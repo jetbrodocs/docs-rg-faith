@@ -58,3 +58,26 @@ Packaging Materials,3,Record Consumption,form,Supervisor,"Enter consumption — 
 Packaging Materials,4,Stock Adjustment,form,Supervisor,"Enter physical count, system shows difference",Submit
 Packaging Materials,5,Packaging GRN History,list,Manager,"Browse all packaging GRNs — filter by SKU, vendor, date",View detail
 Packaging Materials,6,Consumption History,list,Manager,"Browse all consumption records — filter by SKU, program, date",View detail
+Reports,R01,Stage-wise Inventory Report,report,"Manager, Head Office",Real-time material at each stage — Grey / Folded / Fresh / Packed / Accumulated / NA,"Drill down, Export, Print"
+Reports,R02,MRL Lifecycle Report,report,"Manager, Supervisor, Head Office",Complete history of one MRL from creation through dispatch — all events in one view,"Export, Print"
+Reports,R03,Monthly Throughput Report,report,"Manager, Head Office","Period summary — MRLs created, receipts, lots folded/graded, bales packed/dispatched","Filter by date, Export"
+Reports,R04,End-to-End Cycle Time Report,report,"Manager, Head Office","Average/median/min/max time from inbound receipt to dispatch, by vendor or lot","Filter by date/vendor, Export"
+Reports,R05,Vendor Pending Balance Report,report,"Manager, Head Office","Total outstanding metres at each vendor, oldest MRL age, drill down to individual MRLs","Drill down, Export"
+Reports,R06,Vendor Sent/Received Summary,report,"Manager, Head Office","Period report — metres sent/received per vendor, average turnaround days","Filter by date/vendor, Export"
+Reports,R07,Vendor Quality Performance Report,report,"Manager, Head Office","Vendor-wise Fresh yield %, NA rate %, average shrinkage %","Filter by date/vendor, Export"
+Reports,R08,Shrinkage Report,report,"Manager, Supervisor","Lot-by-lot Gate Pass vs folding metres, shrinkage %, vendor grouping","Filter by date/vendor/MRL, Export"
+Reports,R09,Gradation Report (Printable),report,"Manager, Supervisor, Head Office","Print-ready Gradation Report — metre progression, grade breakdown with kg/metres/percentages","Print, Export to PDF"
+Reports,R10,Fresh Yield Trend Report,report,"Manager, Head Office","Fresh yield % over time (weekly/monthly), trend line, vendor breakdown","Filter by date/vendor, Chart + table"
+Reports,R11,Bale Production Report,report,"Manager, Head Office","Bales packed per period — count, metres, by brand/product/customer","Filter by date/brand/product/customer, Export"
+Reports,R12,Cutting Waste Report,report,Manager,"Waste per program — Good Cut/Fent/Chindi kg, waste ratio, trend","Filter by date/MRL, Export"
+Reports,R13,Packing Program Summary (Printable),report,"Manager, Supervisor","Print-ready program summary — header, line items, bales produced, waste","Print, Export to PDF"
+Reports,R14,Dispatch Register,report,"Manager, Head Office","All dispatches for a period — delivery form no, date, customer, bales, metres","Filter by date/customer, Export"
+Reports,R15,Customer-wise Dispatch Report,report,"Manager, Head Office","Total bales/metres shipped per customer, products shipped, last dispatch date","Filter by date/customer, Drill down, Export"
+Reports,R16,Delivery Form (Printable),report,"Manager, Supervisor","Print-ready Delivery Form matching physical format — header, bale lines, totals, signatures",Print
+Reports,R17,Decision Pending Aging Report,report,Manager,"Pending entries with aging — green/yellow/red flags at 7/14 day thresholds","Filter by age, Export"
+Reports,R18,Not Acceptable Aging Report,report,Manager,"Open NA entries by age — grouped by vendor, total pending metres per vendor","Filter by vendor/age, Export"
+Reports,R19,NA Resolution History Report,report,"Manager, Head Office","Resolved entries — days to resolve, resolution type, vendor-wise averages","Filter by date/vendor, Export"
+Reports,R20,Accumulation Trend Report,report,Manager,"Good Cut/Fent/Rags/Chindi kg over time — inflow vs outflow, stacked area chart","Filter by date/grade, Chart + table"
+Reports,R21,Packaging Stock Report,report,"Manager, Supervisor","Current stock of all packaging items, low stock warnings, last received/consumed dates","Export, Print"
+Reports,R22,Packaging GRN Register,report,Manager,"All packaging receipts for a period — GRN no, date, SKU, vendor, quantity","Filter by date/vendor/SKU, Export"
+Reports,R23,Packaging Consumption Report,report,Manager,"Consumption by SKU for a period — total consumed, programs linked, average per bale","Filter by date/SKU, Export"

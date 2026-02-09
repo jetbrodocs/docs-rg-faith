@@ -170,4 +170,6 @@ Reports that span multiple modules and are better defined at the overview level.
 
 ## Companion Documents
 
-- **User Journeys:** [user-journeys.md](user-journeys.md) — narratives for every role showing how real users experience the system day-to-day.
+- **Reports:** [reports.md](reports.md) — 23 analytical and printable reports across 7 categories (system-wide, vendor, processing, packing, dispatch, exception, packaging materials).
+- **Screen List:** [screen-list.csv](screen-list.csv) — consolidated list of all 83 screens (57 operational + 23 reports + 3 printable documents) across all modules.
+- **User Journeys:** [user-journeys.md](user-journeys.md) — timeline narrative of a full day at Miroli showing all roles interacting, plus per-role reference tables.
