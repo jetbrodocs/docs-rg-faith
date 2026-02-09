@@ -23,7 +23,7 @@ These will be resolved based on answers below and then updated in the process ma
 | I3 | "Accumulated" state has no formal entry point in any process map | **RESOLVED:** Material enters "Accumulated" when weighed and stored in accumulation area after grading or cutting. Add explicit state transition. |
 | I4 | Gate Pass fields (Ready Mtr, Shortage/Shrinkage) missing from Process 03 data model but needed for Gradation Report | **RESOLVED (Q5):** Our model: metres sent (MRL) → metres received (Gate Pass) → shrinkage → grade breakdown. Capture received metres in Process 03. |
 | I5 | Transport contradiction — Obs 01 says RG Faith owns all transport, Obs 02 says vendor arranges inbound transport | **RESOLVED (Q4):** RG Faith owns transport. Vendor confirms readiness, RG Faith sends own vehicles. Fix Obs 02. |
-| I6 | Missing glossary terms (GRN, Decision Pending, Trade Number, GSM, Fold Type, etc.) | **PENDING:** Update CLAUDE.md glossary with missing terms. |
+| I6 | Missing glossary terms (GRN, Decision Pending, Trade Number, GSM, Fold Type, etc.) | **RESOLVED:** Added 11 new terms to CLAUDE.md glossary + 9 new project rules. |
 
 ---
 

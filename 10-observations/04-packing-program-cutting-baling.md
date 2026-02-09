@@ -16,7 +16,7 @@ tags: [observation, packing, cutting, baling, brand, sku, packing-program]
 
 ## Activity
 
-Once fabric has been folded and graded as Fresh (or in some cases, Good Cut), it enters the packing pipeline. This pipeline has two distinct phases:
+Once fabric has been folded and graded as Fresh, it enters the packing pipeline. This pipeline has two distinct phases:
 
 1. **Packing Program creation** — A planning/instruction step where the facility manager defines how the material should be cut, folded, branded, and packed to fulfill a sales order.
 2. **Cutting and baling execution** — The physical work of cutting fabric to specified lengths, folding it in the specified pattern, applying brand stamps, and boxing it into bales.

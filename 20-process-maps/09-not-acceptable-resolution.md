@@ -56,7 +56,7 @@ START — Material graded as Not Acceptable (Process 05)
 │    • Lot Number                     │
 │    • Quality code                   │
 │    • Tone                           │
-│    • Metres / kg rejected           │
+│    • Metres rejected                │
 │    • Remark (reason for rejection)  │
 │    • Mill name (vendor)             │
 └──────────────┬──────────────────────┘

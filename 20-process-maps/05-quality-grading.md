@@ -91,7 +91,7 @@ START — Material selected for quality inspection
 │    └──────────┘                     │
 │    ┌───────────────┐  Rejected      │
 │    │ NOT ACCEPTABLE│  Varies         │
-│    │ (metres/kg)   │  → Return to   │
+│    │ (metres)      │  → Return to   │
 │    │               │    vendor       │
 │    └───────────────┘                │
 └──────────────┬──────────────────────┘

@@ -320,7 +320,7 @@ Some of these lots have been sitting for **over a year** with no decision.
 Each decision-pending lot needs:
 - A **remark field** — free text describing the issue
 - A **resolution pipeline** — workflow to move from pending → decided
-- **Aging alerts** — flag lots that have been pending beyond a threshold (e.g., 30 days, 90 days)
+- **Aging alerts** — flag lots that have been pending beyond 14 days with no activity
 - **Escalation** — notify supervisors or managers when lots are aging
 
 This is a clear pain point where the system can add immediate value — making pending lots visible and preventing them from being forgotten.

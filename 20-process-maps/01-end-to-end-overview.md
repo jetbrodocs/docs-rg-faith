@@ -71,8 +71,8 @@ tags: [process, overview, master]
 │         │               │      │           for TODIYA                 │
 │         │               │      │           (Process 08)               │
 │         │               │      │                                      │
-│         │               │      └──► ACCUMULATE or                     │
-│         │               │           PACK with Fresh                   │
+│         │               │      └──► ACCUMULATE                        │
+│         │               │           for TODIYA                        │
 │         │               │                                             │
 │         │               ▼                                             │
 │         │  ┌──────────────────────────┐                               │

@@ -290,7 +290,7 @@ There is **no formal process** for resolving not-acceptable material. It works l
 #### Design Implications
 
 **Must Have:**
-1. **Not Acceptable record** — When material is graded Not Acceptable: MRL, lot, vendor, meters/kg, reason (remark).
+1. **Not Acceptable record** — When material is graded Not Acceptable: MRL, lot, vendor, metres, reason (remark).
 2. **Status tracking** — Open / In Discussion / Resolved (Picked Up) / Unresolved (Remains at facility).
 3. **Aging visibility** — Show how long each Not Acceptable entry has been open.
 
