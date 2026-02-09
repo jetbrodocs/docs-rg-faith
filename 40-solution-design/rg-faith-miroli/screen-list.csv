@@ -11,6 +11,7 @@ Master Data,9,Tone Codes,list,Manager,Browse all tone codes,"Create New, Edit in
 Master Data,10,Quality Codes,list,Manager,Browse all quality codes,"Create New, Edit inline, Deactivate"
 Master Data,11,Trade Numbers,list,Manager,Browse all trade numbers with product filter,"Create New, Edit, Deactivate"
 Master Data,12,Packaging SKUs,list,Manager,Browse all packaging items,"Create New, Edit, Deactivate"
+Master Data,13,Packaging BOM,list,Manager,"Define packaging materials per bale for each product — e.g., 1 cardboard box, 2 plastic sheets, 1 sticker set","Create New, Edit, Deactivate"
 Outbound & Inbound,1,Grey Lot Register,list,"Manager, Supervisor","Browse all grey lots with status, vendor, and balance filters","Create New Grey Lot, Filter by status/vendor"
 Outbound & Inbound,2,Grey Lot Detail,detail,"Manager, Supervisor","View grey lot details, all inbound receipts against it, pending balance, full event history","Edit Grey Lot, Record Receipt"
 Outbound & Inbound,3,Create Grey Lot,form,Manager,"Enter outbound details — vendor, metres, quality code, date",Submit
@@ -32,7 +33,7 @@ Quality Grading,7,Grading Summary Dashboard,dashboard,Manager,"Today's grading a
 Packing Program,1,Packing Programs,list,Manager,"Browse all programs with status, grey lot, progress filters",Create New Program
 Packing Program,2,Packing Program Detail,detail,"Manager, Supervisor","View program header, line items, bales produced, waste recorded, progress","Register Bale, Record Waste, Cancel"
 Packing Program,3,Create Packing Program,form,Manager,"Select Fresh material source, add line items with brand/product/customer/cut specs",Submit
-Packing Program,4,Register Bale,form,"Supervisor, Worker","Select program line, enter pieces and metres",Submit (auto-assigns bale number)
+Packing Program,4,Register Bale,form,"Supervisor, Worker","Select program line, enter pieces and metres. On submit: auto-assigns bale number, backflushes packaging materials per BOM",Submit (auto-assigns bale number + auto-deducts packaging)
 Packing Program,5,Record Cutting Waste,form,Supervisor,Enter waste by grade (Good Cut in metres / Fent in kg / Chindi in kg) for a program,Submit
 Packing Program,6,Bale Register,list,"Manager, Supervisor","Browse all bales — filter by date, brand, product, customer, status",View bale detail
 Packing Program,7,Bale Detail,detail,"Manager, Supervisor","View full bale identity — all attributes, packing slip preview, event history",Print Packing Slip
@@ -51,12 +52,11 @@ NA Resolution,1,Reprocess List,list,"Supervisor, Manager","Browse all open NA en
 NA Resolution,2,NA Entry Detail,detail,"Supervisor, Manager","View one entry — full details, comment history, aging info","Comment, Resolve (Pickup / Write-off)"
 NA Resolution,3,Create NA Entry,form,Supervisor,Record a new Not Acceptable entry (if not auto-created from grading),Submit
 NA Resolution,4,Vendor Rejection Summary,dashboard,Manager,"Vendor-wise rejection totals, aging distribution, resolution stats",Drill down to vendor entries
-Packaging Materials,1,Packaging Stock,list,"Supervisor, Manager",Current stock levels for all packaging items,"Record GRN, Record Consumption, Adjust Stock"
+Packaging Materials,1,Packaging Stock,list,"Supervisor, Manager",Current stock levels for all packaging items — consumption auto-deducted via backflush on bale registration,"Record GRN, Adjust Stock"
 Packaging Materials,2,Record Packaging GRN,form,"Worker, Supervisor",Enter receipt details — SKU / vendor / quantity / reference,Submit
-Packaging Materials,3,Record Consumption,form,Supervisor,"Enter consumption — SKU, quantity, optional packing program link",Submit
-Packaging Materials,4,Stock Adjustment,form,Supervisor,"Enter physical count, system shows difference",Submit
-Packaging Materials,5,Packaging GRN History,list,Manager,"Browse all packaging GRNs — filter by SKU, vendor, date",View detail
-Packaging Materials,6,Consumption History,list,Manager,"Browse all consumption records — filter by SKU, program, date",View detail
+Packaging Materials,3,Stock Adjustment,form,Supervisor,"Enter physical count, system shows difference — reconciles backflushed quantities with actual usage",Submit
+Packaging Materials,4,Packaging GRN History,list,Manager,"Browse all packaging GRNs — filter by SKU, vendor, date",View detail
+Packaging Materials,5,Consumption History,list,Manager,"Browse backflushed consumption records — filter by SKU, program, bale, date",View detail
 Reports,R01,Stage-wise Inventory Report,report,"Manager, Head Office",Real-time material at each stage — Grey / Folded / Fresh / Packed / Accumulated / NA,"Drill down, Export, Print"
 Reports,R02,Grey Lot Lifecycle Report,report,"Manager, Supervisor, Head Office",Complete history of one grey lot from creation through dispatch — all events in one view,"Export, Print"
 Reports,R03,Monthly Throughput Report,report,"Manager, Head Office","Period summary — grey lots created, receipts, lots folded/graded, bales packed/dispatched","Filter by date, Export"
@@ -78,4 +78,4 @@ Reports,R19,NA Resolution History Report,report,"Manager, Head Office","Resolved
 Reports,R20,Accumulation Trend Report,report,Manager,"Good Cut (metres) / Fent/Rags/Chindi (kg) over time — inflow vs outflow, stacked area chart","Filter by date/grade, Chart + table"
 Reports,R21,Packaging Stock Report,report,"Manager, Supervisor","Current stock of all packaging items, low stock warnings, last received/consumed dates","Export, Print"
 Reports,R22,Packaging GRN Register,report,Manager,"All packaging receipts for a period — GRN no, date, SKU, vendor, quantity","Filter by date/vendor/SKU, Export"
-Reports,R23,Packaging Consumption Report,report,Manager,"Consumption by SKU for a period — total consumed, programs linked, average per bale","Filter by date/SKU, Export"
+Reports,R23,Packaging Consumption Report,report,Manager,"Backflushed consumption by SKU for a period — total consumed, bales linked, variance from stock adjustments","Filter by date/SKU, Export"

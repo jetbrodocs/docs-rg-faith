@@ -192,7 +192,7 @@ He opens **Decision Pending Detail** on his phone and resolves the entry: Resolv
 - Pieces: 15
 - Total Metres: 300
 
-She clicks Submit. The system auto-assigns bale number **37432**. A packing slip is generated — one copy will go inside the bale, the office copy is available for printing. The program shows progress: 1 of 5 bales complete. Status changes to IN_PROGRESS.
+She clicks Submit. The system auto-assigns bale number **37432**. A packing slip is generated — one copy will go inside the bale, the office copy is available for printing. The system also backflushes packaging materials per the product BOM: 1 cardboard box, 2 plastic sheets, and 1 sticker set are auto-deducted from packaging stock. The program shows progress: 1 of 5 bales complete. Status changes to IN_PROGRESS.
 
 ---
 
@@ -333,7 +333,7 @@ Quick reference for each role's tasks, organized for onboarding and training.
 | Record cutting waste | Record Cutting Waste | Per program completed |
 | Create Decision Pending entry | Decision Pending | When quality is unclear |
 | Resolve Decision Pending | Decision Pending Detail | When decision is made |
-| Record packaging consumption | Record Consumption | End of day or per program |
+| Adjust packaging stock (physical count) | Stock Adjustment | Weekly or as needed |
 
 ### Receiving Worker (Anil)
 
@@ -387,7 +387,7 @@ Quick reference for each role's tasks, organized for onboarding and training.
 - **Month 6:** Ramesh decides they will never pick up. He resolves the entry as "Unresolved — vendor non-responsive after 6 months." The material remains at MIROLI-NA. It is no longer on the active Reprocess List but exists in the resolution history.
 
 ### Packaging material runs out mid-program
-- **2:00 PM:** During packing, the team reaches for plastic sheets — none left. Work pauses.
+- **2:00 PM:** During packing, the team reaches for plastic sheets — none left. Work pauses. (The system already shows low stock — backflush from earlier bales today has been deducting automatically.)
 - **2:05 PM:** Ramesh checks **Packaging Stock** — confirms 0 plastic sheets. He calls the packaging vendor.
 - **3:00 PM:** Vendor delivers emergency stock. **Anil** records the GRN: 200 plastic sheets. Stock replenishes. Packing resumes.
 
