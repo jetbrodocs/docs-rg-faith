@@ -19,12 +19,11 @@ Outbound & Inbound,5,Inbound Receipts,list,Supervisor,Browse recent inbound rece
 Outbound & Inbound,6,Inbound Receipt Detail,detail,Supervisor,"View a single receipt — all Gate Pass data, linked grey lot",—
 Outbound & Inbound,7,Vendor Pending Balances,dashboard,Manager,"Summary view: total metres outstanding per vendor, grey lots with pending balance",Drill down to grey lot
 Folding & Measurement,1,Pending Folding,list,Supervisor,"Browse grey lots awaiting folding — shows grey lot number, lot number, grey metres",Select lot to fold
-Folding & Measurement,2,Record Folding,form,Supervisor,"Enter folding data — folding metres, Chadat, fold count",Submit
-Folding & Measurement,3,Folding Records,list,"Supervisor, Manager","Browse completed folding records with grey lot, shrinkage, and date filters","View detail, Edit (correction)"
-Folding & Measurement,4,Folding Record Detail,detail,"Supervisor, Manager","View full folding data — metres comparison, shrinkage, Chadat, fold breakdown",Edit (correct values)
-Folding & Measurement,5,Metre Reconciliation,dashboard,Manager,"Side-by-side comparison: Gate Pass metres vs folding metres for recent lots, shrinkage trends",Drill down to lot
+Folding & Measurement,2,Record Fold Measurement,form,Supervisor,"Record measurement at a fold point — select grey lot, enter cumulative metres at this fold",Submit
+Folding & Measurement,3,Folding Records,list,"Supervisor, Manager","Browse folding records with grey lot and date filters","View detail, Edit (correction)"
+Folding & Measurement,4,Folding Record Detail,detail,"Supervisor, Manager","View all fold measurements for a lot — individual fold readings, total measured metres, Chadat",Edit (correct values)
 Quality Grading,1,Pending Grading,list,"Worker, Supervisor",Browse lots with Grey or Folded material awaiting grading,Select lot to grade
-Quality Grading,2,Record Grading,form,"Worker, Supervisor","Enter grade for a section — select grade, enter metres/kg, Chadat auto-filled",Submit
+Quality Grading,2,Record Grading,form,"Worker, Supervisor","Enter grading output for a lot — select grade, enter metres (or kg for Fent/Rags/Chindi), Chadat auto-filled",Submit
 Quality Grading,3,Gradation Report,detail,"Supervisor, Manager","View progressive report for one grey lot — metre progression, grade breakdown, percentages","Print, Export"
 Quality Grading,4,Gradation Reports,list,Manager,"Browse all gradation reports — filter by grey lot, date range, vendor",View report
 Quality Grading,5,Decision Pending,list,"Supervisor, Manager","Browse all pending decisions — shows ageing (days since last activity), 14-day alerts","Add Comment, Resolve"
@@ -64,8 +63,7 @@ Reports,R03,Monthly Throughput Report,report,"Manager, Head Office","Period summ
 Reports,R04,End-to-End Cycle Time Report,report,"Manager, Head Office","Average/median/min/max time from inbound receipt to dispatch, by vendor or lot","Filter by date/vendor, Export"
 Reports,R05,Vendor Pending Balance Report,report,"Manager, Head Office","Total outstanding metres at each vendor, oldest grey lot age, drill down to individual grey lots","Drill down, Export"
 Reports,R06,Vendor Sent/Received Summary,report,"Manager, Head Office","Period report — metres sent/received per vendor, average turnaround days","Filter by date/vendor, Export"
-Reports,R07,Vendor Quality Performance Report,report,"Manager, Head Office","Vendor-wise Fresh yield %, NA rate %, average shrinkage %","Filter by date/vendor, Export"
-Reports,R08,Shrinkage Report,report,"Manager, Supervisor","Lot-by-lot Gate Pass vs folding metres, shrinkage %, vendor grouping","Filter by date/vendor/grey lot, Export"
+Reports,R07,Vendor Quality Performance Report,report,"Manager, Head Office","Vendor-wise Fresh yield %, NA rate %","Filter by date/vendor, Export"
 Reports,R09,Gradation Report (Printable),report,"Manager, Supervisor, Head Office","Print-ready Gradation Report — metre progression, grade breakdown with kg/metres/percentages","Print, Export to PDF"
 Reports,R10,Fresh Yield Trend Report,report,"Manager, Head Office","Fresh yield % over time (weekly/monthly), trend line, vendor breakdown","Filter by date/vendor, Chart + table"
 Reports,R11,Bale Production Report,report,"Manager, Head Office","Bales packed per period — count, metres, by brand/product/customer","Filter by date/brand/product/customer, Export"

@@ -12,8 +12,8 @@ This document describes how real users experience the system day-to-day. It is s
 
 | Role | Person | Location | Responsibility | Primary Screens |
 |---|---|---|---|---|
-| **Facility Manager** | Ramesh | Miroli floor | Decision-maker. Creates MRLs, packing programs, delivery forms. Reviews dashboards. Handles vendor issues. | Dashboards, MRL Register, Create Packing Program, Ready for Dispatch, Reprocess List |
-| **Supervisor** | Kiran | Miroli floor (folding/grading/packing areas) | Operational lead. Records inbound receipts, folding data, grading entries. Registers bales. Manages Decision Pending entries. | Record Inbound, Record Folding, Record Grading, Register Bale, Decision Pending |
+| **Facility Manager** | Ramesh | Miroli floor | Decision-maker. Creates grey lots, packing programs, delivery forms. Reviews dashboards. Handles vendor issues. | Dashboards, Grey Lot Register, Create Packing Program, Ready for Dispatch, Reprocess List |
+| **Supervisor** | Kiran | Miroli floor (folding/grading/packing areas) | Operational lead. Records inbound receipts, fold measurements, grading entries. Registers bales. Manages Decision Pending entries. | Record Inbound, Record Fold Measurement, Record Grading, Register Bale, Decision Pending |
 | **Receiving Worker** | Anil | Miroli receiving area | Unloads trucks. Records packaging material GRNs. | Record Packaging GRN, Packaging Stock |
 | **Packing Worker** | Deepa | Miroli packing area | Executes packing programs — cuts, folds, stamps, packs. Registers completed bales. | Packing Program Detail, Register Bale |
 | **Head Office User** | Priyanka | Ahmedabad head office (New Cloth Market) | Remote monitoring. Reviews dashboards and reports. Answers management queries. | Stage-wise Dashboard, Gradation Reports, Dispatch history |
@@ -89,7 +89,7 @@ Meanwhile, **Kiran** opens **Pending Folding** on her tablet. She sees the lot t
 
 ### 8:30 AM — Ramesh creates an MRL for outbound
 
-Woven cloth has arrived from the weaving facility (separate location, out of scope). Ramesh needs to send 8,200 metres to RSK Industries for dyeing. He opens **Create MRL**:
+Woven cloth has arrived from the weaving facility (separate location, out of scope). Ramesh needs to send 8,200 metres to RSK Industries for dyeing. He opens **Create Grey Lot**:
 
 - Vendor: RSK Industries
 - Metres Sent: 8,200
@@ -141,34 +141,35 @@ She and two other workers begin cutting the fabric into 20-metre pieces. Each pi
 
 ---
 
-### 10:30 AM — Folding complete, Kiran records the data
+### 10:30 AM — Folding in progress, Kiran records measurements
 
-The folding team finishes processing grey lot MRL-0535, Lot 7890. **Kiran** opens **Record Folding**:
+The folding team is working through grey lot MRL-0535, Lot 7890 (4,200 grey metres). As the workers fold the rolls at 2-metre intervals, **Kiran** periodically records measurements on the **Record Fold Measurement** screen. Each entry captures the cumulative metres measured at that fold point:
 
-- Inbound Receipt: MRL-0535 / Lot 7890
-- Folding Metres: 4,082.50
-- Chadat: 5.12 (a standard fold weighed and calculated: metres/kg = 5.12)
-- Fold Count: 2,041 (standard 2m folds)
+- Entry 1: 502.00 metres. Submit.
+- Entry 2: 1,018.50 metres. Submit.
+- Entry 3: 1,530.25 metres. Submit.
+- ... (continues through the morning)
 
-She clicks Submit. The system calculates shrinkage: 4,200 - 4,082.50 = 117.50 metres (2.80%). The lot moves from GREY to FOLDED.
+By the time the team finishes the full lot, the final measurement reads **4,082.50 metres** — RG Faith's own verified count. Kiran also records the Chadat: 5.12 (a known length weighed and calculated: metres/kg = 5.12). The lot moves from GREY to FOLDED.
 
 ---
 
 ### 10:45 AM — Grading begins on the freshly folded lot
 
-The same workers (multi-skilled) now start inspecting the folded sections from Lot 7890. As they work through each fold, **Kiran** records grading entries in real time on the **Record Grading** screen:
+The same workers (multi-skilled) now start inspecting the folded material from Lot 7890. They work through the lot visually and by feel, identifying sections by quality. Grading is not done fold-by-fold — the workers assess stretches of fabric at whatever granularity the material demands.
 
-- Fold 1: Grade = FRESH, Metres = 100. Submit.
-- Fold 2: Grade = FRESH, Metres = 100. Submit.
-- Fold 3: Worker spots a stain at the 65-metre mark. They cut out the defective section for grading purposes. Kiran records two entries:
-  - Grade = FRESH, Metres = 65. Submit.
-  - Grade = NOT_ACCEPTABLE, Metres = 5 (the stained section, cut out). Submit.
-  - The remaining 30 metres continue as the next section.
-- Fold 4: Some minor defects — a section set aside. Grade = GOOD_CUT, Metres = 10.75. Submit.
+As they work, **Kiran** records grading output on the **Record Grading** screen. Each entry captures a grade and the quantity for that grade:
 
-She continues through the morning. The **Gradation Report** for MRL-0535 updates incrementally with each entry — Fresh percentage starts at 100% and settles around 96.5% as non-Fresh sections are recorded.
+- Grade = FRESH, Metres = 3,938.50. Submit.
+- Grade = GOOD_CUT, Metres = 10.75. Submit.
+- Grade = FENT, Kg = 6.2. Submit. (Chadat auto-filled: 5.12 → 31.74 equivalent metres)
+- Grade = RAGS, Kg = 1.1. Submit. (→ 5.63 equivalent metres)
+- Grade = CHINDI, Kg = 0.8. Submit. (→ 4.10 equivalent metres)
+- Grade = NOT_ACCEPTABLE, Metres = 5.00. Submit.
 
-The 5 metres of Not Acceptable fabric automatically creates an entry on the **Reprocess List**: NA-2026-0034, MRL-0535, 5 metres, remark "stain at fold 3, approx 65m mark."
+Grading may happen progressively — Kiran can submit entries as sections are graded rather than waiting for the full lot. The **Gradation Report** for MRL-0535 updates with each entry.
+
+The 5 metres of Not Acceptable fabric automatically creates an entry on the **Reprocess List**: NA-2026-0034, MRL-0535, 5 metres, remark "stain found during grading, approx 65m mark."
 
 The Good Cut goes to the accumulation area. The **Accumulation Dashboard** updates: Good Cut increases from 42.5 metres to 53.25 metres.
 
@@ -224,7 +225,6 @@ The team continues executing PP-2026-0087. **Deepa** registers bales as they are
 | Chindi (0.8 kg = 4.10m via Chadat) | 4.10 | 0.10% |
 | Not Acceptable | 5.00 | 0.12% |
 | **Total** | **3,995.72** | — |
-| Unaccounted (shrinkage beyond folding) | 86.78 | 2.13% |
 
 The lot is fully graded. 3,938.50 metres of Fresh are now available at MIROLI-FRESH for the next packing program.
 
@@ -313,7 +313,7 @@ Quick reference for each role's tasks, organized for onboarding and training.
 | Review stage-wise inventory | Stage-wise Dashboard | Daily (start of shift) |
 | Check vendor pending balances | Vendor Pending Balances | Daily |
 | Review Decision Pending alerts | Decision Pending list | Daily |
-| Create MRL (outbound to vendor) | Create MRL | As needed (several per week) |
+| Create grey lot (outbound to vendor) | Create Grey Lot | As needed (several per week) |
 | Create packing program | Create Packing Program | As needed (triggered by sales orders) |
 | Create Todiya program | Create Todiya Program | Occasional (when buyer found for leftovers) |
 | Create delivery form (dispatch) | Create Delivery Form | Multiple times per week |
@@ -326,7 +326,7 @@ Quick reference for each role's tasks, organized for onboarding and training.
 | Task | Screen | Frequency |
 |---|---|---|
 | Record inbound receipt | Record Inbound Receipt | Per truck arrival (multiple/week) |
-| Record folding completion | Record Folding | Per lot folded (daily) |
+| Record fold measurements | Record Fold Measurement | Per lot being folded (continuous) |
 | Record grading entries | Record Grading | Continuous throughout day |
 | Check Gradation Report progress | Gradation Report | Per lot being graded |
 | Register bales | Register Bale | Per bale completed (multiple/day) |
