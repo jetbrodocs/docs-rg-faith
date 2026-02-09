@@ -126,13 +126,13 @@ Quality inspection classifies the material into grades. This is where the materi
 | Grade | Unit | Disposition | Notes |
 |---|---|---|---|
 | **Fresh** | Meters | Ready for packing program | Best quality. Typically ~96-97% of a lot. |
-| **Good Cut** | Kilograms | Accumulate for Todiya | Second grade. Conversion via Chadat. |
+| **Good Cut** | Metres | Accumulate for Todiya | Second grade. |
 | **Fent** | Kilograms | Accumulate for Todiya | Lower grade. ~50% considered loss. |
 | **Rags** | Kilograms | Accumulate for Todiya | Lower grade. |
 | **Chindi** | Kilograms | Accumulate for Todiya | Lowest grade. 100% loss. |
 | **Not Acceptable** | Meters | Send back to vendor | Rejected. Informal resolution process. |
 
-**Critical concept — Chadat:** Fresh cut is always measured in meters. All other grades are measured in kilograms. The **Chadat** is a conversion factor between meters and kilograms, calculated for each specific lot during cutting. It's used to determine what percentage of the received lot was Fresh versus other grades, and to track loss.
+**Critical concept — Chadat:** Fresh and Good Cut are measured in metres. Fent, Rags, and Chindi are measured in kilograms. The **Chadat** is a conversion factor between metres and kilograms, calculated for each specific lot. It's used to convert Fent, Rags, and Chindi from kg to metres for reporting, to determine the percentage breakdown of a lot and track loss.
 
 ### State 4: Packing Program Assigned
 
@@ -171,7 +171,8 @@ The material is tracked through several identifiers at different stages:
 | Grey material (incoming) | Meters | From vendor's Gate Pass |
 | Folded material | Meters | RG Faith's own measurement |
 | Fresh grade | Meters | Primary output |
-| Good Cut, Fent, Rags, Chindi | Kilograms | Converted via Chadat |
+| Good Cut | Metres | Second grade, measured in metres |
+| Fent, Rags, Chindi | Kilograms | Converted to metres via Chadat |
 | Shrinkage | Meters (loss) | Grey meters minus finished meters |
 | Chadat | Meters per kilogram | Lot-specific conversion factor |
 | Finished bales | Pieces + meters | Pieces per bale and total meters per bale |

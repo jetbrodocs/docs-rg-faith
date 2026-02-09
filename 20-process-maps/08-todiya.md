@@ -34,7 +34,7 @@ tags: [process, todiya, toria, leftover, accumulation, repacking]
 
 | Input | Source | Format | Notes |
 |---|---|---|---|
-| Accumulated Good Cut | Accumulation area | Physical fabric (kg) | From cutting waste across multiple packing programs. |
+| Accumulated Good Cut | Accumulation area | Physical fabric (metres) | From cutting waste across multiple packing programs. |
 | Accumulated Fent | Accumulation area | Physical fabric (kg) | From grading and cutting waste. |
 | Accumulated Rags | Accumulation area | Physical fabric (kg) | From grading and cutting waste. |
 | Accumulated Chindi | Accumulation area | Physical fabric (kg) | Waste material. 100% loss. |
@@ -58,11 +58,11 @@ Normal packing programs produce cutting waste
 ┌─────────────────────────────────────┐
 │ ACCUMULATION AREA                   │
 │                                     │
-│ Good Cut:  +2.3 kg (from Program A) │
-│            +1.8 kg (from Program B) │
-│            +3.1 kg (from Program C) │
+│ Good Cut:  +2.3 m (from Program A)  │
+│            +1.8 m (from Program B)  │
+│            +3.1 m (from Program C)  │
 │            ────────                 │
-│            = 7.2 kg accumulated     │
+│            = 7.2 m accumulated      │
 │                                     │
 │ Fent:      +4.5 kg (from grading)   │
 │            +2.1 kg (from cutting)   │

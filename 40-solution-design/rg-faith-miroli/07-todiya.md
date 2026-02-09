@@ -4,12 +4,12 @@
 
 ### Process: Accumulation Tracking and Todiya Packing Programs
 
-"Todiya" (from Hindi/Gujarati for "breaking") manages the lifecycle of non-Fresh material — Good Cut, Fent, Rags, and Chindi — that accumulates from two sources: quality grading (Module 04) and cutting waste during packing (Module 05). When enough leftover stock accumulates and a buyer is found, the manager creates a Todiya Packing Program to repack the accumulated material into bales for sale.
+"Todiya" (from Hindi/Gujarati for "breaking") manages the lifecycle of non-Fresh material — Good Cut (in metres), Fent, Rags, and Chindi (in kg) — that accumulates from two sources: quality grading (Module 04) and cutting waste during packing (Module 05). When enough leftover stock accumulates and a buyer is found, the manager creates a Todiya Packing Program to repack the accumulated material into bales for sale.
 
 Todiya programs follow the same physical execution flow as regular packing programs (Module 05) — cut, fold, brand, pack — but differ in key ways:
 - **Material source:** Accumulated leftover stock instead of fresh-graded lots
 - **Grade mixing:** May combine Good Cut + Fent in one bale (regular programs never mix grades)
-- **MRL mixing:** May combine material from multiple original MRLs
+- **MRL mixing:** May combine material from multiple original grey lots (MRLs)
 - **Trigger:** Buyer found for leftovers (sales-driven, not order-driven)
 
 Today, "Todiya" is mostly a software/accounting operation — inventory is reassigned in records, though some physical repacking may still occur.
@@ -49,11 +49,12 @@ Flow:
 |---|---|---|
 | id | UUID | Primary key |
 | grade | string | GOOD_CUT, FENT, RAGS, or CHINDI |
-| total_kg | decimal | Running total kilograms accumulated |
-| total_metres_equivalent | decimal | Approximate metres equivalent (using average Chadat) |
+| total_quantity | decimal | Running total accumulated — in metres for GOOD_CUT, in kg for FENT/RAGS/CHINDI |
+| unit | string | METRES (for GOOD_CUT) or KG (for FENT/RAGS/CHINDI) |
+| total_metres_equivalent | decimal | Approximate metres equivalent (for kg grades, converted using average Chadat; for GOOD_CUT, equals total_quantity) |
 | last_updated_at | datetime | When stock was last updated |
 
-Note: Accumulation stock is a **projection** — it is computed from `GRADING_RECORDED` and `CUTTING_WASTE_RECORDED` events, minus material consumed by Todiya programs. It is not directly created by users.
+Note: Accumulation stock is a **projection** — it is computed from `GRADING_RECORDED` and `CUTTING_WASTE_RECORDED` events, minus material consumed by Todiya programs. It is not directly created by users. Good Cut is tracked in metres; Fent, Rags, and Chindi are tracked in kg.
 
 #### Todiya Packing Program
 
@@ -62,10 +63,10 @@ Uses the same `PackingProgram` entity from Module 05, with `program_type = TODIY
 | Field | Difference from Regular |
 |---|---|
 | program_type | `TODIYA` instead of `REGULAR` |
-| mrl_id | May be null (material from multiple MRLs) |
+| mrl_id | May be null (material from multiple grey lots) |
 | inbound_receipt_id | May be null |
 | source_grades | List of grades being packed (e.g., [GOOD_CUT, FENT]) |
-| source_kg | Total kg of accumulated material being used |
+| source_quantity | Total quantity of accumulated material being used (metres for Good Cut, kg for others) |
 
 ---
 
@@ -82,7 +83,7 @@ Trigger:
 
 Data points captured:
   - source_grades: list of string — which grades to include (GOOD_CUT, FENT, RAGS)
-  - source_kg: decimal — total kg of accumulated material to use
+  - source_quantity: decimal — total quantity of accumulated material to use (metres for GOOD_CUT, kg for others)
   - customer_id: UUID — the Todiya buyer
   - line items (same structure as regular packing program lines):
     - brand_id, product_id, trade_number_id, fold_type_id, customer_id
@@ -95,7 +96,7 @@ Payload:
   program_type: "TODIYA"
   mrl_id: null (or specific MRL if single-source)
   source_grades: [string]
-  source_kg: decimal
+  source_quantity: decimal
   customer_id: UUID
   program_date: date
   notes: string?
@@ -106,19 +107,19 @@ Aggregate: PackingProgram / id
 Location: MIROLI-PACK
 
 Preconditions:
-  - Accumulation stock must have sufficient kg for the requested grades
-  - source_kg must be > 0
+  - Accumulation stock must have sufficient quantity for the requested grades (metres for Good Cut, kg for others)
+  - source_quantity must be > 0
   - At least one line item required
   - All referenced master data must be active
 
 Side effects:
-  - accumulation_stock: reserved kg deducted from available totals
+  - accumulation_stock: reserved quantity deducted from available totals (metres for Good Cut, kg for others)
   - fabric_inventory: state -> TODIYA_PROGRAM_ASSIGNED for consumed accumulation stock
 
 Projections updated:
   - packing_programs: new row (program_type = TODIYA, status = CREATED)
   - packing_program_lines: new rows per line
-  - accumulation_stock: totals reduced by source_kg, distributed across grades
+  - accumulation_stock: totals reduced by source_quantity, distributed across grades
 
 Permissions:
   - events:TODIYA_PROGRAM_CREATED:emit
@@ -153,11 +154,13 @@ Accumulation stock is not a stateful entity with lifecycle transitions — it is
 
 ```
 Increases:
-  GRADING_RECORDED (grade = GOOD_CUT/FENT/RAGS/CHINDI)  → +kg
-  CUTTING_WASTE_RECORDED                                  → +kg
+  GRADING_RECORDED (grade = GOOD_CUT)                     → +metres
+  GRADING_RECORDED (grade = FENT/RAGS/CHINDI)             → +kg
+  CUTTING_WASTE_RECORDED (Good Cut)                       → +metres
+  CUTTING_WASTE_RECORDED (Fent/Chindi)                    → +kg
 
 Decreases:
-  TODIYA_PROGRAM_CREATED                                  → -kg
+  TODIYA_PROGRAM_CREATED                                  → -(metres or kg by grade)
 ```
 
 ---
@@ -168,7 +171,7 @@ Decreases:
 
 | # | Business Question | Projection Table | Key Fields | Updated By Events |
 |---|---|---|---|---|
-| 1 | "How much accumulated stock do we have, by grade?" | `accumulation_stock` | grade, total_kg, total_metres_equivalent | `GRADING_RECORDED`, `CUTTING_WASTE_RECORDED`, `TODIYA_PROGRAM_CREATED` |
+| 1 | "How much accumulated stock do we have, by grade?" | `accumulation_stock` | grade, total_quantity (metres or kg), total_metres_equivalent | `GRADING_RECORDED`, `CUTTING_WASTE_RECORDED`, `TODIYA_PROGRAM_CREATED` |
 | 2 | "What Todiya programs are active?" | `packing_programs` | program_type=TODIYA, status, customer | Todiya and bale events |
 | 3 | "History of Todiya sales by customer" | `delivery_forms` + `packing_programs` | program_type=TODIYA, customer, total bales/metres | `DELIVERY_CREATED` |
 | 4 | "Accumulation trend — is leftover stock growing or shrinking?" | `accumulation_stock` (historical) | grade, total_kg over time | All accumulation events |
@@ -209,7 +212,7 @@ Decreases:
 
 | # | Screen Name | Type | Used By | Purpose | Key Actions |
 |---|---|---|---|---|---|
-| 1 | Accumulation Dashboard | dashboard | Manager | Current accumulated stock by grade (kg and approx metres), trend over time | Create Todiya Program |
+| 1 | Accumulation Dashboard | dashboard | Manager | Current accumulated stock by grade (Good Cut in metres; Fent/Rags/Chindi in kg with approx metres equivalent), trend over time | Create Todiya Program |
 | 2 | Create Todiya Program | form | Manager | Select grades, enter kg, add line items with brand/product/customer | Submit |
 | 3 | Todiya Programs | list | Manager | Browse Todiya programs (filter from Packing Programs list by type=TODIYA) | View detail |
 | 4 | Todiya Program Detail | detail | Manager, Supervisor | View program details, bales produced, progress | Register Bale, Record Waste |

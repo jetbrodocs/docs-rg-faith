@@ -258,10 +258,12 @@ Total graded metres:            5,644.33
 | Fresh | — | 5,470.02 | 96.91% | 0% | 0% |
 | Good Cut | — | 52.00 | 0.92% | 0% | — |
 | Fent | 11.46 | 64.44 | 1.14% | 50% | 0.58% |
-| Rags | — | 6.48 | 0.15% | 0% | — |
+| Rags | 1.15 | 6.48 | 0.15% | 0% | — |
 | Chindi | 2.00 | 16.82 | 0.35% | 100% | 0.35% |
 | Not Acceptable | — | 0.00 | 0.00% | — | — |
 | **Total** | | **5,644.32** | **100%** | | |
+
+Note: Fresh, Good Cut, and Not Acceptable are measured directly in metres. Fent, Rags, and Chindi are measured in kg and converted to metres via Chadat.
 
 **Metadata:** MRL number, vendor, lot number, quality code, Chadat, folding date, grading completion status.
 
@@ -347,11 +349,10 @@ Visualised as a line chart (Fresh yield % over time) with a table below.
 | MRL / Lot | Source material |
 | Metres allocated | Fresh metres input |
 | Metres packed | Into bales |
-| Good Cut (kg) | Waste grade |
-| Fent (kg) | Waste grade |
-| Chindi (kg) | Waste grade |
-| Total waste (kg) | Sum |
-| Waste ratio | Total waste kg / metres packed |
+| Good Cut (metres) | Waste grade — in metres |
+| Fent (kg) | Waste grade — in kg |
+| Chindi (kg) | Waste grade — in kg |
+| Waste ratio | Waste quantity relative to metres packed |
 
 **Summary:** Average waste ratio over the period, trend line.
 
@@ -374,7 +375,7 @@ Visualised as a line chart (Fresh yield % over time) with a table below.
 | **Header** | Program number, type (Regular/Todiya), date, MRL, lot, quality, tone, width, Chadat |
 | **Line Items** | Per line: brand, product, trade number, fold type, customer, cut length, pieces/bale, planned bales, actual bales, planned metres, actual metres |
 | **Bales Produced** | Bale number, packing date, pieces, metres, packing slip reference |
-| **Cutting Waste** | Good Cut kg, Fent kg, Chindi kg, total kg |
+| **Cutting Waste** | Good Cut (metres), Fent (kg), Chindi (kg) |
 | **Status** | Current status, completion date |
 
 ---
@@ -547,13 +548,13 @@ Visualised as a line chart (Fresh yield % over time) with a table below.
 | Column | Description |
 |---|---|
 | Date / Period | Time bucket (weekly/monthly) |
-| Good Cut (kg) | Running balance |
-| Fent (kg) | Running balance |
-| Rags (kg) | Running balance |
-| Chindi (kg) | Running balance |
-| Total (kg) | Sum |
-| Inflow (kg) | Added from grading + cutting waste |
-| Outflow (kg) | Consumed by Todiya programs |
+| Good Cut (metres) | Running balance — in metres |
+| Fent (kg) | Running balance — in kg |
+| Rags (kg) | Running balance — in kg |
+| Chindi (kg) | Running balance — in kg |
+| Total (metres equivalent) | Sum using Chadat conversion for kg grades |
+| Inflow | Added from grading + cutting waste (metres for Good Cut, kg for others) |
+| Outflow | Consumed by Todiya programs |
 
 Visualised as a stacked area chart showing accumulation over time.
 

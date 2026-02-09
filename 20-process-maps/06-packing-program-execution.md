@@ -32,7 +32,7 @@ tags: [process, packing, cutting, baling, brand, product, bale, packing-program]
 | Input | Source | Format | Notes |
 |---|---|---|---|
 | Fresh-graded fabric | Grading output (Process 05) | Physical rolls (metres) | Best-quality material, ready for packing. |
-| Accumulated leftovers (for Todiya) | Accumulation area | Physical pieces (kg) | Good Cut, Fent — only for Todiya programs. |
+| Accumulated leftovers (for Todiya) | Accumulation area | Physical pieces (metres/kg) | Good Cut (metres), Fent (kg) — only for Todiya programs. |
 | Sales order / packing slip (when applicable) | Head office | Paper / verbal | Triggers the program in ~95% of cases. |
 | Packaging materials | Packaging inventory (Process 10) | Physical materials | Plastic, stickers, stamps, cardboard, thread, brochures. |
 
@@ -44,7 +44,7 @@ tags: [process, packing, cutting, baling, brand, product, bale, packing-program]
 | Packing slip (inside bale) | Inside the bale | Generated document | One copy sealed inside each bale. |
 | Packing slip (office copy) | Filed | Generated document | Reference copy. |
 | Bale label | On the bale | Printed label | External identification. |
-| Cutting waste (Good Cut, Fent, Chindi) | Accumulation area | Physical fabric (kg) | Leftover from cutting — added to Todiya stock. |
+| Cutting waste (Good Cut, Fent, Chindi) | Accumulation area | Physical fabric (Good Cut in metres; Fent/Chindi in kg) | Leftover from cutting — added to Todiya stock. |
 | Cutting tally sheet | Filed | Handwritten | Execution record of what was cut and packed. |
 
 ## Process Steps
@@ -178,7 +178,8 @@ Proceed to Phase 2: Execution
 │ 10. Record cutting waste            │
 │     • Leftover material sorted:     │
 │       Good Cut, Fent, Chindi        │
-│     • Weighed in kg                 │
+│     • Good Cut measured in metres;  │
+│       Fent/Chindi weighed in kg     │
 │     • Added to accumulation stock   │
 │       for future Todiya             │
 └──────────────┬──────────────────────┘

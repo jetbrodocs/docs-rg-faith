@@ -277,24 +277,23 @@ Event type: `CUTTING_WASTE_RECORDED`
 
 Trigger:
   Supervisor records the cutting waste produced during a packing program's execution. Opens
-  the Record Waste screen for a packing program, enters weight per grade (Good Cut kg, Fent kg,
-  Chindi kg). Clicks Submit.
+  the Record Waste screen for a packing program, enters quantities per grade (Good Cut in metres, Fent in kg,
+  Chindi in kg). Clicks Submit.
 
 Data points captured:
   - packing_program_id: UUID
-  - good_cut_kg: decimal
-  - fent_kg: decimal
-  - chindi_kg: decimal
+  - good_cut_metres: decimal — Good Cut waste in metres
+  - fent_kg: decimal — Fent waste in kg
+  - chindi_kg: decimal — Chindi waste in kg
   - notes: string (optional)
 
 Payload:
   id: UUID (generated)
   packing_program_id: UUID
   mrl_id: UUID (from program)
-  good_cut_kg: decimal
+  good_cut_metres: decimal
   fent_kg: decimal
   chindi_kg: decimal
-  total_waste_kg: decimal (sum)
   recording_date: date
   notes: string?
 
@@ -307,12 +306,12 @@ Preconditions:
 
 Side effects:
   - Packing program: cutting_waste_kg updated
-  - accumulation_stock: Good Cut, Fent, Chindi incremented by respective amounts
+  - accumulation_stock: Good Cut (metres), Fent (kg), Chindi (kg) incremented by respective amounts
   - fabric_inventory: new ACCUMULATED entries at MIROLI-ACCUM
 
 Projections updated:
-  - packing_programs: cutting_waste_kg updated
-  - accumulation_stock: good_cut_kg += good_cut_kg, fent_kg += fent_kg, chindi_kg += chindi_kg
+  - packing_programs: cutting_waste updated
+  - accumulation_stock: good_cut_metres += good_cut_metres, fent_kg += fent_kg, chindi_kg += chindi_kg
   - fabric_inventory: new entries (state = ACCUMULATED, location = MIROLI-ACCUM)
 
 Permissions:
@@ -453,7 +452,7 @@ Notes:
 | 2 | Packing Program Detail | detail | Manager, Supervisor | View program header, line items, bales produced, waste recorded, progress | Register Bale, Record Waste, Cancel |
 | 3 | Create Packing Program | form | Manager | Select Fresh material source, add line items with brand/product/customer/cut specs | Submit |
 | 4 | Register Bale | form | Supervisor, Worker | Select program line, enter pieces and metres | Submit (auto-assigns bale number) |
-| 5 | Record Cutting Waste | form | Supervisor | Enter waste by grade (Good Cut kg, Fent kg, Chindi kg) for a program | Submit |
+| 5 | Record Cutting Waste | form | Supervisor | Enter waste by grade (Good Cut in metres, Fent in kg, Chindi in kg) for a program | Submit |
 | 6 | Bale Register | list | Manager, Supervisor | Browse all bales — filter by date, brand, product, customer, status | View bale detail |
 | 7 | Bale Detail | detail | Manager, Supervisor | View full bale identity — all attributes, packing slip preview, event history | Print Packing Slip |
 | 8 | Fresh Material Available | list | Manager | Browse GRADED_FRESH inventory — shows MRL, lot, metres available for allocation | Create Program from this lot |

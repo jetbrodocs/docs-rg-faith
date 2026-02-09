@@ -36,14 +36,14 @@ The folding team selects a lot from the stored grey material. They retrieve the 
 
 ### Step 2: Unfold and Measure
 
-Every meter of fabric is unfolded, laid out, and physically measured. This is manual work — workers handle the fabric piece by piece. Incoming rolls from vendors can be very long — **1,000 meters or more per roll**. The folding team cuts these long rolls into **standard 100-meter folds**. This 100m fold is the fundamental unit of work.
+Every meter of fabric is unfolded, laid out, and physically measured. This is manual work — workers handle the fabric piece by piece. Incoming rolls from vendors can be very long — **1,000 meters or more per roll**. The folding team folds these long rolls into **standard 2-metre folds**. Folding is a measurement and handling step, not a cutting step — the fold could be of any total length.
 
-As they unfold and cut into 100m sections, they simultaneously:
+As they unfold and fold into 2m sections, they simultaneously:
 - Count the meters (using their own measurement)
 - Record the measurement for each roll/piece
 - Note any defects, stains, tears, or other quality issues they observe
 
-**Handling non-round numbers:** If a roll is 1,012 meters, it produces 10 full 100m folds plus a 12m remainder. The 12m tail piece is not long enough for a standard fold, so it gets classified as Good Cut, Fent, or Chindi depending on its quality — not because it's defective, but because it's too short for a standard unit.
+**Note on folding vs cutting:** Folding is about measurement and handling — fabric is folded into standard 2m folds for easier handling. Cutting of fabric happens during grading (to separate defective sections) or during packing program execution (to cut to specified lengths for bales).
 
 ### Step 3: Record Folding Meters
 
@@ -82,39 +82,39 @@ The inspection is visual and tactile — workers rely on experience and judgment
 
 **Two scenarios for Not Acceptable material:**
 
-**Scenario 1 — Full roll rejection (before cutting):**
-During initial inspection of the incoming roll, the team may decide the entire roll is Not Acceptable — e.g., severe discoloration across the whole fabric. The entire roll is rejected before any cutting into 100m folds happens.
+**Scenario 1 — Full roll rejection (before grading):**
+During initial inspection of the incoming roll, the team may decide the entire roll is Not Acceptable — e.g., severe discoloration across the whole fabric. The entire roll is rejected.
 
-**Scenario 2 — Partial rejection (during cutting):**
-While cutting a long roll into 100m folds, the team encounters a defect (e.g., a mark or stain). They cut out the defective section, which gets classified as Not Acceptable. The remaining sections continue as Fresh. Since everything must be measured in whole meters, the cut-out is always at meter boundaries.
+**Scenario 2 — Partial rejection (during grading):**
+While grading fabric, the team encounters a defect (e.g., a mark or stain). They cut out the defective section, which gets classified as Not Acceptable. The remaining sections continue as Fresh. Since everything must be measured in whole metres, the cut-out is always at metre boundaries. Cutting happens during grading to separate defective sections.
 
 ### Step 5: Grading
 
-Based on the inspection, each 100m fold (and any remainder pieces) is classified into a quality grade. The grading system has six categories:
+Based on the inspection, each section is classified into a quality grade. Cutting may happen during grading to separate defective sections. The grading system has six categories:
 
 | Grade | Quality Level | Measured In | Disposition | Typical % of Lot |
 |---|---|---|---|---|
 | **Fresh** | Best — no defects | Meters | Ready for packing program | ~96-97% |
-| **Good Cut** | Minor defects, still usable | Kilograms | Accumulate for Todiya | ~0.5-1% |
+| **Good Cut** | Minor defects, still usable | Metres | Accumulate for Todiya | ~0.5-1% |
 | **Fent** | Noticeable defects | Kilograms | Accumulate for Todiya sale | ~1-1.5% |
 | **Rags** | Significant defects | Kilograms | Accumulate for Todiya sale | ~0.1-0.2% |
 | **Chindi** | Waste-level quality | Kilograms | Accumulate for Todiya sale (100% loss) | ~0.3-0.5% |
 | **Not Acceptable** | Completely rejected | Meters | Send back to vendor mill | Varies |
 
-**Key insight:** Fresh is measured in **meters** because it's the sellable product. All lower grades are measured in **kilograms** because they're sold by weight (as scrap, rags, etc.). The bridge between these two units is the **Chadat**.
+**Key insight:** Fresh and Good Cut are measured in **metres**. Fent, Rags, and Chindi are measured in **kilograms** because they're sold by weight. The bridge between metres and kilograms is the **Chadat**, used for converting Fent, Rags, and Chindi to metres for reporting.
 
 ### The Chadat — Meters to Kilograms Conversion
 
 The **Chadat** (also sometimes spelled "Chaddat") is a critical concept. It is a conversion factor between meters and kilograms that is **specific to each lot**.
 
 **Why it's needed:**
-- Fresh material is tracked in meters (because customers buy by the meter)
-- Non-Fresh material (Good Cut, Fent, Rags, Chindi) is tracked in kilograms (because it's sold by weight)
+- Fresh and Good Cut are tracked in metres
+- Fent, Rags, and Chindi are tracked in kilograms (because they're sold by weight)
 - To calculate the percentage breakdown of a lot (how much was Fresh vs waste), you need a common unit
-- The Chadat provides that conversion: X meters = Y kilograms for this specific lot
+- The Chadat provides that conversion: X metres = Y kilograms for this specific lot, used for Fent, Rags, and Chindi
 
 **How it's calculated:**
-During the folding and cutting process, the team weighs a known length of fabric from the current lot — likely a standard 100-meter fold, since that's the easiest unit to weigh. This gives them the meters-per-kg ratio (the Chadat). For example:
+During the folding process, the team weighs a known length of fabric from the current lot. This gives them the meters-per-kg ratio (the Chadat). For example:
 - Chadat = 4.86 means 4.86 meters per kilogram for this lot
 - Chadat = 5.37 means 5.37 meters per kilogram for this lot
 
@@ -242,7 +242,7 @@ The Gradation Report captures two fundamentally different types of loss:
 | Folding meter records | Paper register | Handwritten | Per-roll and per-lot measurements |
 | Meter reconciliation | Paper notebook | Handwritten | Folding meters vs factory meters comparison |
 | Graded material — Fresh | Packing area / storage | Physical fabric | Ready for packing program allocation |
-| Graded material — Good Cut | Accumulation area | Physical fabric (weighed in kg) | Held until enough volume for sale or Todiya |
+| Graded material — Good Cut | Accumulation area | Physical fabric (measured in metres) | Held until enough volume for sale or Todiya |
 | Graded material — Fent | Accumulation area | Physical fabric (weighed in kg) | Held for Todiya |
 | Graded material — Rags | Accumulation area | Physical fabric (weighed in kg) | Held for Todiya |
 | Graded material — Chindi | Accumulation area | Physical fabric (weighed in kg) | Waste. Held for Todiya. 100% loss. |
@@ -270,7 +270,7 @@ The Gradation Report captures two fundamentally different types of loss:
 |---|---|---|
 | Folding tables / work surface | Lay out and fold fabric | Part of the open floor area |
 | Measuring tape / meter stick | Measure fabric lengths | Manual measurement tools |
-| Weighing scale | Weigh non-Fresh grades in kg | Used for Good Cut, Fent, Rags, Chindi |
+| Weighing scale | Weigh Fent, Rags, and Chindi in kg | Used for grades measured by weight |
 | Paper registers / notebooks | Record measurements and grades | Currently the only "system" |
 
 ## Systems
@@ -344,7 +344,7 @@ This is a clear pain point where the system can add immediate value — making p
 3. **Chadat recording** — Capture the meters-to-kg conversion factor per lot.
 4. **Progressive Gradation Report** — Auto-generated, updates as grading progresses. Shows: meter progression (grey → folded → graded), grade breakdown (% Fresh, etc.), shrinkage, non-fresh loss.
 5. **Decision-pending workflow** — Remark field, resolution pipeline, aging alerts.
-6. **Unit handling** — Fresh in meters, other grades in kg, with automatic Chadat conversion for reporting.
+6. **Unit handling** — Fresh and Good Cut in metres; Fent, Rags, and Chindi in kg, with automatic Chadat conversion for reporting.
 
 ### Nice to Have
 7. **Auto-reconciliation** — Import Gate Pass meters and compare against folding meters. Highlight discrepancies.
@@ -376,15 +376,15 @@ From `00-inbox/notes.md`:
 > "The not acceptable part gets cut from the fabric. We need to store that cut inventory separately because RG Faith needs to send it back to them."
 
 From `00-inbox/note_2.md`:
-> "Chadat is a conversion unit between meters and kilograms for the specific lot covered by the gradation report. Fresh cut is always measured in meters. Everything else, good cut, fent, rags, or chindi, is measured in kilograms."
+> "Chadat is a conversion unit between meters and kilograms for the specific lot covered by the gradation report. Fresh cut is always measured in meters. Everything else, good cut, fent, rags, or chindi, is measured in kilograms." *(Note: Updated understanding — Good Cut is also measured in metres. Only Fent, Rags, and Chindi are measured in kg. Chadat applies to Fent, Rags, and Chindi only.)*
 >
 > "The gradation report is a progressive report... the report itself should only cover the portion of the lot that has actually gone through the process up to whatever stage it's reached."
 
 ## Open Questions
 
-1. ~~How exactly is the Chadat measured?~~ **RESOLVED:** Likely by weighing a 100-meter fold (standard fold length). System just captures the Chadat value; doesn't need to enforce the measurement method.
+1. ~~How exactly is the Chadat measured?~~ **RESOLVED:** By weighing a known length of fabric. System just captures the Chadat value; doesn't need to enforce the measurement method. Chadat is used for converting Fent, Rags, and Chindi between metres and kg.
 2. ~~Is grading done by the same workers who fold?~~ **RESOLVED:** Yes. Workers are multi-skilled, no dedicated roles per station.
-3. ~~How is the "Not Acceptable" decision made?~~ **RESOLVED:** Judgment-based, no specific threshold. Two scenarios: (a) Full roll rejected before cutting — entire roll goes to Not Acceptable. (b) Defect found during cutting into 100m folds — defective section cut out and classified. Remainder continues as Fresh. Leftover short pieces (e.g., 12m tail of a 1012m roll) become Good Cut/Fent/Chindi based on quality.
-4. ~~Is Not Acceptable physically cut out at this stage?~~ **RESOLVED:** Yes — either entire roll rejected before cutting, or defective section cut out during the 100m fold process.
+3. ~~How is the "Not Acceptable" decision made?~~ **RESOLVED:** Judgment-based, no specific threshold. Two scenarios: (a) Full roll rejected before grading — entire roll goes to Not Acceptable. (b) Defect found during grading — defective section cut out and classified. Remainder continues as Fresh.
+4. ~~Is Not Acceptable physically cut out at this stage?~~ **RESOLVED:** Yes — either entire roll rejected before grading, or defective section cut out during grading.
 5. ~~How does Gradation Report data get to head office?~~ **RESOLVED:** Physical document copies (packing slips, inward slips) are sent via RG Faith's own courier/helper to head office. Head office staff enters data into their ERP. Our system eliminates this round-trip.
 6. ~~Do any lots skip grading?~~ **RESOLVED:** No, never. Every lot must go through folding and grading. System should enforce this sequence.

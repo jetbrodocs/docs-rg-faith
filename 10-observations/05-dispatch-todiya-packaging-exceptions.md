@@ -131,7 +131,7 @@ During the normal packing process, cutting produces waste:
 - **Rags** — significant defects
 - **Chindi** — waste material
 
-These are weighed (in kilograms, using the Chadat for conversion) and stored in the **accumulation area**. Over time, enough volume builds up to make a sale worthwhile.
+Good Cut is measured in metres; Fent, Rags, and Chindi are weighed in kilograms (using the Chadat for conversion to metres). All are stored in the **accumulation area**. Over time, enough volume builds up to make a sale worthwhile.
 
 ### The Todiya Cycle
 
@@ -171,7 +171,7 @@ Scan page 17 has the note "Toshika ki Todiya khaata" — "Toshika's Todiya accou
 
 **Must Have:**
 1. **Todiya packing program type** — Flag to distinguish from regular packing programs.
-2. **Accumulated stock tracking** — Running balance of Good Cut, Fent, Rags, Chindi in kg, aggregated from cutting waste across all packing programs.
+2. **Accumulated stock tracking** — Running balance of Good Cut (in metres), Fent, Rags, Chindi (in kg), aggregated from cutting waste across all packing programs.
 3. **Todiya dispatch records** — Same as regular dispatch but linked to Todiya programs.
 
 **Nice to Have:**

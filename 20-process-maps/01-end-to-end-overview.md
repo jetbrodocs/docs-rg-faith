@@ -55,7 +55,7 @@ tags: [process, overview, master]
 │         │            │ Independent activities — can happen in    │   │
 │         │            │ any order or concurrently                  │   │
 │         │            │                                           │   │
-│         │            │ 04: Cut into 100m folds, measure,         │   │
+│         │            │ 04: Fold into 2m folds, measure,          │   │
 │         │            │     calculate Chadat, reconcile           │   │
 │         │            │ 05: Inspect, classify into grades,        │   │
 │         │            │     update Gradation Report               │   │
@@ -110,14 +110,14 @@ tags: [process, overview, master]
 | **Grey** | Received at Miroli, not yet processed | Meters | 03 - Inbound |
 | **Folded** | Measured by RG Faith (independent of grading) | Meters | 04 - Folding |
 | **Graded — Fresh** | Quality checked, best grade (independent of folding) | Meters | 05 - Grading |
-| **Graded — Good Cut** | Quality checked, second grade | Kilograms | 05 - Grading |
+| **Graded — Good Cut** | Quality checked, second grade | Metres | 05 - Grading |
 | **Graded — Fent/Rags/Chindi** | Quality checked, lower grades | Kilograms | 05 - Grading |
 | **Graded — Not Acceptable** | Rejected, pending return to vendor | Meters | 05 - Grading |
 | **Decision Pending** | Awaiting grading decision | Meters | 05 - Grading |
 | **Packing Program Assigned** | Allocated to a packing program | Meters | 06 - Packing |
 | **Packed (Bale)** | Cut, folded, branded, boxed | Pieces + Meters | 06 - Packing |
 | **Dispatched** | Shipped to customer | Pieces + Meters | 07 - Dispatch |
-| **Accumulated (Todiya)** | Leftovers awaiting buyer | Kilograms | 08 - Todiya |
+| **Accumulated (Todiya)** | Leftovers awaiting buyer | Metres (Good Cut) / Kilograms (Fent/Rags/Chindi) | 08 - Todiya |
 
 ## Key Identifiers Through the Process
 

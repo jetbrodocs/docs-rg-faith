@@ -13,12 +13,12 @@ The facility has ~50 multi-skilled workers operating on an open floor plan with 
 | # | Module | PRD | What It Covers |
 |---|---|---|---|
 | 1 | Master Data | [01-master-data.md](01-master-data.md) | Vendors, customers (Haste), brands, products, fold types, tone codes, quality codes, trade numbers, packaging SKUs — all user-configurable |
-| 2 | Outbound & Inbound | [02-outbound-inbound.md](02-outbound-inbound.md) | MRL lifecycle: send grey cloth to vendor for dyeing, receive dyed cloth back with Gate Pass, track pending balances |
-| 3 | Folding & Measurement | [03-folding-measurement.md](03-folding-measurement.md) | Cut into 100m folds, measure, calculate Chadat (metres-to-kg conversion), reconcile against Gate Pass metres |
-| 4 | Quality Grading | [04-quality-grading.md](04-quality-grading.md) | Inspect and classify into 6 grades (Fresh, Good Cut, Fent, Rags, Chindi, Not Acceptable), produce progressive Gradation Report, manage Decision Pending |
+| 2 | Outbound & Inbound | [02-outbound-inbound.md](02-outbound-inbound.md) | Grey lot lifecycle: send grey cloth to vendor for dyeing (assign MRL number), receive dyed cloth back with Gate Pass, track pending balances |
+| 3 | Folding & Measurement | [03-folding-measurement.md](03-folding-measurement.md) | Fold fabric (standard 2m folds, though any length is possible), measure, calculate Chadat (metres-to-kg conversion for Fent/Rags/Chindi), reconcile against Gate Pass metres |
+| 4 | Quality Grading | [04-quality-grading.md](04-quality-grading.md) | Inspect and classify into 6 grades (Fresh, Good Cut, Fent, Rags, Chindi, Not Acceptable). Fresh, Good Cut, and Not Acceptable are in metres; Fent, Rags, and Chindi are in kg. Produce progressive Gradation Report, manage Decision Pending |
 | 5 | Packing Program | [05-packing-program.md](05-packing-program.md) | Create packing programs (work orders), execute cutting/folding/branding, register bales, generate packing slips, track cutting waste |
 | 6 | Dispatch | [06-dispatch.md](06-dispatch.md) | Create Delivery Forms, dispatch finished bales to customers, track shipments |
-| 7 | Todiya | [07-todiya.md](07-todiya.md) | Track accumulated leftovers (Good Cut, Fent, Rags, Chindi), create Todiya packing programs, dispatch to Todiya buyers |
+| 7 | Todiya | [07-todiya.md](07-todiya.md) | Track accumulated leftovers (Good Cut in metres; Fent, Rags, Chindi in kg), create Todiya packing programs, dispatch to Todiya buyers |
 | 8 | Not Acceptable Resolution | [08-not-acceptable-resolution.md](08-not-acceptable-resolution.md) | Reprocess List, vendor communication tracking, aging alerts, resolution workflow |
 | 9 | Packaging Materials | [09-packaging-materials.md](09-packaging-materials.md) | GRN for packaging supplies, stock levels, consumption tracking during packing |
 
@@ -46,7 +46,7 @@ The facility has ~50 multi-skilled workers operating on an open floor plan with 
 │                                                       │
 │ Independent activities — can happen in any order       │
 │                                                       │
-│ (3): 100m folds, Chadat       (4): 6 quality grades   │
+│ (3): 2m folds, Chadat         (4): 6 quality grades   │
 │      calculation                    Gradation Report   │
 └──┬──────────┬──────────┬──────────┬──────────────────┘
    │          │          │          │
@@ -83,7 +83,7 @@ Entities that appear across multiple modules. The responsible module creates the
 | Quality Code | Master Data (1) | Outbound & Inbound (2), Grading (4) | e.g., 44x45P6 |
 | Trade Number | Master Data (1) | Packing Program (5), Dispatch (6) | SKU reference, e.g., S8072-58" |
 | Packaging SKU | Master Data (1) | Packaging Materials (9) | Consumable and reusable items |
-| MRL | Outbound & Inbound (2) | Folding (3), Grading (4), Packing (5), Todiya (7), NA Resolution (8) | Central tracking ID through lifecycle |
+| MRL (reference number) | Outbound & Inbound (2) | Folding (3), Grading (4), Packing (5), Todiya (7), NA Resolution (8) | Facility reference number assigned at outbound; tracks grey lots through lifecycle |
 | Bale | Packing Program (5) | Dispatch (6) | Finished product unit |
 | Inventory Levels (fabric) | Updated by modules 2-7 | Queried by all modules | Stage-wise quantities |
 | Inventory Levels (packaging) | Packaging Materials (9) | Packing Program (5) | Packaging stock |
@@ -94,10 +94,10 @@ Events emitted in one module that are consumed by projections in other modules.
 
 | Event Type | Emitted By | Consumed By | What It Does |
 |---|---|---|---|
-| `MRL_CREATED` | Outbound & Inbound (2) | Inventory projection | Creates MRL record, sets initial "Sent to Vendor" inventory |
-| `INBOUND_RECEIVED` | Outbound & Inbound (2) | Inventory projection | Adds Grey inventory, updates MRL pending balance |
+| `MRL_CREATED` | Outbound & Inbound (2) | Inventory projection | Creates MRL record, sets initial "Sent to Vendor" inventory for the grey lot |
+| `INBOUND_RECEIVED` | Outbound & Inbound (2) | Inventory projection | Adds Grey inventory for the received grey lot, updates MRL pending balance |
 | `FOLDING_COMPLETED` | Folding (3) | Inventory projection, Gradation Report projection | Updates material state to Folded, records folding metres and Chadat |
-| `GRADING_RECORDED` | Quality Grading (4) | Inventory projection, Gradation Report projection, Accumulation projection | Splits material into grades, routes to appropriate destination |
+| `GRADING_RECORDED` | Quality Grading (4) | Inventory projection, Gradation Report projection, Accumulation projection | Splits material into grades (Fresh/Good Cut/NA in metres; Fent/Rags/Chindi in kg), routes to appropriate destination |
 | `PACKING_PROGRAM_CREATED` | Packing Program (5) | Inventory projection | Allocates Fresh material, changes state to Program Assigned |
 | `BALE_REGISTERED` | Packing Program (5) | Inventory projection | Creates finished bale, moves material to Packed state |
 | `CUTTING_WASTE_RECORDED` | Packing Program (5) | Accumulation projection | Adds waste to accumulated Todiya stock |
@@ -112,7 +112,7 @@ Phase 1: Foundation
   └── Master Data (1) — must be built first; all other modules reference it
 
 Phase 2: Core Flow (can be built in parallel after Phase 1)
-  ├── Outbound & Inbound (2) — creates MRLs, the central tracking entity
+  ├── Outbound & Inbound (2) — creates MRLs and tracks grey lots through the send/receive cycle
   └── Packaging Materials (9) — independent domain, no dependencies beyond master data
 
 Phase 3: Processing (depends on Phase 2 for MRL data)

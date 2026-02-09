@@ -30,14 +30,14 @@ tags: [process, grading, quality, gradation, fresh, good-cut, fent, rags, chindi
 | Input | Source | Format | Notes |
 |---|---|---|---|
 | Grey or folded material | Storage or folding process | Physical fabric rolls or folds | Grading can operate on material before or after folding. |
-| Chadat value (if available) | Folding process (Process 04) | Number | Needed for converting non-Fresh grades from kg to metres. May be calculated during grading if folding hasn't happened yet. |
+| Chadat value (if available) | Folding process (Process 04) | Number | Needed for converting Fent, Rags, and Chindi from kg to metres. May be calculated during grading if folding hasn't happened yet. |
 
 ## Outputs
 
 | Output | Destination | Format | Notes |
 |---|---|---|---|
 | Fresh material | Graded storage → Packing (Process 06) | Physical fabric (metres) | Best quality. ~96–97% of lot. Ready for packing program. |
-| Good Cut | Accumulation area → Todiya (Process 08) | Physical fabric (kilograms) | Minor defects. Always goes to accumulation for Todiya — never packed with Fresh in regular programs. |
+| Good Cut | Accumulation area → Todiya (Process 08) | Physical fabric (metres) | Minor defects. Always goes to accumulation for Todiya — never packed with Fresh in regular programs. |
 | Fent | Accumulation area → Todiya (Process 08) | Physical fabric (kilograms) | Noticeable defects. ~50% considered loss. |
 | Rags | Accumulation area → Todiya (Process 08) | Physical fabric (kilograms) | Significant defects. |
 | Chindi | Accumulation area → Todiya (Process 08) | Physical fabric (kilograms) | Waste. 100% loss. |
@@ -75,7 +75,7 @@ START — Material selected for quality inspection
 │    └─────────┘                      │
 │    ┌──────────┐  Minor defects      │
 │    │ GOOD CUT │  ~0.5–1%            │
-│    │ (kg)     │  → Accumulate/Pack  │
+│    │ (metres) │  → Accumulate/Pack  │
 │    └──────────┘                     │
 │    ┌──────────┐  Noticeable defects │
 │    │ FENT     │  ~1–1.5%            │
@@ -98,12 +98,13 @@ START — Material selected for quality inspection
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 3. Weigh non-Fresh grades           │
-│    • Good Cut, Fent, Rags, Chindi   │
-│      weighed in kilograms           │
+│ 3. Weigh/measure non-Fresh grades   │
+│    • Good Cut: measured in metres   │
+│    • Fent, Rags, Chindi: weighed    │
+│      in kilograms                   │
 │    • Use Chadat to calculate        │
 │      equivalent metres for          │
-│      reporting                      │
+│      Fent/Rags/Chindi reporting     │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -128,7 +129,7 @@ START — Material selected for quality inspection
 │      % Good Cut, % Fent, etc.       │
 │    • Shrinkage + non-Fresh loss     │
 │    • Uses Chadat for kg → metre     │
-│      conversion                     │
+│      conversion (Fent/Rags/Chindi)  │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -150,25 +151,25 @@ Scenario 1: FULL ROLL REJECTION (before cutting)
       │
       ▼
   Entire roll → NOT ACCEPTABLE
-  (no cutting into 100m folds)
+  (rejected as-is)
       │
       ▼
   → Process 09 (Not Acceptable Resolution)
 
 
-Scenario 2: PARTIAL REJECTION (during cutting)
+Scenario 2: PARTIAL REJECTION (during grading)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  1,012m roll being cut into 100m folds
+  1,012m roll being graded
       │
-      ├── Fold 1 (100m) → FRESH ✓
-      ├── Fold 2 (100m) → FRESH ✓
-      ├── Fold 3: defect found at 65m mark
+      ├── Section 1 → FRESH ✓
+      ├── Section 2 → FRESH ✓
+      ├── Section 3: defect found at 65m mark
       │   ├── 65m → FRESH ✓
       │   ├── 5m → NOT ACCEPTABLE ✗ (cut out)
       │   └── 30m → continue as next section
-      ├── ... more folds
-      └── 12m remainder → GOOD CUT (too short)
+      ├── ... more sections
+      └── remaining material graded by quality
 ```
 
 ### Decision Pending — Special Case
@@ -201,8 +202,8 @@ Material arrives → Inspection → Quality unclear
 | Exception | How Handled |
 |---|---|
 | Borderline quality — hard to classify | Supervisor makes judgment call. If unresolved, enters Decision Pending state. |
-| Full roll rejected before cutting | Entire roll goes to Not Acceptable without cutting into folds. |
-| Defect found mid-fold during cutting | Defective section cut out (at metre boundaries) and classified separately. |
+| Full roll rejected before grading | Entire roll goes to Not Acceptable. |
+| Defect found during grading | Defective section cut out (at metre boundaries) and classified separately. Cutting may happen during grading to separate defective sections. |
 | Lot sits as Decision Pending beyond 14 days | Currently: periodic manual review. System: auto-flag lots with no comment/activity for 14 days. Escalate to manager. |
 
 ## State Transition
@@ -259,7 +260,7 @@ If only 4,000 of 6,000 metres have been graded, the report shows data for only t
 
 | Tool | Purpose |
 |---|---|
-| Weighing scale | Weigh non-Fresh grades in kg. |
+| Weighing scale | Weigh Fent, Rags, and Chindi in kg. |
 | Paper registers | Record grades per fold. |
 | Head office ERP | Generates Gradation Report (computer-generated, data entered at head office). |
 | Future system | Digital grading entry, auto-generated progressive Gradation Report, decision-pending workflow with aging alerts. |

@@ -4,7 +4,7 @@
 
 ### Process: Quality Inspection, Grade Classification, and Gradation Report
 
-This module covers the quality inspection of fabric at Miroli. Workers visually and tactilely inspect each fold or section and classify it into one of six grades: Fresh (best quality, in metres), Good Cut, Fent, Rags, Chindi (descending quality, in kilograms), or Not Acceptable (rejected, in metres). The output is a progressive Gradation Report — the single most important document in the facility — which tracks the yield breakdown for each lot.
+This module covers the quality inspection of fabric at Miroli. Workers visually and tactilely inspect each fold or section and classify it into one of six grades: Fresh (best quality, in metres), Good Cut (second quality, in metres), Fent, Rags, Chindi (descending quality, in kilograms), or Not Acceptable (rejected, in metres). The output is a progressive Gradation Report — the single most important document in the facility — which tracks the yield breakdown for each lot. Cutting may happen during grading to separate defective sections from good material.
 
 Quality grading and folding (Module 03) are **independent activities**. Material can be graded before folded, after folded, or concurrently. The system must not enforce any sequence between them.
 
@@ -49,9 +49,9 @@ Flow:
 | inbound_receipt_id | UUID (FK) | Which lot this grading applies to |
 | mrl_id | UUID (FK) | Denormalized — parent MRL |
 | grade | string | One of: FRESH, GOOD_CUT, FENT, RAGS, CHINDI, NOT_ACCEPTABLE |
-| metres | decimal | Metres for this section (all grades) |
-| kilograms | decimal | Weight in kg (for Good Cut, Fent, Rags, Chindi — converted via Chadat). Zero for Fresh and Not Acceptable. |
-| chadat | decimal | Chadat used for conversion (from folding record or manually entered) |
+| metres | decimal | Metres for this section. Entered directly for Fresh, Good Cut, and Not Acceptable. Computed via Chadat for Fent, Rags, Chindi. |
+| kilograms | decimal | Weight in kg (for Fent, Rags, Chindi — converted via Chadat). Zero for Fresh, Good Cut, and Not Acceptable. |
+| chadat | decimal | Chadat used for kg-to-metres conversion (from folding record or manually entered). Only relevant for Fent, Rags, Chindi. |
 | grading_date | date | When grading was performed |
 | notes | string | Optional remarks (defect description, etc.) |
 | created_at | datetime | When the entry was created |
@@ -67,10 +67,9 @@ Flow:
 | gate_pass_metres | decimal | From Inbound Receipt — what Gate Pass reported |
 | folding_metres | decimal | From Folding Record — RG Faith's measurement (null if not yet folded) |
 | total_graded_metres | decimal | Sum of all grading entries in metres |
-| fresh_metres | decimal | Sum of FRESH grading entries |
+| fresh_metres | decimal | Sum of FRESH grading entries (in metres) |
 | fresh_percentage | decimal | (fresh_metres / total_graded_metres) * 100 |
-| good_cut_kg | decimal | Sum of GOOD_CUT in kg |
-| good_cut_metres | decimal | Converted via Chadat |
+| good_cut_metres | decimal | Sum of GOOD_CUT grading entries (in metres) |
 | fent_kg | decimal | Sum of FENT in kg |
 | fent_metres | decimal | Converted via Chadat |
 | rags_kg | decimal | Sum of RAGS in kg |
@@ -117,9 +116,9 @@ Trigger:
 Data points captured:
   - inbound_receipt_id: UUID — which lot
   - grade: string — FRESH, GOOD_CUT, FENT, RAGS, CHINDI, or NOT_ACCEPTABLE
-  - metres: decimal — metres of this section (for Fresh and Not Acceptable, entered directly; for others, converted from kg via Chadat)
-  - kilograms: decimal — weight in kg (for Good Cut, Fent, Rags, Chindi; zero for Fresh/NA)
-  - chadat: decimal — conversion factor used (auto-filled from folding record if available, otherwise manually entered)
+  - metres: decimal — metres of this section (for Fresh, Good Cut, and Not Acceptable, entered directly; for Fent/Rags/Chindi, converted from kg via Chadat)
+  - kilograms: decimal — weight in kg (for Fent, Rags, Chindi; zero for Fresh/Good Cut/NA)
+  - chadat: decimal — conversion factor used for kg grades (auto-filled from folding record if available, otherwise manually entered)
   - grading_date: date — defaults to today
   - notes: string (optional) — defect description
 
@@ -142,25 +141,25 @@ Preconditions:
   - Inbound receipt must exist
   - Lot must have Grey or Folded inventory
   - grade must be one of the six valid values
-  - For FRESH and NOT_ACCEPTABLE: metres must be > 0, kilograms = 0
-  - For GOOD_CUT, FENT, RAGS, CHINDI: kilograms must be > 0, metres computed from chadat
+  - For FRESH, GOOD_CUT, and NOT_ACCEPTABLE: metres must be > 0, kilograms = 0
+  - For FENT, RAGS, CHINDI: kilograms must be > 0, metres computed from chadat
   - Cumulative graded metres must not exceed lot's available metres
 
 Side effects:
   - Gradation Report projection updated (incremental recalculation)
   - fabric_inventory updated based on grade:
     - FRESH: state -> GRADED_FRESH, location -> MIROLI-FRESH
-    - GOOD_CUT: state -> ACCUMULATED, location -> MIROLI-ACCUM
-    - FENT: state -> ACCUMULATED, location -> MIROLI-ACCUM
-    - RAGS: state -> ACCUMULATED, location -> MIROLI-ACCUM
-    - CHINDI: state -> ACCUMULATED, location -> MIROLI-ACCUM
+    - GOOD_CUT: state -> ACCUMULATED, location -> MIROLI-ACCUM (metres)
+    - FENT: state -> ACCUMULATED, location -> MIROLI-ACCUM (kg)
+    - RAGS: state -> ACCUMULATED, location -> MIROLI-ACCUM (kg)
+    - CHINDI: state -> ACCUMULATED, location -> MIROLI-ACCUM (kg)
     - NOT_ACCEPTABLE: state -> NOT_ACCEPTABLE, location -> MIROLI-NA
 
 Projections updated:
   - grading_entries: new row
   - gradation_reports: incremental update (add metres/kg to grade totals, recalculate percentages)
   - fabric_inventory: new entries per grade with appropriate state and location
-  - accumulation_stock: if grade is GOOD_CUT/FENT/RAGS/CHINDI, add to accumulation totals
+  - accumulation_stock: if grade is GOOD_CUT (metres), FENT/RAGS/CHINDI (kg), add to accumulation totals
 
 Permissions:
   - events:GRADING_RECORDED:emit
@@ -385,7 +384,7 @@ flowchart TD
     B -->|"Quality unclear"| D["Decision Pending\n(PENDING)"]
 
     C -->|"GRADING_RECORDED\n(FRESH)"| E["Graded — Fresh\n→ MIROLI-FRESH"]
-    C -->|"GRADING_RECORDED\n(GOOD_CUT/FENT/RAGS/CHINDI)"| F["Accumulated\n→ MIROLI-ACCUM"]
+    C -->|"GRADING_RECORDED\n(GOOD_CUT in m / FENT,RAGS,CHINDI in kg)"| F["Accumulated\n→ MIROLI-ACCUM"]
     C -->|"GRADING_RECORDED\n(NOT_ACCEPTABLE)"| G["Not Acceptable\n→ MIROLI-NA"]
 
     D -->|"DECISION_PENDING_RESOLVED"| C

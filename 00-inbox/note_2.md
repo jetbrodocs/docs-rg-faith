@@ -1,6 +1,6 @@
 The gradation report tells the whole story. One thing I missed is the chadat, spelled C H A D A T. You'll see "chadat" written in Gujarati or Hindi in other scans too.
 
-chadat is a conversion unit between meters and kilograms for the specific lot covered by the gradation report. Fresh cut is always measured in meters. Everything else, good cut, fent, rags, or chindi, is measured in kilograms.
+chadat is a conversion unit between meters and kilograms for the specific lot covered by the gradation report. Fresh cut is always measured in meters. Everything else, good cut, fent, rags, or chindi, is measured in kilograms. *(Correction: Good Cut is also measured in metres. Only Fent, Rags, and Chindi are in kilograms. Chadat is used for Fent, Rags, and Chindi only.)*
 
 During cutting and buzzing, they calculate this conversion for a particular patch or lot and mark it as chaddat. They need the chaddat to figure out what percentage of the received lot was fresh cut versus good cut, fent, rags, and chindi. It also helps them track how much loss happened in backing or forwarding.
 

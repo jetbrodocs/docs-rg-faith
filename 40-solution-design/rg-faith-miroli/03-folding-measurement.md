@@ -4,11 +4,11 @@
 
 ### Process: Folding, Measurement, and Chadat Calculation
 
-This module covers the physical processing of grey material into standard 100-metre folds at the Miroli facility. Workers unfold incoming rolls (which can be 1,000+ metres), cut them into 100-metre sections, and measure every section — converting vendor-reported grey metres into RG Faith-verified folding metres. The Chadat (metres-to-kilogram conversion factor) is calculated by weighing a standard fold, providing the bridge between metres (used for Fresh grade) and kilograms (used for all other grades).
+This module covers the physical processing of grey material into folds at the Miroli facility. Workers take incoming rolls (which can be 1,000+ metres) and fold them into standard 2-metre folds — though the fold length can vary and rolls of any length may be folded without cutting. Folding is a measurement and handling step, not a cutting step. Workers measure every section as they fold, converting vendor-reported grey metres into RG Faith-verified folding metres. The Chadat (metres-to-kilogram conversion factor) is calculated by weighing a standard fold, providing the bridge between metres and kilograms (used for grades measured in kg: Fent, Rags, Chindi).
 
 Folding and quality grading (Module 04) are **independent activities** — neither requires the other as a prerequisite. Material can be folded before graded, graded before folded, or both done concurrently. The system must not enforce any sequence between them.
 
-Folding operates at the inbound receipt / lot level. A single folding session processes one lot (one inbound receipt against one MRL).
+Folding operates at the inbound receipt / grey lot level. A single folding session processes one lot (one inbound receipt against one MRL).
 
 Flow:
 
@@ -18,9 +18,9 @@ Flow:
         |                         |                           |
    LOT_SELECTED             (physical process)          FOLDING_COMPLETED
         |                         |                           |
-     (retrieve)               (cut + measure)            (record data)
+     (retrieve)               (fold + measure)           (record data)
         |                         |                           |
-   Gate Pass retrieved        100m folds created         Chadat calculated
+   Gate Pass retrieved        Folds created              Chadat calculated
         |                         |                           |
      [EXIT]                    [EXIT]                      [EXIT]
 ```
@@ -33,7 +33,7 @@ Flow:
 
 | Entity | Aggregate Type | Relationships |
 |---|---|---|
-| Folding Record | `FoldingRecord` | Belongs to an Inbound Receipt (and therefore an MRL). One folding record per lot. |
+| Folding Record | `FoldingRecord` | Belongs to an Inbound Receipt (and therefore a grey lot / MRL). One folding record per lot. |
 
 ### Entity Field Definitions
 
@@ -42,15 +42,14 @@ Flow:
 | Field | Type | Description |
 |---|---|---|
 | id | UUID | Primary key |
-| inbound_receipt_id | UUID (FK) | Which inbound receipt / lot this folding applies to |
+| inbound_receipt_id | UUID (FK) | Which inbound receipt / grey lot this folding applies to |
 | mrl_id | UUID (FK) | Denormalized from inbound receipt — the parent MRL |
 | gate_pass_metres | decimal | Metres as reported by vendor's Gate Pass (copied from inbound receipt for reference) |
 | folding_metres | decimal | Total metres as measured by RG Faith during folding |
 | shrinkage_metres | decimal | Computed: gate_pass_metres - folding_metres |
 | shrinkage_percentage | decimal | Computed: (shrinkage_metres / gate_pass_metres) * 100 |
-| chadat | decimal | Metres per kilogram — calculated from weighing a 100m fold |
-| fold_count | integer | Number of 100m folds produced |
-| remainder_metres | decimal | Leftover metres that don't make a full 100m fold |
+| chadat | decimal | Metres per kilogram — calculated from weighing a standard fold. Used for converting Fent, Rags, and Chindi between metres and kg. |
+| fold_count | integer | Number of folds produced (standard fold is 2m, but may vary) |
 | status | string | COMPLETE or PARTIAL (if only part of the lot has been folded) |
 | folding_date | date | When folding was performed |
 | notes | string | Optional remarks |
@@ -69,16 +68,15 @@ Folding records do not have a separate human-readable number. They are identifie
 Event type: `FOLDING_COMPLETED`
 
 Trigger:
-  Supervisor opens the Record Folding screen, selects an inbound receipt / lot from the dropdown
+  Supervisor opens the Record Folding screen, selects a grey lot from the dropdown
   (filtered to lots in Grey state that have not been fully folded), enters the measured folding
   metres, Chadat value, and fold count. Clicks Submit.
 
 Data points captured:
-  - inbound_receipt_id: UUID — which lot was folded
+  - inbound_receipt_id: UUID — which grey lot was folded
   - folding_metres: decimal — total metres measured by RG Faith
-  - chadat: decimal — metres per kg, calculated from weighing a 100m fold
-  - fold_count: integer — number of 100m folds produced
-  - remainder_metres: decimal — leftover metres (e.g., 12m from a 1,012m roll)
+  - chadat: decimal — metres per kg, calculated from weighing a standard fold
+  - fold_count: integer — number of folds produced
   - folding_date: date — defaults to today
   - notes: string (optional)
 
@@ -92,7 +90,6 @@ Payload:
   shrinkage_percentage: decimal (computed)
   chadat: decimal
   fold_count: integer
-  remainder_metres: decimal
   folding_date: date
   status: string (COMPLETE or PARTIAL)
   notes: string?
@@ -225,8 +222,8 @@ Notes:
 
 | # | Screen Name | Type | Used By | Purpose | Key Actions |
 |---|---|---|---|---|---|
-| 1 | Pending Folding | list | Supervisor | Browse Grey lots awaiting folding — shows MRL number, lot number, grey metres | Select lot to fold |
-| 2 | Record Folding | form | Supervisor | Enter folding data — folding metres, Chadat, fold count, remainder | Submit |
+| 1 | Pending Folding | list | Supervisor | Browse grey lots awaiting folding — shows MRL number, lot number, grey metres | Select lot to fold |
+| 2 | Record Folding | form | Supervisor | Enter folding data — folding metres, Chadat, fold count | Submit |
 | 3 | Folding Records | list | Supervisor, Manager | Browse completed folding records with MRL, shrinkage, and date filters | View detail, Edit (correction) |
 | 4 | Folding Record Detail | detail | Supervisor, Manager | View full folding data — metres comparison, shrinkage, Chadat, fold breakdown | Edit (correct values) |
 | 5 | Metre Reconciliation | dashboard | Manager | Side-by-side comparison: Gate Pass metres vs folding metres for recent lots, shrinkage trends | Drill down to lot |
@@ -237,7 +234,7 @@ Notes:
 
 ```mermaid
 flowchart TD
-    A["Grey Inventory\n(from Inbound Receipt)"] -->|"Lot selected for folding"| B["Unfold & Cut\ninto 100m folds"]
+    A["Grey Inventory\n(from Inbound Receipt)"] -->|"Grey lot selected for folding"| B["Fold fabric\n(standard 2m folds)"]
     B -->|"Measure every section"| C["Record Folding Metres\n& Calculate Chadat"]
     C -->|FOLDING_COMPLETED| D{"Full lot\nfolded?"}
     D -->|"Yes"| E["Folded Inventory\n(COMPLETE)"]
@@ -249,4 +246,4 @@ flowchart TD
     style F fill:#ff9,stroke:#333
 ```
 
-Note: Folding and Grading (Module 4) are independent — grading may have already started or completed before folding finishes for the same lot. The system does not enforce ordering between them.
+Note: Folding is a measurement and handling step — fabric is folded (typically 2m folds) and measured, not cut. Any cutting of fabric happens during grading (for grading purposes) or during packing program execution. Folding and Grading (Module 4) are independent — grading may have already started or completed before folding finishes for the same grey lot. The system does not enforce ordering between them.

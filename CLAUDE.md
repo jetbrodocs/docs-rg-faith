@@ -9,15 +9,15 @@ Factory-level inventory tracking system for RG Faith Creations Pvt. Ltd. at thei
 | Term | Definition |
 |---|---|
 | Miroli | RG Faith's processing facility — all operations happen here |
-| MRL No | Miroli lot number — round-trip tracking ID assigned when sending goods to vendor for dyeing; vendor references it on return |
+| MRL No | Miroli lot number — a reference number for the facility, assigned when sending goods to vendor for dyeing. Used as a round-trip tracking ID (vendor references it on return). The inbound material itself is referred to as a "grey lot." |
 | Avak | Incoming/arrival — "Avak Date" = date material arrived at Miroli |
 | Grey | Default classification of incoming fabric; ungraded/unprocessed state |
 | Fresh | Highest quality grade — good quality fabric, measured in meters |
-| Good Cut | Second quality grade, measured in kg (converted via Chadat) |
+| Good Cut | Second quality grade, measured in metres |
 | Fent | Lower quality grade, measured in kg |
 | Rags | Lower quality grade, measured in kg |
 | Chindi | Lowest quality grade, 100% loss, measured in kg |
-| Chadat | Conversion factor between meters and kg for a specific lot |
+| Chadat | Conversion factor between metres and kg for a specific lot — used for grades measured in kg (Fent, Rags, Chindi) |
 | Thaan | A piece of fabric (= "piece") |
 | Haste | "For [party name]" — indicates which customer/party goods are destined for |
 | Todiya / Toria | Breaking/reassigning inventory — now mostly a software operation for repacking accumulated leftovers. "Todiya" is the primary spelling used. |
@@ -61,7 +61,7 @@ Factory-level inventory tracking system for RG Faith Creations Pvt. Ltd. at thei
 - Use "grey" spelling (not "gray")
 - System is independent from head office ERP — future import/export utility only
 - Master data (brands, products, fold types, tone codes, quality codes, SKU attributes) must be user-configurable
-- Chadat is the conversion bridge between meters (Fresh) and kg (all other grades)
+- Chadat is the conversion bridge between metres and kg — needed for Fent, Rags, and Chindi (which are measured in kg). Fresh, Good Cut, and Not Acceptable are all measured in metres.
 - Folding and grading are independent activities — no enforced sequence between them
 - Regular packing programs use Fresh only; Good Cut and below always go to accumulation → Todiya
 - Not Acceptable material is always measured in metres (never kg)

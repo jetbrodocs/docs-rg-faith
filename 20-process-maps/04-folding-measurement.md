@@ -12,9 +12,9 @@ tags: [process, folding, measurement, chadat, reconciliation]
 
 | Field | Value |
 |---|---|
-| **Purpose** | Physically unfold, measure, and cut incoming fabric into standard 100-metre folds — converting vendor-reported grey metres into RG Faith-verified folding metres. Calculate the Chadat (metres-to-kg conversion factor) for the lot. |
+| **Purpose** | Physically unfold, measure, and fold incoming fabric into standard 2-metre folds — converting vendor-reported grey metres into RG Faith-verified folding metres. Calculate the Chadat (metres-to-kg conversion factor for Fent, Rags, and Chindi) for the lot. |
 | **Trigger** | Grey material selected for processing from storage. |
-| **End condition** | All material in the lot is cut into 100m folds and measured. Folding metres recorded. Chadat calculated. |
+| **End condition** | All material in the lot is folded into 2m folds and measured. Folding metres recorded. Chadat calculated. |
 | **Frequency** | Continuous during working hours. |
 | **Typical duration** | A 6,000-metre lot likely takes a full day or more. |
 
@@ -22,7 +22,7 @@ tags: [process, folding, measurement, chadat, reconciliation]
 
 | Role | Responsibility |
 |---|---|
-| Folding workers (3–7) | Physically unfold, measure, and cut fabric into 100m folds. Scale varies with workload. |
+| Folding workers (3–7) | Physically unfold, measure, and fold fabric into 2m folds. Scale varies with workload. |
 | Supervisor | Oversees process, handles metre reconciliation, records Chadat. |
 
 ## Inputs
@@ -37,11 +37,10 @@ tags: [process, folding, measurement, chadat, reconciliation]
 
 | Output | Destination | Format | Notes |
 |---|---|---|---|
-| 100-metre folds | Grading area | Physical fabric folds | Standard unit of work for quality inspection. |
-| Remainder pieces | Grading area | Physical fabric pieces | Non-round-number leftovers (e.g., 12m from a 1,012m roll). |
+| 2-metre folds | Grading area | Physical fabric folds | Standard unit of work for quality inspection. |
 | Folding metre records | Paper register | Handwritten | Per-roll and per-lot measurements. |
 | Metre reconciliation | Paper notebook | Handwritten | Folding metres vs factory (Gate Pass) metres comparison. |
-| Chadat value | Records / Gradation Report | Number | Metres-per-kg conversion factor for this lot. |
+| Chadat value | Records / Gradation Report | Number | Metres-per-kg conversion factor for this lot. Used for converting Fent, Rags, and Chindi between metres and kg. |
 
 ## Process Steps
 
@@ -61,19 +60,19 @@ START — Lot selected from grey storage
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 2. Unfold and cut into 100m folds   │
+│ 2. Unfold and fold into 2m folds    │
 │    • Incoming rolls can be 1,000m+  │
-│    • Cut each roll into standard    │
-│      100-metre sections             │
-│    • Example: 1,012m roll produces  │
-│      10 × 100m folds + 12m remainder│
+│    • Fold each roll into standard   │
+│      2-metre folds                  │
+│    • Folding is a measurement and   │
+│      handling step, not cutting     │
 └──────────────┬──────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────┐
 │ 3. Measure every section            │
 │    • Physically handle and measure  │
-│      each 100m fold                 │
+│      each fold                      │
 │    • Record metre count per section │
 │    • These are "folding metres" —   │
 │      RG Faith's own verified count  │
@@ -82,10 +81,10 @@ START — Lot selected from grey storage
                ▼
 ┌─────────────────────────────────────┐
 │ 4. Calculate Chadat                 │
-│    • Weigh a standard 100m fold     │
+│    • Weigh a known length of fabric │
 │    • Chadat = metres ÷ kilograms    │
-│    • Example: 100m fold weighs      │
-│      20.6 kg → Chadat = 4.86       │
+│    • Used for converting Fent, Rags,│
+│      and Chindi between metres & kg │
 │    • Lot-specific: varies by fabric │
 │      density / GSM                  │
 └──────────────┬──────────────────────┘
@@ -119,29 +118,16 @@ END — Material folded and measured.
       after, or concurrently with folding.
 ```
 
-### Handling Remainders
+### Note on Folding vs Cutting
 
-```
-1,012-metre roll
-  │
-  ├── 100m fold #1  ─┐
-  ├── 100m fold #2   │
-  ├── 100m fold #3   │
-  ├── ...             ├── Standard folds → go to grading
-  ├── 100m fold #10  ─┘
-  │
-  └── 12m remainder ──→ Goes to grading as-is.
-                        Too short for standard fold.
-                        Will be classified as Good Cut,
-                        Fent, or Chindi based on quality.
-```
+Folding is a measurement and handling step — fabric is folded into standard 2-metre folds for easier handling and measurement. The fold could be of any total length (1,000m+ is common). **Folding is not cutting.** Cutting of fabric happens during grading (to separate defective sections) or during packing program execution (to cut to specified lengths).
 
 ### Exceptions
 
 | Exception | How Handled |
 |---|---|
 | Gate Pass missing or misplaced | Search filing system. Contact vendor if needed. Do not process without reference data. |
-| Severe quality issue visible during unfolding | Note the issue. May be flagged as Decision Pending at grading. Full roll may be rejected before cutting. |
+| Severe quality issue visible during unfolding | Note the issue. May be flagged as Decision Pending at grading. Full roll may be rejected before grading. |
 | Measurement discrepancy beyond expected shrinkage | Record as-is. Not commercially actionable (trusted vendor relationship). |
 
 ## State Transition
@@ -157,7 +143,7 @@ Grey ──► Folded (measured by RG Faith, Chadat calculated)
 | Folding metres | RG Faith's own verified measurement | Measured during folding |
 | Factory metres (Gate Pass) | Vendor's reported measurement | Gate Pass document |
 | Shrinkage | Grey metres → Folding metres loss | Calculated (difference) |
-| Chadat | Metres per kilogram for this lot | Calculated from weighing a 100m fold |
+| Chadat | Metres per kilogram for this lot (used for Fent, Rags, Chindi) | Calculated from weighing a known length of fabric |
 
 ## Connected Processes
 

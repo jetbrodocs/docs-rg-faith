@@ -37,7 +37,7 @@ Ramesh arrives at Miroli and opens the system on the shared tablet near the offi
 - Fresh (available for packing): 8,750 metres across 3 lots
 - Packing programs in progress: 2 programs, 14 bales completed of 22 planned
 - Packed bales awaiting dispatch: 31 bales for 4 customers
-- Accumulated stock (Todiya): 18.5 kg Good Cut, 7.2 kg Fent
+- Accumulated stock (Todiya): 42.5 metres Good Cut, 7.2 kg Fent
 
 He switches to **Vendor Pending Balances**. MRL-0542 shows 2,800 metres outstanding at Kalapurna Mills — it has been 9 days since dispatch. He makes a mental note to call them after breakfast.
 
@@ -81,7 +81,7 @@ He checks **Packaging Stock** — cardboard boxes went from 45 to 245. Plastic s
 
 ### 7:30 AM — Folding team starts on yesterday's grey lot
 
-The folding workers pick up a lot that arrived yesterday — MRL-0535, Lot 7890, 4,200 grey metres. They begin unfolding the rolls, cutting them into standard 100-metre sections, and measuring each one. This is physical, continuous work that takes most of the morning.
+The folding workers pick up a grey lot that arrived yesterday — MRL-0535, Lot 7890, 4,200 grey metres. They begin folding the rolls into standard 2-metre folds and measuring each section. This is physical, continuous work that takes most of the morning.
 
 Meanwhile, **Kiran** opens **Pending Folding** on her tablet. She sees the lot the team is working on, plus the lot that just arrived (MRL-0538, 5,826 metres) — that one will be next.
 
@@ -143,13 +143,12 @@ She and two other workers begin cutting the fabric into 20-metre pieces. Each pi
 
 ### 10:30 AM — Folding complete, Kiran records the data
 
-The folding team finishes processing MRL-0535, Lot 7890. **Kiran** opens **Record Folding**:
+The folding team finishes processing grey lot MRL-0535, Lot 7890. **Kiran** opens **Record Folding**:
 
 - Inbound Receipt: MRL-0535 / Lot 7890
 - Folding Metres: 4,082.50
-- Chadat: 5.12 (100m fold weighed 19.53 kg → 100/19.53 = 5.12)
-- Fold Count: 40 (40 × 100m folds)
-- Remainder: 82.50 metres
+- Chadat: 5.12 (a standard fold weighed and calculated: metres/kg = 5.12)
+- Fold Count: 2,041 (standard 2m folds)
 
 She clicks Submit. The system calculates shrinkage: 4,200 - 4,082.50 = 117.50 metres (2.80%). The lot moves from GREY to FOLDED.
 
@@ -161,17 +160,17 @@ The same workers (multi-skilled) now start inspecting the folded sections from L
 
 - Fold 1: Grade = FRESH, Metres = 100. Submit.
 - Fold 2: Grade = FRESH, Metres = 100. Submit.
-- Fold 3: Worker spots a stain at the 65-metre mark. Kiran records two entries:
+- Fold 3: Worker spots a stain at the 65-metre mark. They cut out the defective section for grading purposes. Kiran records two entries:
   - Grade = FRESH, Metres = 65. Submit.
   - Grade = NOT_ACCEPTABLE, Metres = 5 (the stained section, cut out). Submit.
   - The remaining 30 metres continue as the next section.
-- Fold 4: Some minor defects — 2.1 kg of fabric set aside. Grade = GOOD_CUT, Kilograms = 2.1. Chadat auto-fills as 5.12. Equivalent metres = 2.1 × 5.12 = 10.75m. Submit.
+- Fold 4: Some minor defects — a section set aside. Grade = GOOD_CUT, Metres = 10.75. Submit.
 
 She continues through the morning. The **Gradation Report** for MRL-0535 updates incrementally with each entry — Fresh percentage starts at 100% and settles around 96.5% as non-Fresh sections are recorded.
 
 The 5 metres of Not Acceptable fabric automatically creates an entry on the **Reprocess List**: NA-2026-0034, MRL-0535, 5 metres, remark "stain at fold 3, approx 65m mark."
 
-The Good Cut goes to the accumulation area. The **Accumulation Dashboard** updates: Good Cut increases from 18.5 kg to 20.6 kg.
+The Good Cut goes to the accumulation area. The **Accumulation Dashboard** updates: Good Cut increases from 42.5 metres to 53.25 metres.
 
 ---
 
@@ -219,10 +218,10 @@ The team continues executing PP-2026-0087. **Deepa** registers bales as they are
 | Grade | Metres | % |
 |---|---|---|
 | Fresh | 3,938.50 | 96.47% |
-| Good Cut (10.75m) | 10.75 | 0.26% |
-| Fent (6.2 kg = 31.74m) | 31.74 | 0.78% |
-| Rags (1.1 kg = 5.63m) | 5.63 | 0.14% |
-| Chindi (0.8 kg = 4.10m) | 4.10 | 0.10% |
+| Good Cut | 10.75 | 0.26% |
+| Fent (6.2 kg = 31.74m via Chadat) | 31.74 | 0.78% |
+| Rags (1.1 kg = 5.63m via Chadat) | 5.63 | 0.14% |
+| Chindi (0.8 kg = 4.10m via Chadat) | 4.10 | 0.10% |
 | Not Acceptable | 5.00 | 0.12% |
 | **Total** | **3,995.72** | — |
 | Unaccounted (shrinkage beyond folding) | 86.78 | 2.13% |
@@ -247,7 +246,7 @@ He opens **NA Entry Detail** for the entry and adds a comment: "Called PSJC. The
 
 The program status changes to COMPLETED. All 5 bales are packed and at MIROLI-FG-OUT.
 
-**Kiran** weighs the cutting waste: 1.8 kg Good Cut, 0.5 kg Fent. She opens **Record Cutting Waste** for PP-2026-0087 and enters the numbers. Submit. The accumulation stock updates: Good Cut now at 22.4 kg, Fent at 7.7 kg.
+**Kiran** records the cutting waste: 8.5 metres Good Cut, 0.5 kg Fent. She opens **Record Cutting Waste** for PP-2026-0087 and enters the numbers. Submit. The accumulation stock updates: Good Cut now at 61.75 metres, Fent at 7.7 kg.
 
 ---
 
@@ -295,7 +294,7 @@ Ramesh does a final check of the dashboard:
 - Fresh available: 11,188.50 metres (up — new graded lot added, minus what was packed today)
 - Packed awaiting dispatch: 26 bales
 - MRLs pending at vendors: 6 (including the new MRL-0548)
-- Accumulation: Good Cut 22.4 kg, Fent 7.7 kg
+- Accumulation: Good Cut 61.75 metres, Fent 7.7 kg
 
 Tomorrow, the folding team will start on the 5,826 metres that arrived today (MRL-0538, Lot 7993). Ramesh will check if any more sales orders come in from head office.
 
@@ -393,8 +392,8 @@ Quick reference for each role's tasks, organized for onboarding and training.
 - **3:00 PM:** Vendor delivers emergency stock. **Anil** records the GRN: 200 plastic sheets. Stock replenishes. Packing resumes.
 
 ### Todiya sale opportunity
-- **Morning:** A buyer calls asking for 15 kg of Good Cut fabric.
-- Ramesh checks the **Accumulation Dashboard** — 22.4 kg Good Cut available.
-- He creates a Todiya program: source = GOOD_CUT, 15 kg, customer = Todiya Buyer X, brand = SSTM, product = KT-555.
+- **Morning:** A buyer calls asking for 40 metres of Good Cut fabric.
+- Ramesh checks the **Accumulation Dashboard** — 61.75 metres Good Cut available.
+- He creates a Todiya program: source = GOOD_CUT, 40 metres, customer = Todiya Buyer X, brand = SSTM, product = KT-555.
 - The packing team executes it using the same workflow as regular packing. Bales are registered, waste recorded, delivery form created.
-- Accumulation stock drops from 22.4 kg to 7.4 kg Good Cut.
+- Accumulation stock drops from 61.75 metres to 21.75 metres Good Cut.
