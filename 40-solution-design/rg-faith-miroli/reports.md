@@ -651,7 +651,7 @@ Note: Not Acceptable material is identified during packing execution (Module 05)
 
 **Summary:** Total Todiya candidate bales, total non-Fresh thaans, breakdown by grade.
 
-Note: Todiya is an unpack-and-repack operation. Candidate bales at PACKED status containing non-Fresh thaans can be unpacked (`BALE_UNPACKED`), thaans selected, and repacked into new Todiya bales (`TODIYA_BALE_REGISTERED`). There is no separate accumulation running balance — the bales themselves are the inventory.
+Note: Todiya is an unpack-and-repack operation. Candidate bales at PACKED status containing non-Fresh thaans can be unpacked (`BALE_UNPACKED`), thaans selected, and repacked into new Todiya bales (`BALE_REGISTERED` with source=TODIYA). There is no separate accumulation running balance — the bales themselves are the inventory.
 
 ---
 

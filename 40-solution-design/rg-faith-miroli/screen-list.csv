@@ -63,7 +63,7 @@ Packaging Materials,2,Record Packaging GRN,form,"Worker, Supervisor",(DEFERRED) 
 Packaging Materials,3,Stock Adjustment,form,Supervisor,(DEFERRED) Enter physical count — system shows difference — reconciles backflushed quantities with actual usage,Submit
 Packaging Materials,4,Packaging GRN History,list,Manager,(DEFERRED) Browse all packaging GRNs — filter by SKU / vendor / date,View detail
 Packaging Materials,5,Consumption History,list,Manager,(DEFERRED) Browse backflushed consumption records — filter by SKU / program / bale / date,View detail
-Reports,R01,Stage-wise Inventory Report,report,"Manager, Head Office",Real-time material at each stage — Received / Folded / Classified / Packed / Accumulated / NA,"Drill down, Export, Print"
+Reports,R01,Stage-wise Inventory Report,report,"Manager, Head Office",Real-time material at each stage — Received / Folded / Classified / Packed / Todiya Candidates / NA,"Drill down, Export, Print"
 Reports,R02,MRL Lifecycle Report,report,"Manager, Supervisor, Head Office",Complete history of one MRL from creation through dispatch — all events in one view,"Export, Print"
 Reports,R03,Monthly Throughput Report,report,"Manager, Head Office","Period summary — MRLs created, receipts, lots folded/classified, bales packed/dispatched","Filter by date, Export"
 Reports,R04,End-to-End Cycle Time Report,report,"Manager, Head Office","Average/median/min/max time from inbound receipt to dispatch, by vendor or lot","Filter by date/vendor, Export"

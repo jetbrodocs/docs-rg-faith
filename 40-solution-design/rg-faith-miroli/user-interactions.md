@@ -182,13 +182,13 @@ Two paths exist depending on whether the MRL already exists.
 
 | Field | Value |
 |---|---|
-| **Action** | Register a bale — Phase 2 of packing execution (assemble Fresh thaans into a bale). Only Fresh thaans are assembled into bales within a regular packing program. |
+| **Action** | Register a bale — Phase 2 of packing execution (assemble thaans into a bale). Fresh thaans go into Fresh bales; non-Fresh thaans go into separate non-Fresh bales. Each bale contains one grade only. |
 | **Screen** | Register Bale |
 | **Role** | Supervisor, Worker |
 | **Trigger** | Sufficient Fresh thaans have been logged for the program; worker assembles them into a physical bale with branding, stamping, and boxing |
 | **Data captured** | Packing Program (selected), Fresh thaans to include (selected from program's available Fresh thaans) |
 | **System effect** | Bale record created. Bale number auto-assigned (sequential). Packing slip generated (one copy for inside bale, one for office). Bale status = PACKED, dispatch-ready. Program progress updated (e.g. "3 of 5 bales complete"). If first bale: program status -> IN_PROGRESS. If final bale: program status -> COMPLETED. |
-| **Auto side-effects** | Packaging materials auto-deducted from stock per product BOM (backflush) — e.g. 1 cardboard box, 2 plastic sheets, 1 sticker set per bale. Packaging Stock levels decrease automatically. |
+| **Auto side-effects** | — (Packaging material tracking is deferred to a future phase.) |
 
 ### 4.4 Cancel Packing Program
 
@@ -270,7 +270,7 @@ Todiya is the process of unpacking bales that contain non-Fresh thaans (accumula
 | **Trigger** | Worker assembles selected thaans from the unpacked pool into a new physical bale |
 | **Data captured** | Todiya Instruction (selected), Thaans to include (selected from unpacked pool) |
 | **System effect** | New bale record created. Bale number auto-assigned. Packing slip generated (one copy inside bale, one for office). Bale status = PACKED, dispatch-ready. |
-| **Auto side-effects** | Packaging materials auto-deducted from stock per product BOM (backflush). |
+| **Auto side-effects** | — (Packaging material tracking is deferred to a future phase.) |
 
 ### 6.4 Complete Todiya Instruction
 

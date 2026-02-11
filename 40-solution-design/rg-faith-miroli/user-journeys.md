@@ -189,7 +189,7 @@ She opens **Register Bale** on the tablet:
 - Line: Line 1 (SSTM / Officer / Rame)
 - Selected Thaans: 15 Fresh thaans (104832, 104833, ... 104846)
 
-She clicks Submit. The system auto-assigns bale number **37432**. The selected thaans change status from CREATED to BALED. A packing slip is generated — one copy will go inside the bale, the office copy is available for printing. The system also emits a PACKAGING_BACKFLUSHED event — packaging materials are auto-deducted per the product BOM: 1 cardboard box, 2 plastic sheets, and 1 sticker set deducted from packaging stock. The program shows progress: 1 of 5 bales complete. Status changes to IN_PROGRESS.
+She clicks Submit. The system auto-assigns bale number **37432**. The selected thaans change status from CREATED to BALED. A packing slip is generated — one copy will go inside the bale, the office copy is available for printing. The program shows progress: 1 of 5 bales complete. Status changes to IN_PROGRESS.
 
 ---
 
