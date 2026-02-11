@@ -1,27 +1,28 @@
 ---
-title: "Dispatch, Todiya, Packaging Materials, and Exception Handling"
+title: "Dispatch, Todiya, and Exception Handling"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
-tags: [observation, dispatch, todiya, packaging, exceptions, reprocess, decision-pending]
+updated: 2026-02-11
+tags: [observation, dispatch, todiya, exceptions, reprocess, decision-pending]
 ---
 
-# Dispatch, Todiya, Packaging Materials, and Exception Handling
+# Dispatch, Todiya, and Exception Handling
 
 ## Location / Station
 
-- **Area:** Miroli facility — dispatch area, accumulation area, packaging storage
+- **Area:** Miroli facility — dispatch area, accumulation area
 - **Station/Cell:** No fixed stations. Open floor plan.
 - **Address/Building:** Miroli facility, Ahmedabad
 
 ## Overview
 
-This observation covers four related but distinct operational areas that complete the end-to-end process at Miroli:
+This observation covers three related but distinct operational areas that complete the end-to-end process at Miroli:
 
-1. **Dispatch** — Shipping finished bales to customers
-2. **Todiya (Toria)** — Reassigning and repacking accumulated leftover material
-3. **Packaging Materials** — Tracking the consumable materials used during packing
-4. **Exception Handling** — Managing rejected lots (Not Acceptable) and decision-pending lots
+1. **Dispatch** — Shipping finished bales to customers (two-step: pickup scheduled → dispatched)
+2. **Todiya (Toria)** — Unpacking and repacking accumulated leftover material when a buyer is found
+3. **Exception Handling** — Managing rejected lots (Not Acceptable) and decision-pending lots
+
+> **Note:** Packaging materials (inward from vendors, consumption during packing) are deferred to a future phase and are not covered here.
 
 ---
 
@@ -71,13 +72,17 @@ This confirms that a single customer delivery can include multiple product brand
 **Quality issues on delivery (scan page 10):**
 The delivery form includes Hindi notes: "Maal mein US type ariyaan hain" (the material has defects/issues). This particular delivery might be a return/reprocess shipment rather than a customer dispatch.
 
-### Dispatch Process — Step by Step
+### Dispatch Process — Step by Step (Two-Step)
 
+**Step 1: Pickup Scheduled**
 1. **Packing is complete** — Bales are packed, labeled, and packing slips generated.
 2. **Delivery Form created** — Lists all bales in the shipment with bale numbers, trade numbers, pieces, and meters.
-3. **Bales loaded** — Physical loading onto truck/transport.
-4. **Delivery Form signed** — "Ok", "Office", "Recd./Date", "Made by" fields signed off.
-5. **Truck dispatched** — Goods leave Miroli to the customer.
+3. **Pickup scheduled** — The shipment is scheduled for pickup/transport.
+
+**Step 2: Dispatched**
+4. **Bales loaded** — Physical loading onto truck/transport.
+5. **Delivery Form signed** — "Ok", "Office", "Recd./Date", "Made by" fields signed off.
+6. **Truck dispatched** — Goods leave Miroli to the customer. Status becomes "Dispatched."
 
 ### Inputs
 
@@ -119,49 +124,53 @@ The delivery form includes Hindi notes: "Maal mein US type ariyaan hain" (the ma
 
 ### Activity
 
-Todiya (or Toria — from the Hindi/Gujarati word for "breaking") is the process of **reassigning and repacking accumulated leftover material** when a buyer is found.
+Todiya (or Toria — from the Hindi/Gujarati word for "breaking") is the process of **unpacking existing bales and repacking their thaans into new bales** when a buyer is found for accumulated non-Fresh material.
 
-Originally, Todiya was a physical process — workers would literally break open existing bales to repackage the contents for a new buyer. Today, it is more of a **software/accounting operation** — the inventory is reassigned in records, though some physical repacking may still occur.
+Todiya is an **unpack and repack operation only** — there is no re-cutting or re-folding. The thaans are unchanged (same metres, same identity); they are simply moved from one bale to another under a new packing program for the buyer.
 
 ### How Leftover Material Accumulates
 
-During the normal packing process, cutting produces waste:
-- **Good Cut** pieces — usable but not Fresh quality
-- **Fent** pieces — noticeable defects
-- **Rags** — significant defects
-- **Chindi** — waste material
+During normal packing execution, non-Fresh thaans are identified and logged as gradation output:
+- **Good Cut** thaans — usable but not Fresh quality (metres)
+- **Fent** thaans — noticeable defects (kg)
+- **Rags** thaans — significant defects (kg)
+- **Chindi** thaans — waste material (kg)
 
-Good Cut is measured in metres; Fent, Rags, and Chindi are weighed in kilograms (using the Chadat for conversion to metres). All are stored in the **accumulation area**. Over time, enough volume builds up to make a sale worthwhile.
+These non-Fresh thaans are packed into bales and stored in the **accumulation area**. Over time, enough volume builds up to make a sale worthwhile.
 
 ### The Todiya Cycle
 
 ```
-Cutting waste produced (small quantities per packing program)
+Non-Fresh thaans produced during packing (gradation output)
     │
     ▼
-Accumulate in storage (weeks to months)
+Packed into bales, stored in accumulation area (weeks to months)
     │
     ▼
 Sales team finds a buyer for the accumulated stock
     │
     ▼
-Facility manager creates a TODIYA Packing Program
+Facility manager creates a TODIYA Program
     │
     ▼
-Material is repacked / reassigned per the new buyer's requirements
+Existing bales UNPACKED (marked as "unpacked")
+    │
+    ▼
+Unchanged thaans REPACKED into new bales for the buyer
     │
     ▼
 Dispatch to the Todiya buyer
 ```
 
-### Todiya Packing Program (from scan page 14)
+### Todiya Program
 
-A Todiya Packing Program looks similar to a regular one but has key differences:
-- **Material source:** Accumulated leftover stock, not a freshly graded lot
+A Todiya Program is distinct from a regular packing program:
+- **No cutting or folding** — just unpack and repack existing thaans
+- **Original bales marked as "unpacked"** when opened
+- **Thaans are unchanged** — same metres, same identity, same source roll
 - **Grades may be mixed:** "G/C + Fent" (Good Cut and Fent together in one bale)
-- **Multiple MRLs:** May combine leftovers from several original lots
-- **Quality notes:** "Good cut only!" or grade-specific instructions
-- **Trigger:** Buyer for leftovers, not a regular sales order
+- **Thaans from multiple bales** (and therefore multiple MRLs) can go into one new Todiya bale
+- **Trigger:** Buyer found for leftovers, not a regular sales order
 
 ### Todiya Account Tracking
 
@@ -180,74 +189,13 @@ Scan page 17 has the note "Toshika ki Todiya khaata" — "Toshika's Todiya accou
 
 ---
 
-## Section 3: Packaging Materials
-
-### Activity
-
-Packaging materials are the consumable supplies used during the packing process. They are tracked separately from the main fabric inventory. The notes explicitly state that RG Faith does **not want a purchase order system** — they just want to record what comes in, track quantities, and monitor consumption.
-
-### Packaging Materials Used
-
-| Material | Purpose | When Used | Type |
-|---|---|---|---|
-| Plastic sheets/layers | Protective wrapping per fold | During folding and packing | Consumable |
-| Stickers / product labels | Product identification | Applied during packing | Consumable |
-| Brand stamps | Brand impression on fabric | Applied during packing | **Reusable** |
-| Cardboard boxes | Bale container | Final packaging step | Consumable |
-| Thread / twine | Secure and tighten the box | Final packaging step | Consumable |
-| Brochures / booklets | Marketing material for samples | When samples are included | Consumable |
-
-**Important distinction:** Most packaging materials are **consumable** — they get used up and need restocking. **Brand stamps are reusable** — they are assets that don't deplete. The system needs to handle both: consumables tracked by stock level and consumption, stamps tracked as reusable assets (master list only, no inventory depletion).
-
-### Inward Process
-
-From the notes:
-> "Vendors are called to send packaging material. The material arrives with an invoice. There's a GRN with invoice. They don't want a purchase system. They just want to record the inward of material that comes in and the quantity, both to track inventory and to track when quantities are being used for packaging."
-
-The process:
-1. **Vendor ships packaging material** with an invoice
-2. **Material received at Miroli** — GRN (Goods Receipt Note) created against the invoice
-3. **Quantities recorded** — what material, how much, from which vendor
-4. **Material stored** in the packaging area
-
-### Consumption Tracking
-
-Packaging materials are consumed during the packing process. The consumption needs to be tracked to:
-- Know current stock levels (do we need to reorder?)
-- Monitor usage rates
-- Identify if consumption is aligned with production volume
-
-Currently, there is **no scan or document** in the inbox that shows the packaging material tracking process. This is noted as a gap — we have the description from the notes but no example form or register.
-
-### Design Implications
-
-**Must Have:**
-1. **Packaging material SKU master** — User-configurable. Each packaging item is an SKU with attributes.
-2. **Vendor master for packaging** — Who supplies what.
-3. **Inward receipt record** — Date, vendor, material SKU, UOM, quantity, vendor reference. No purchase order — just receipt recording.
-4. **Current stock view** — How much of each consumable packaging material is on hand.
-5. **Consumption recording** — How much packaging material was used (possibly linked to packing programs or bales).
-6. **Reusable asset list** — Master list of reusable items (stamps). No stock depletion tracking needed for these.
-
-**Nice to Have:**
-6. **Reorder alerts** — When stock drops below a minimum threshold.
-7. **Consumption-per-bale metrics** — Average packaging material used per bale.
-8. **Vendor-wise purchase history** — How much was ordered from each packaging vendor over time.
-
-**Not Needed:**
-- Purchase order system (explicitly declined)
-- Invoice/payment tracking (no financial data)
-- Approval workflows for packaging procurement
-
----
-
-## Section 4: Exception Handling
+## Section 3: Exception Handling
 
 ### 4a. Not Acceptable Material — Return to Vendor
 
 #### What It Is
 
-When material is graded as "Not Acceptable" during the folding/grading process, it needs to be sent back to the vendor mill. This is tracked on the **"Ready For Sending Reprocess List"** (scan page 2).
+When material is identified as "Not Acceptable" during packing execution (gradation), it needs to be sent back to the vendor mill. This is tracked on the **"Ready For Sending Reprocess List"** (scan page 2).
 
 #### The Reprocess List (from scan page 2)
 
@@ -352,7 +300,6 @@ Across all four areas in this observation, a consistent pattern emerges: **criti
 |---|---|---|
 | Dispatch | Delivery Form | Dispatch history, customer volumes, shipment tracking |
 | Todiya | Todiya account register | Leftover accumulation trends, Todiya sale history |
-| Packaging | GRN register (if any) | Stock levels, consumption rates, reorder timing |
 | Not Acceptable | Reprocess List | Vendor quality trends, resolution times |
 | Decision Pending | Pending Lots register | Aging, volume, resolution rates |
 
@@ -378,13 +325,13 @@ The following reports have been identified as priorities for the system:
 
 | # | Report | Description | Replaces |
 |---|---|---|---|
-| 1 | **Real-time Stage-wise Inventory Dashboard** | How much material is at each stage: grey → folded → graded → packing program → packed → dispatched. Quantities in meters and kg. | No current equivalent — this is the core value proposition |
+| 1 | **Real-time Stage-wise Inventory Dashboard** | How much material is at each stage: received → folded → awaiting classification → classified → packing program → packed → dispatched. Quantities in meters and kg. | No current equivalent — this is the core value proposition |
 | 2 | **Gradation Report** | Progressive yield analysis per lot. Shows: meter progression, grade breakdown (Fresh %, Good Cut %, etc.), shrinkage, loss. Updates as the lot is processed. | Head office ERP-generated report (scan page 16) |
-| 3 | **Fresh Pending Lots Report** | All lots graded as Fresh but not yet in a packing program or packed. Filterable by width, quality, mill. | Handwritten register (scan pages 6-7) |
+| 3 | **Classified Awaiting Program Report** | All rolls/lots classified (tone + finish assigned) but not yet in a packing program. Filterable by width, quality, mill. | Handwritten register (scan pages 6-7) |
 | 4 | **Decision Pending Lots Report** | All lots awaiting grading decision. With aging (days pending), remarks, and mill. Aging alerts at configurable thresholds. | Handwritten register (scan page 3) |
 | 5 | **Packed Bales Register** | All bales packed, with bale number, brand, product, trade number, meters, pieces, date. Searchable and filterable. | Monthly handwritten bale list (scan page 1) |
 | 6 | **Reprocess / Not Acceptable List** | All Not Acceptable items pending vendor pickup. With status, aging, vendor, remarks. | Handwritten reprocess list (scan page 2) |
-| 7 | **Packaging Material Stock** | Current stock levels of all consumable packaging materials. | No current equivalent |
+| ~~7~~ | ~~**Packaging Material Stock**~~ | ~~Deferred to future phase~~ | — |
 
 ---
 

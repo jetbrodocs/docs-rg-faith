@@ -4,7 +4,7 @@
 
 ### Process: Reprocess List Management and Vendor Return Tracking
 
-This module tracks material graded as "Not Acceptable" (Module 04) — rejected fabric that needs to be returned to the vendor mill. It functions as an issue tracker: rejected material is recorded on the Reprocess List, the vendor is contacted, back-and-forth discussion occurs, and eventually the vendor either picks up the material or it remains at Miroli indefinitely.
+This module tracks material identified as "Not Acceptable" during packing execution (Module 05) — rejected fabric that needs to be returned to the vendor mill. It functions as an issue tracker: rejected material is recorded on the Reprocess List, the vendor is contacted, back-and-forth discussion occurs, and eventually the vendor either picks up the material or it remains at Miroli indefinitely.
 
 This is an informal, trust-based process with no formal dispute mechanism, no credit notes, and no penalties. Resolution timelines vary from days to months — some entries on the Reprocess List remain open for over a year.
 
@@ -22,7 +22,7 @@ Flow:
      List)                     discussion)                OR remains at
          |                           |                    facility)
   material stored              aging tracked                  |
-  separately                        |                     [EXIT]
+  at MIROLI-NA                      |                     [EXIT]
          |                        [EXIT]
       [EXIT]
 ```
@@ -70,9 +70,9 @@ Flow:
 Event type: `NA_ENTRY_CREATED`
 
 Trigger:
-  When material is graded as NOT_ACCEPTABLE (Module 04), the system automatically creates a
-  Reprocess List entry. Alternatively, a supervisor can manually create one from the Not
-  Acceptable screen.
+  When a thaan is logged with grade NOT_ACCEPTABLE during packing execution (Module 05), the
+  system automatically creates a Reprocess List entry. Alternatively, a supervisor can manually
+  create one from the Not Acceptable screen.
 
 Data points captured:
   - inbound_receipt_id: UUID
@@ -102,7 +102,7 @@ Preconditions:
   - metres must be > 0
 
 Side effects:
-  - fabric_inventory: state already set to NOT_ACCEPTABLE by grading module
+  - fabric_inventory: state already set to NOT_ACCEPTABLE by packing module (THAAN_LOGGED with grade = NA)
   - Entry appears on Reprocess List
 
 Projections updated:
@@ -312,7 +312,7 @@ Notes:
 
 ```mermaid
 flowchart TD
-    A["Material graded\nNOT_ACCEPTABLE\n(Module 4)"] -->|"NA_ENTRY_CREATED"| B["Reprocess List Entry\n(OPEN)"]
+    A["Material identified as\nNOT_ACCEPTABLE\nduring packing (Module 5)"] -->|"NA_ENTRY_CREATED"| B["Reprocess List Entry\n(OPEN)"]
     B -->|"NA_ENTRY_COMMENTED\n(vendor contacted)"| C["In Discussion\n(IN_DISCUSSION)"]
     C -->|"NA_ENTRY_COMMENTED\n(ongoing discussion)"| C
     C -->|"Vendor arranges pickup"| D["Resolved: Vendor Pickup\n(RESOLVED)"]

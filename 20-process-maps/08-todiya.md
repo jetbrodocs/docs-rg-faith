@@ -2,8 +2,8 @@
 title: "Process 08 — Todiya (Leftover Repacking)"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
-tags: [process, todiya, toria, leftover, accumulation, repacking]
+updated: 2026-02-11
+tags: [process, todiya, toria, leftover, accumulation, unpack, repack]
 ---
 
 # Process 08 — Todiya (Leftover Repacking)
@@ -12,40 +12,38 @@ tags: [process, todiya, toria, leftover, accumulation, repacking]
 
 | Field | Value |
 |---|---|
-| **Purpose** | Reassign and repack accumulated leftover material (Good Cut, Fent, Rags, Chindi) when a buyer is found, transforming accumulated waste stock into saleable bales. |
+| **Purpose** | Unpack existing bales and repack unchanged thaans into new bales when a buyer is found for accumulated leftover material. Todiya is strictly unpack + repack — no re-cutting or re-folding. |
 | **Trigger** | Sales team finds a buyer for accumulated leftover stock. |
-| **End condition** | Todiya bales packed and dispatched. Accumulation stock reduced. |
+| **End condition** | Todiya bales packed. Original bales marked as unpacked. Thaans reassigned to new bales. |
 | **Frequency** | Periodic — when enough leftovers accumulate and a buyer is available. |
-| **Typical duration** | Same as regular packing — depends on quantity. |
+| **Typical duration** | Shorter than regular packing — no cutting or folding involved. |
 
 ## Context
 
-"Todiya" (or "Toria") comes from the Hindi/Gujarati word for "breaking." Historically, this involved physically breaking open existing bales to repackage. Today, it is more of a **software/accounting operation** — inventory is reassigned in records, though some physical repacking may still occur.
+"Todiya" (or "Toria") comes from the Hindi/Gujarati word for "breaking." The process involves physically unpacking existing bales and repacking the unchanged thaans into new bales for a different buyer. **Todiya does NOT involve cutting or folding** — thaans retain their original identity (same metres, same source roll).
 
 ## Roles
 
 | Role | Responsibility |
 |---|---|
 | Sales team | Finds a buyer for leftover stock. (Out of scope for the system.) |
-| Facility manager | Creates the Todiya Packing Program. |
-| Cutting/packing workers | Execute the repacking. |
+| Facility manager | Creates the Todiya instruction. |
+| Packing workers | Execute the unpack and repack. |
 
 ## Inputs
 
 | Input | Source | Format | Notes |
 |---|---|---|---|
-| Accumulated Good Cut | Accumulation area | Physical fabric (metres) | From cutting waste across multiple packing programs. |
-| Accumulated Fent | Accumulation area | Physical fabric (kg) | From grading and cutting waste. |
-| Accumulated Rags | Accumulation area | Physical fabric (kg) | From grading and cutting waste. |
-| Accumulated Chindi | Accumulation area | Physical fabric (kg) | Waste material. 100% loss. |
+| Existing bales to unpack | Storage / accumulation area | Physical bales | Bales containing non-Fresh thaans (Good Cut, Fent, Rags, etc.) from previous packing programs. |
 | Buyer requirements | Sales team | Verbal | What the Todiya buyer wants. |
 
 ## Outputs
 
 | Output | Destination | Format | Notes |
 |---|---|---|---|
-| Todiya bales | Dispatch area → Customer | Physical boxes | Packed leftover material for the buyer. |
-| Updated accumulation stock | System records | Updated quantities | Reduced by amount packed/dispatched. |
+| Todiya bales | Dispatch area → Customer | Physical boxes | Repacked thaans for the buyer. New bale numbers assigned. |
+| Unpacked bale records | System records | Status update | Original bales marked as "unpacked." |
+| Updated thaan-to-bale mapping | System records | Updated references | Thaans reassigned from old bale(s) to new Todiya bale(s). |
 
 ## Process Steps
 
@@ -64,8 +62,8 @@ Normal packing programs produce cutting waste
 │            ────────                 │
 │            = 7.2 m accumulated      │
 │                                     │
-│ Fent:      +4.5 kg (from grading)   │
-│            +2.1 kg (from cutting)   │
+│ Fent:      +4.5 kg (from Program A) │
+│            +2.1 kg (from Program B) │
 │            ────────                 │
 │            = 6.6 kg accumulated     │
 │                                     │
@@ -74,7 +72,7 @@ Normal packing programs produce cutting waste
 └─────────────────────────────────────┘
 ```
 
-### The Todiya Packing Flow
+### The Todiya Unpack & Repack Flow
 
 ```
 START — Buyer found for accumulated leftovers
@@ -82,7 +80,7 @@ START — Buyer found for accumulated leftovers
   ▼
 ┌─────────────────────────────────────┐
 │ 1. Assess available stock           │
-│    • Check accumulated quantities   │
+│    • Check accumulated bales / thaans│
 │      by grade (G/C, Fent, Rags,     │
 │      Chindi)                        │
 │    • May span material from         │
@@ -91,15 +89,13 @@ START — Buyer found for accumulated leftovers
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 2. Create Todiya Packing Program    │
+│ 2. Create Todiya instruction        │
 │    • Marked as Todiya type          │
-│    • Material source: accumulated   │
-│      stock (not a freshly graded    │
-│      lot)                           │
+│    • Specify which bales to unpack  │
 │    • May mix grades in one bale     │
 │      (e.g., "G/C + Fent")          │
 │    • May combine material from      │
-│      multiple MRLs                  │
+│      multiple MRLs / bales          │
 │    • Specific instructions per      │
 │      buyer's requirements           │
 │    • Example note: "Good cut only!" │
@@ -107,21 +103,28 @@ START — Buyer found for accumulated leftovers
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 3. Execute packing                  │
-│    • Same physical process as       │
-│      regular packing (Process 06)   │
-│    • Cut, fold, brand, box          │
-│    • Assign bale numbers            │
-│    • Generate packing slips         │
+│ 3. Unpack existing bale(s)          │
+│    • Physically open selected bales │
+│    • Mark original bale(s) as       │
+│      "unpacked" in the system       │
+│    • Remove thaans — thaans retain  │
+│      their original identity        │
+│    • NO re-cutting or re-folding    │
+│    • Thaans are unchanged: same     │
+│      metres, same source roll       │
 └──────────────┬──────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 4. Update accumulation stock        │
-│    • Reduce accumulated quantities  │
-│      by what was packed             │
-│    • Track which MRLs contributed   │
-│      to the Todiya bales            │
+│ 4. Repack thaans into new bale(s)   │
+│    • Assemble selected thaans into  │
+│      new Todiya bale(s)             │
+│    • Thaans from multiple unpacked  │
+│      bales can go into one new bale │
+│    • Assign new bale number         │
+│    • Apply brand and packaging      │
+│    • Generate packing slip          │
+│    • Update thaan-to-bale mapping   │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -136,43 +139,46 @@ START — Buyer found for accumulated leftovers
                │
                ▼
 END — Todiya bales dispatched.
-      Accumulation stock reduced.
+      Original bales marked unpacked.
+      Thaan-to-bale mapping updated.
 ```
 
 ### Todiya vs Regular Packing Program
 
 | Aspect | Regular (Process 06) | Todiya (Process 08) |
 |---|---|---|
-| Material source | Fresh-graded lot | Accumulated leftovers |
+| Material source | Classified rolls (Awaiting Program) | Existing bales (accumulated non-Fresh) |
 | Trigger | Sales order (~95%) or proactive (~5%) | Buyer found for leftovers |
-| Grades used | Fresh only | Good Cut, Fent, Rags (may be mixed) |
-| MRL reference | Single MRL / lot | May combine multiple MRLs |
+| Involves cutting | Yes — rolls cut to specified lengths | No — thaans are unchanged |
+| Involves folding | Yes — fold type specified by program | No — thaans retain original fold |
+| Grades used | Fresh (non-Fresh goes to accumulation) | Good Cut, Fent, Rags (may be mixed) |
+| MRL reference | Single or multiple MRLs (cross-lot) | May combine multiple MRLs / bales |
 | Grade mixing | Never | Often ("G/C + Fent" in one bale) |
-| Example | Scan page 13 | Scan page 14 |
+| Thaan identity | Created during cutting | Unchanged — same metres, same source roll |
 
 ### Exceptions
 
 | Exception | How Handled |
 |---|---|
 | Accumulated stock insufficient for buyer's order | Wait for more to accumulate, or negotiate smaller quantity. |
-| Buyer wants only one grade (e.g., "Good cut only!") | Todiya program specifies grade filter. |
-| Material from too many MRLs — hard to reconcile | Todiya programs may reference "Lot Pending" rather than specific MRLs. |
+| Buyer wants only one grade (e.g., "Good cut only!") | Todiya instruction specifies grade filter. Only bales with matching thaans unpacked. |
+| Material from too many MRLs — hard to reconcile | Thaan-to-bale mapping maintains traceability even across multiple MRL sources. |
 
 ## State Transition
 
 ```
-Graded — Good Cut  ──► Accumulated ──► Todiya Packed (Bale) ──► Dispatched
-Graded — Fent      ──► Accumulated ──► Todiya Packed (Bale) ──► Dispatched
-Graded — Rags      ──► Accumulated ──► Todiya Packed (Bale) ──► Dispatched
-Graded — Chindi    ──► Accumulated ──► Todiya Packed (Bale) ──► Dispatched
+Packed (Bale, non-Fresh) ──► Unpacked ──► Todiya Packed (new Bale) ──► Pickup Scheduled ──► Dispatched
+
+Thaan lifecycle through Todiya:
+  Thaan in Bale A ──► Bale A unpacked ──► Thaan repacked into Bale B (unchanged)
+  (same metres, same source roll, same identity)
 ```
 
 ## Connected Processes
 
 | Direction | Process | How Connected |
 |---|---|---|
-| **Upstream (waste from cutting)** | [06 — Packing Program & Execution](06-packing-program-execution.md) | Cutting waste feeds into accumulation stock. |
-| **Upstream (waste from grading)** | [05 — Quality Grading](05-quality-grading.md) | Non-Fresh grades routed to accumulation area. |
+| **Upstream (non-Fresh from packing)** | [06 — Packing Program & Execution](06-packing-program-execution.md) | Non-Fresh material identified during gradation goes to accumulation, eventually packed into bales available for Todiya. |
 | **Downstream** | [07 — Dispatch](07-dispatch.md) | Todiya bales dispatched via normal dispatch process. |
 
 ## Systems / Tools
@@ -180,8 +186,7 @@ Graded — Chindi    ──► Accumulated ──► Todiya Packed (Bale) ──
 | Tool | Purpose |
 |---|---|
 | Todiya account register (current) | Track Todiya transactions per party. |
-| Packing Program form (current) | Todiya programs use same form as regular programs. |
-| Future system | Todiya packing program type, accumulated stock dashboard, Todiya dispatch records. |
+| Future system | Todiya workflow (unpack/repack), thaan reassignment, accumulated stock dashboard, Todiya dispatch records. |
 
 ## Known Issues
 

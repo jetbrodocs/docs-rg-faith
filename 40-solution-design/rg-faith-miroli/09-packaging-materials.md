@@ -1,4 +1,6 @@
-# Module 09 — Packaging Materials
+# Module 09 — Packaging Materials (DEFERRED)
+
+> **This module is deferred to a future phase.** Packaging material management is out of scope for the initial build. The content below is retained for reference and future implementation planning.
 
 ## 1. Process Overview
 

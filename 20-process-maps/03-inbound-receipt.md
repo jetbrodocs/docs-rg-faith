@@ -2,8 +2,8 @@
 title: "Process 03 — Inbound Receipt"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
-tags: [process, inbound, grey, gate-pass, receipt]
+updated: 2026-02-11
+tags: [process, inbound, receipt, gate-pass, mrl]
 ---
 
 # Process 03 — Inbound Receipt
@@ -12,9 +12,9 @@ tags: [process, inbound, grey, gate-pass, receipt]
 
 | Field | Value |
 |---|---|
-| **Purpose** | Receive dyed cloth returning from vendor mills, match it to the original MRL, record the arrival, and file the Gate Pass for downstream processing. |
-| **Trigger** | Truck arrives from a vendor mill carrying dyed cloth and a Gate Pass. |
-| **End condition** | Material stored at Miroli. Gate Pass filed. MRL updated with received metres. Inventory state = Grey. |
+| **Purpose** | Receive finished material returning from vendor mills, generate or match the MRL, record the arrival, capture vendor-reported pending greige balance, and file the Gate Pass for downstream processing. |
+| **Trigger** | Truck arrives from a vendor mill carrying finished material and a Gate Pass. |
+| **End condition** | Material stored at Miroli. Gate Pass filed. MRL generated (first receipt) or matched (subsequent receipt). Inventory state = Received. |
 | **Frequency** | Multiple times per week. |
 | **Typical duration** | 30–60 minutes per truck (unloading and filing). |
 
@@ -23,23 +23,23 @@ tags: [process, inbound, grey, gate-pass, receipt]
 | Role | Responsibility |
 |---|---|
 | Receiving workers (2–3) | Unload truck, store material on facility floor. |
-| Supervisor / manager | Match shipment to existing MRL. File Gate Pass. Record avak (arrival) date. |
+| Supervisor / manager | Generate new MRL (first receipt) or match to existing MRL (subsequent receipt). File Gate Pass. Record avak (arrival) date. |
 
 ## Inputs
 
 | Input | Source | Format | Notes |
 |---|---|---|---|
-| Dyed cloth (semi-finished goods) | Vendor mill | Physical rolls/bundles on truck | Not counted or measured at this stage. |
-| Gate Pass / Ready Goods Report | Vendor mill | Printed form (standard format) | Contains: lot number, roll-by-roll metres, grey metres, quality code, GSM, width. |
-| MRL Number (pre-existing) | RG Faith records | Reference number | Created at outbound (Process 02). Used to match inbound to outbound. |
+| Finished material (dyed cloth) | Vendor mill | Physical rolls/bundles on truck | Not counted or measured at this stage. |
+| Gate Pass / Ready Goods Report | Vendor mill | Printed form (standard format) | Contains: lot number, roll-by-roll metres, metres, quality code, GSM, width, pending greige balance. |
+| MRL Number (if subsequent receipt) | RG Faith records | Reference number | Only exists if this is a subsequent receipt against an existing MRL. |
 
 ## Outputs
 
 | Output | Destination | Format | Notes |
 |---|---|---|---|
-| Stored grey material | Miroli facility floor (waiting area) | Physical rolls/bundles | Awaiting folding station. |
+| Stored received material | Miroli facility floor (waiting area) | Physical rolls/bundles | Awaiting folding station. |
 | Filed Gate Pass | Paper file | Physical document | Referenced later during folding. |
-| MRL receipt record | Internal records | Paper register / future system | Avak date, metres received, lot number, Gate Pass ref. |
+| MRL record | Internal records | Paper register / future system | MRL generated (first receipt) or updated (subsequent). Avak date, metres received, lot number, Gate Pass ref, vendor-reported pending greige balance. |
 
 ## Process Steps
 
@@ -52,7 +52,8 @@ START — RG Faith's truck returns from vendor mill
 ┌─────────────────────────────────────┐
 │ 1. Receive truck and Gate Pass      │
 │    • RG Faith's own truck returns   │
-│      from vendor with dyed cloth    │
+│      from vendor with finished      │
+│      material (dyed cloth)          │
 │    • Gate Pass document collected   │
 │    • No counting or measurement     │
 └──────────────┬──────────────────────┘
@@ -67,11 +68,13 @@ START — RG Faith's truck returns from vendor mill
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 3. Match to MRL                     │
-│    • Identify the MRL Number from   │
-│      the Gate Pass or prior records │
-│    • Link this inbound shipment to  │
-│      the original outbound MRL     │
+│ 3. Generate or match MRL            │
+│    • FIRST RECEIPT: Generate a new  │
+│      MRL Number for this material   │
+│    • SUBSEQUENT RECEIPT: Identify   │
+│      the existing MRL from the Gate │
+│      Pass or prior records and      │
+│      match this shipment to it      │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -82,6 +85,8 @@ START — RG Faith's truck returns from vendor mill
 │      (from Gate Pass — trusted)     │
 │    • Record lot number (vendor's)   │
 │    • Record Gate Pass reference     │
+│    • Record vendor-reported pending │
+│      greige balance (from Gate Pass)│
 │    • Update MRL with received qty   │
 └──────────────┬──────────────────────┘
                │
@@ -94,16 +99,17 @@ START — RG Faith's truck returns from vendor mill
 └──────────────┬──────────────────────┘
                │
                ▼
-END — Material stored as Grey inventory.
+END — Material stored as Received inventory.
       Awaiting folding station pickup.
 ```
 
 ### What Does NOT Happen at Receipt
 
-- **No measurement** — Grey metres from Gate Pass accepted at face value.
-- **No quality inspection** — Happens at folding/grading (Process 04/05).
+- **No measurement** — Metres from Gate Pass accepted at face value.
+- **No quality inspection** — Quality is assessed later during packing execution (gradation).
 - **No rejection** — Material is always accepted at intake.
 - **No immediate processing** — Material waits until folding picks it up.
+- **No outbound tracking** — The system starts at inbound receipt. There is no outbound process in the system. Pending greige balance is a vendor-reported note on the Gate Pass, not a system-tracked outbound.
 
 ### Partial Shipments
 
@@ -119,42 +125,43 @@ MRL 526 — 6,000 metres sent to vendor
       └── Pending balance: 0 metres (complete)
 ```
 
-Each shipment creates its own receipt record against the same MRL. The system auto-calculates the pending balance (total sent minus total received).
+Each shipment creates its own receipt record against the same MRL. The vendor-reported pending greige balance on the Gate Pass indicates what remains with the vendor.
 
 ### Exceptions
 
 | Exception | How Handled |
 |---|---|
 | Material arrives without a Gate Pass | Contact vendor. Do not process until Gate Pass is received. |
-| Cannot identify the MRL for the shipment | Manager matches from memory/paper records. System will provide MRL lookup. |
+| Cannot identify the MRL for a subsequent shipment | Manager matches from memory/paper records. System will provide MRL lookup. |
 | Partial shipment (not all metres returned) | Record what's received. Pending balance tracked. Second shipment expected later. |
 
 ## State Transition
 
 ```
-Sent to Vendor ──► Grey (received at Miroli, not yet processed)
+[Not in system] ──► Received (MRL generated at first receipt, or matched on subsequent receipt)
 ```
 
 ## Key Data Captured
 
 | Field | Source | Description |
 |---|---|---|
-| MRL Number | Pre-existing (from outbound) | Links inbound to outbound. |
+| MRL Number | Generated at first receipt; matched on subsequent | System-generated identifier for the lot. The MRL is created at this inbound step (not at outbound). |
 | Avak Date | Recorded at receipt | Date material arrived at Miroli. |
 | Lot Number | From Gate Pass (vendor-assigned) | Vendor's internal reference. Stays with material through all stages. |
-| Grey Metres | From Gate Pass | Total metres in this shipment. Trusted at face value. |
+| Received Metres | From Gate Pass | Total metres in this shipment. Trusted at face value. |
 | Quality Code | From Gate Pass | Inbound quality attribute (e.g., 44x45P6). User-configurable. |
 | GSM | From Gate Pass | Grams per square metre — fabric weight. |
 | Width | From Gate Pass | Fabric width (e.g., 58"). |
-| Rolls / Pieces | From Gate Pass | Number of physical rolls in shipment. |
+| Rolls / Pieces | From Gate Pass | Number of physical rolls in shipment. "Roll" is the system term (may physically be a roll or lump). |
 | Gate Pass Reference | From Gate Pass | Vendor's dispatch document number. |
+| Vendor-reported Pending Greige Balance | From Gate Pass | Greige metres still pending with the vendor. A vendor-reported note, not verified by the system. |
 
 ## Connected Processes
 
 | Direction | Process | How Connected |
 |---|---|---|
-| **Upstream** | [02 — Outbound to Vendor](02-outbound-to-vendor.md) | MRL created at outbound; this process receives against it. |
-| **Downstream** | [04 — Folding & Measurement](04-folding-measurement.md) | Grey material picked up by folding team for processing. |
+| **Upstream** | Vendor mill (external) | Vendor dyes the greige material and returns it as finished material. No outbound tracking in the system. |
+| **Downstream** | [04 — Folding & Measurement](04-folding-measurement.md) | Received material picked up by folding team for processing. |
 
 ## Systems / Tools
 

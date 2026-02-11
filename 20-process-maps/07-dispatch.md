@@ -2,8 +2,8 @@
 title: "Process 07 — Dispatch"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
-tags: [process, dispatch, delivery, shipping, customer]
+updated: 2026-02-11
+tags: [process, dispatch, delivery, shipping, customer, pickup]
 ---
 
 # Process 07 — Dispatch
@@ -12,7 +12,7 @@ tags: [process, dispatch, delivery, shipping, customer]
 
 | Field | Value |
 |---|---|
-| **Purpose** | Ship finished bales from Miroli to customers. Create Delivery Form documenting what was shipped. |
+| **Purpose** | Ship finished bales from Miroli to customers. Two-step process: schedule pickup, then dispatch. Create Delivery Form documenting what was shipped. |
 | **Trigger** | Packed bales ready for customer delivery. |
 | **End condition** | Bales loaded, Delivery Form signed, truck dispatched. Inventory state = Dispatched. |
 | **Frequency** | Multiple times per week. |
@@ -59,7 +59,18 @@ START — Packed bales ready for shipment
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 2. Create Delivery Form             │
+│ 2. Schedule pickup                  │
+│    • Mark selected bales as         │
+│      "Pickup Scheduled"             │
+│    • Arrange vehicle and logistics  │
+│    • RG Faith's own transport       │
+│    • State: Packed → Pickup         │
+│      Scheduled                      │
+└──────────────┬──────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────┐
+│ 3. Create Delivery Form             │
 │                                     │
 │  HEADER:                            │
 │    Inward No (serial), Date,        │
@@ -81,7 +92,7 @@ START — Packed bales ready for shipment
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 3. Load bales onto truck            │
+│ 4. Load bales onto truck            │
 │    • Physical loading               │
 │    • Verify count against           │
 │      Delivery Form                  │
@@ -89,16 +100,19 @@ START — Packed bales ready for shipment
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 4. Sign off and dispatch            │
+│ 5. Sign off and dispatch            │
 │    • Delivery Form signed           │
 │    • Truck departs Miroli           │
 │    • Office copy filed              │
 │    • Original accompanies shipment  │
+│    • State: Pickup Scheduled →      │
+│      Dispatched                     │
 └──────────────┬──────────────────────┘
                │
                ▼
 END — Bales shipped to customer.
       Delivery Form filed.
+      State: Dispatched.
 ```
 
 ### Example: Multi-Product Delivery
@@ -129,7 +143,7 @@ A single delivery can include multiple product brands for the same customer.
 ## State Transition
 
 ```
-Packed (Bale) ──► Dispatched
+Packed (Bale) ──► Pickup Scheduled ──► Dispatched
 ```
 
 **Dispatch-ready trigger:** A bale is dispatch-ready once its packing slip has been generated (no separate approval step).

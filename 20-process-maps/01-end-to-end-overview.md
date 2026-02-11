@@ -2,7 +2,7 @@
 title: "End-to-End Process Overview"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-11
 tags: [process, overview, master]
 ---
 
@@ -10,8 +10,8 @@ tags: [process, overview, master]
 
 ## Process Overview
 
-- **Purpose:** Transform semi-finished dyed cloth into branded, packed bales ready for customer dispatch, while tracking inventory at every stage.
-- **Trigger:** Grey cloth sent to vendor for dyeing (MRL creation).
+- **Purpose:** Transform finished (dyed) cloth received from vendors into branded, packed bales ready for customer dispatch, while tracking inventory at every stage.
+- **Trigger:** Finished material received at Miroli from vendor (MRL generated at first inbound receipt).
 - **End condition:** Finished bales dispatched to customer via Delivery Form.
 - **Frequency:** Continuous — multiple lots in various stages at any given time.
 - **Typical duration:** ~1 week from inbound receipt to dispatch for normal lots. Can extend to months/years for decision-pending exceptions.
@@ -22,111 +22,121 @@ tags: [process, overview, master]
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        RG FAITH — MIROLI FACILITY                   │
 │                                                                     │
-│  ┌──────────────┐                                                   │
-│  │ OUTBOUND TO  │  Grey cloth sent to vendor for dyeing             │
-│  │ VENDOR       │  MRL Number assigned                              │
-│  │ (Process 02) │──────────────────────┐                            │
-│  └──────────────┘                      │                            │
-│                                        ▼                            │
 │                              ┌──────────────────┐                   │
 │                              │  VENDOR MILL     │                   │
 │                              │  (External)      │                   │
 │                              │  Dyeing process  │                   │
 │                              └────────┬─────────┘                   │
 │                                       │                             │
-│                                       │ Gate Pass + dyed cloth      │
+│                                       │ Gate Pass + finished cloth   │
 │                                       ▼                             │
-│  ┌──────────────┐    ┌──────────────────────────┐                   │
-│  │ PACKAGING    │    │ INBOUND RECEIPT           │                   │
-│  │ MATERIAL     │    │ (Process 03)              │                   │
-│  │ MANAGEMENT   │    │                           │                   │
-│  │ (Process 10) │    │ • Receive goods + Gate Pass│                  │
-│  │              │    │ • Match to MRL             │                   │
-│  │ • Inward     │    │ • Record Avak Date         │                   │
-│  │ • Stock      │    │ • File Gate Pass           │                   │
-│  │ • Consume    │    │ • Store as GREY inventory   │                  │
-│  └──────┬───────┘    └────────────┬───────────────┘                  │
-│         │                         │                                  │
-│         │                         ▼                                  │
-│         │            ┌──────────────────────────────────────────┐    │
-│         │            │ FOLDING & MEASUREMENT  ◄──► QUALITY GRADING│   │
-│         │            │ (Process 04)               (Process 05)   │   │
-│         │            │                                           │   │
-│         │            │ Independent activities — can happen in    │   │
-│         │            │ any order or concurrently                  │   │
-│         │            │                                           │   │
-│         │            │ 04: Fold into 2m folds, measure,          │   │
-│         │            │     calculate Chadat, reconcile           │   │
-│         │            │ 05: Inspect, classify into grades,        │   │
-│         │            │     update Gradation Report               │   │
-│         │            └──┬──────┬──────┬──────┬───────────────────┘   │
-│         │               │      │      │      │                        │
-│         │          FRESH │  G/C │  F/R/C│  N/A │                      │
-│         │               │      │      │      │                        │
-│         │               │      │      │      └──► NOT ACCEPTABLE      │
-│         │               │      │      │          RESOLUTION           │
-│         │               │      │      │          (Process 09)         │
-│         │               │      │      │                               │
-│         │               │      │      └──► ACCUMULATE                 │
-│         │               │      │           for TODIYA                 │
-│         │               │      │           (Process 08)               │
-│         │               │      │                                      │
-│         │               │      └──► ACCUMULATE                        │
-│         │               │           for TODIYA                        │
-│         │               │                                             │
-│         │               ▼                                             │
-│         │  ┌──────────────────────────┐                               │
-│         │  │ PACKING PROGRAM &        │                               │
-│         │  │ EXECUTION                │                               │
-│         │  │ (Process 06)             │                               │
-│         │  │                          │                               │
-│         │  │ • Manager creates program │                              │
-│         │  │ • Cut to lengths          │                              │
-│         │  │ • Fold per spec           │                              │
-│         │  │ • Brand stamp             │                              │
-│         ├──► • Package with materials  │                              │
-│         │  │ • Assign Bale Number      │                              │
-│         │  │ • Generate Packing Slip   │                              │
-│         │  └────────────┬─────────────┘                               │
-│         │               │                                             │
-│         │               ▼                                             │
-│         │  ┌──────────────────────────┐                               │
-│         │  │ DISPATCH                 │                               │
-│         │  │ (Process 07)             │                               │
-│         │  │                          │                               │
-│         │  │ • Create Delivery Form    │                              │
-│         │  │ • Load bales              │                              │
-│         │  │ • Ship to customer        │                              │
-│         │  └──────────────────────────┘                               │
-│         │                                                             │
-└─────────┴─────────────────────────────────────────────────────────────┘
+│  ┌──────────────────────────────────────────────────┐               │
+│  │ INBOUND RECEIPT                                   │               │
+│  │ (Process 02)                                      │               │
+│  │                                                   │               │
+│  │ • Receive goods + Gate Pass                       │               │
+│  │ • Generate MRL Number (first receipt)             │               │
+│  │ • Record Avak Date, metres, vendor-reported       │               │
+│  │   pending greige balance                          │               │
+│  │ • Store as RECEIVED inventory                     │               │
+│  └────────────────────┬─────────────────────────────┘               │
+│                       │                                              │
+│                       ▼                                              │
+│  ┌──────────────────────────────────────────────────┐               │
+│  │ FOLDING & MEASUREMENT                             │               │
+│  │ (Process 03)                                      │               │
+│  │                                                   │               │
+│  │ • Fold each roll (standard fold)                  │               │
+│  │ • Measure and record metres per roll              │               │
+│  │ • Record Chadat (separate event,                  │               │
+│  │   must be before gradation)                       │               │
+│  └────────────────────┬─────────────────────────────┘               │
+│                       │                                              │
+│                       ▼                                              │
+│  ┌──────────────────────────────────────────────────┐               │
+│  │ TONE & FINISH CLASSIFICATION                      │               │
+│  │ (Process 04)                                      │               │
+│  │                                                   │               │
+│  │ • Rough visual inspection                         │               │
+│  │ • Send samples to head office                     │               │
+│  │ • HO confirms tone + finish                       │               │
+│  │ • Factory worker records classification           │               │
+│  │ • Two attributes: tone (e.g., O1W)                │               │
+│  │   and finish (e.g., 01, 02, 03)                   │               │
+│  └────────────────────┬─────────────────────────────┘               │
+│                       │                                              │
+│                       ▼                                              │
+│  ┌──────────────────────────────────────────────────┐               │
+│  │ PACKING PROGRAM & EXECUTION                       │               │
+│  │ (Process 05)                                      │               │
+│  │                                                   │               │
+│  │ • Manager creates program: which rolls            │               │
+│  │   (cross-lot), fold type, brand, trade,           │               │
+│  │   cut metres, bale count (advisory)               │               │
+│  │ • Phase 1: Cut + fold → thaan (logged)            │               │
+│  │ • Phase 2: Assemble thaans → bale                 │               │
+│  │ • Gradation: non-Fresh thaans logged              │               │
+│  │   with grade (embedded in execution)              │               │
+│  │ • Assign Bale Number, generate Packing Slip       │               │
+│  └──┬──────┬──────────────────────┬─────────────────┘               │
+│     │      │                      │                                  │
+│  FRESH  NON-FRESH              NOT ACCEPTABLE                        │
+│  thaans  thaans                 material                             │
+│     │      │                      │                                  │
+│     │      │                      └──► NOT ACCEPTABLE                │
+│     │      │                          RESOLUTION                     │
+│     │      │                          (Process 08)                   │
+│     │      │                                                         │
+│     │      └──► ACCUMULATE for TODIYA                                │
+│     │           (Process 07)                                         │
+│     │                                                                │
+│     ▼                                                                │
+│  ┌──────────────────────────────────────────────────┐               │
+│  │ DISPATCH                                          │               │
+│  │ (Process 06)                                      │               │
+│  │                                                   │               │
+│  │ • Create Delivery Form                            │               │
+│  │ • Schedule pickup                                 │               │
+│  │ • Load bales, dispatch to customer                │               │
+│  └──────────────────────────────────────────────────┘               │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
 ```
+
+> **Note:** Packaging Material Management is deferred to a future phase.
 
 ## Inventory States Through the Process
 
 | State | Stage | Unit | Process |
 |---|---|---|---|
-| **Sent to Vendor** | Cloth at vendor mill for dyeing | Meters | 02 - Outbound |
-| **Grey** | Received at Miroli, not yet processed | Meters | 03 - Inbound |
-| **Folded** | Measured by RG Faith (independent of grading) | Meters | 04 - Folding |
-| **Graded — Fresh** | Quality checked, best grade (independent of folding) | Meters | 05 - Grading |
-| **Graded — Good Cut** | Quality checked, second grade | Metres | 05 - Grading |
-| **Graded — Fent/Rags/Chindi** | Quality checked, lower grades | Kilograms | 05 - Grading |
-| **Graded — Not Acceptable** | Rejected, pending return to vendor | Meters | 05 - Grading |
-| **Decision Pending** | Awaiting grading decision | Meters | 05 - Grading |
-| **Packing Program Assigned** | Allocated to a packing program | Meters | 06 - Packing |
-| **Packed (Bale)** | Cut, folded, branded, boxed | Pieces + Meters | 06 - Packing |
-| **Dispatched** | Shipped to customer | Pieces + Meters | 07 - Dispatch |
-| **Accumulated (Todiya)** | Leftovers awaiting buyer | Metres (Good Cut) / Kilograms (Fent/Rags/Chindi) | 08 - Todiya |
+| **Received** | Finished material arrived at Miroli from vendor | Meters | 02 - Inbound |
+| **Folded** | Measured by RG Faith per roll | Meters | 03 - Folding |
+| **Awaiting Classification** | Samples sent to HO, waiting for tone/finish confirmation | Meters | 04 - Classification |
+| **Classified** | Tone and finish assigned per roll/lot | Meters | 04 - Classification |
+| **Awaiting Program** | Classified, ready for packing program allocation | Meters | — |
+| **Packing Program Assigned** | Allocated to a packing program | Meters | 05 - Packing |
+| **Thaan (Fresh)** | Cut and folded piece, logged | Meters | 05 - Packing |
+| **Thaan (Non-Fresh)** | Good Cut / Fent / Rags / Chindi, logged during gradation | Metres or Kg | 05 - Packing |
+| **Packed (Bale)** | Thaans assembled into bale | Pieces + Meters | 05 - Packing |
+| **Pickup Scheduled** | Bale scheduled for dispatch | Pieces + Meters | 06 - Dispatch |
+| **Dispatched** | Shipped to customer | Pieces + Meters | 06 - Dispatch |
+| **Accumulated (Todiya)** | Non-Fresh bales awaiting buyer | Metres / Kg | 07 - Todiya |
+| **Decision Pending** | Quality unclear, awaiting decision | Meters | — |
 
 ## Key Identifiers Through the Process
 
 ```
 MRL Number ──────────────────────────────────────────────────────►
-(Created at outbound, used through entire lifecycle)
+(Created at first inbound receipt, used through entire lifecycle)
 
 Lot Number ────────────────────────────────────────────────────►
 (Created by vendor, stays through entire lifecycle)
+
+                    Roll ────────────────────────────────►
+                    (Unit within a lot, tracked from folding)
+
+                                        Thaan ──────────►
+                                        (Created at packing execution)
 
                                               Bale Number ────►
                                               (Created at packing)
@@ -141,24 +151,28 @@ Lot Number ───────────────────────
 
 | # | Process | Trigger | Key Output |
 |---|---|---|---|
-| 02 | [Outbound to Vendor](02-outbound-to-vendor.md) | Woven cloth ready for dyeing | MRL Number assigned, cloth dispatched to mill |
-| 03 | [Inbound Receipt](03-inbound-receipt.md) | Truck arrives from vendor with Gate Pass | Grey inventory recorded, Gate Pass filed |
-| 04 | [Folding & Measurement](04-folding-measurement.md) | Grey material selected for processing | Folding meters recorded, Chadat calculated |
-| 05 | [Quality Grading](05-quality-grading.md) | Folded material ready for inspection | Material classified into grades, Gradation Report updated |
-| 06 | [Packing Program & Execution](06-packing-program-execution.md) | Sales order or proactive decision | Finished bales with brand, product, trade number |
-| 07 | [Dispatch](07-dispatch.md) | Packed bales ready for customer | Delivery Form, bales shipped |
+| 02 | [Inbound Receipt](02-inbound-receipt.md) | Truck arrives from vendor with Gate Pass | MRL generated (first receipt), received inventory recorded |
+| 03 | [Folding & Measurement](03-folding-measurement.md) | Received material selected for processing | Folding metres recorded per roll, Chadat recorded |
+| 04 | [Tone & Finish Classification](04-tone-finish-classification.md) | Folded material awaiting classification | Tone and finish assigned, material classified and awaiting program |
+| 05 | [Packing Program & Execution](05-packing-program-execution.md) | Sales order or proactive decision | Thaans logged, bales with brand/product/trade, gradation output |
+| 06 | [Dispatch](06-dispatch.md) | Packed bales ready for customer | Pickup scheduled, Delivery Form, bales shipped |
 
 ### Sub-processes
 
 | # | Process | Trigger | Key Output |
 |---|---|---|---|
-| 08 | [Todiya — Leftover Repacking](08-todiya.md) | Accumulated leftovers find a buyer | Repacked bales from Good Cut/Fent/Rags |
-| 09 | [Not Acceptable Resolution](09-not-acceptable-resolution.md) | Material graded as Not Acceptable | Vendor pickup or material remains at facility |
-| 10 | [Packaging Material Management](10-packaging-material-management.md) | Packaging stock needed / received | Stock levels maintained, consumption tracked |
+| 07 | [Todiya — Unpack & Repack](07-todiya.md) | Accumulated non-Fresh material finds a buyer | Existing bales unpacked, thaans repacked into new bales |
+| 08 | [Not Acceptable Resolution](08-not-acceptable-resolution.md) | Material identified as Not Acceptable during packing | Vendor pickup or material remains at facility |
+
+### Deferred
+
+| # | Process | Status |
+|---|---|---|
+| ~~09~~ | ~~Packaging Material Management~~ | Deferred to future phase |
 
 ## Connected Processes
 
-All processes feed the **real-time stage-wise inventory dashboard** — the core output of the system. Each state transition (grey → folded → graded → packing → packed → dispatched) updates the dashboard.
+All processes feed the **real-time stage-wise inventory dashboard** — the core output of the system. Each state transition (received → folded → classified → packing program → packed → dispatched) updates the dashboard.
 
 ## Known Issues
 

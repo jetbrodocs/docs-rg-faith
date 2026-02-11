@@ -1,26 +1,32 @@
-# Module 02 — Outbound & Inbound (Grey Lot Lifecycle)
+# Module 02 — Inbound Receipt
 
 ## 1. Process Overview
 
-### Process: Grey Lot Lifecycle — Outbound to Vendor & Inbound Receipt
+### Process: Inbound Receipt of Finished Material
 
-This module tracks the round-trip lifecycle of grey lots sent to external vendor mills for dyeing. It begins when RG Faith dispatches grey (woven) cloth to a vendor and assigns an MRL (Miroli) Number — a facility reference number that tracks the grey lot through every downstream process. It ends when the vendor returns dyed cloth, which is received at Miroli, matched to the original MRL number, and stored as Grey inventory.
+This module tracks the inbound receipt of finished (dyed) material arriving at the Miroli facility from external vendor mills. There is no outbound tracking — the system does not record when greige cloth is dispatched to vendors. The process begins when a vendor's truck arrives at Miroli with dyed cloth and a Gate Pass.
 
-A single grey lot (MRL) may return in multiple partial shipments. The system tracks the pending balance (metres sent minus metres received) and flags grey lots with outstanding balances. No measurement or quality inspection happens at inbound receipt — the vendor's Gate Pass quantities are trusted at face value. Processing begins at the folding and grading stages.
+The MRL (Miroli Lot) Number is a facility reference number created at the first inbound receipt. It serves as the lifetime tracking ID for a lot through every downstream process (folding, classification, packing, dispatch). A single MRL may receive material across multiple partial shipments — each shipment is a separate Inbound Receipt linked to the MRL.
+
+The vendor's Gate Pass carries a note of the total greige metres originally sent and the pending greige balance. These are vendor-reported values captured as informational fields on the receipt — the system does not independently track outbound quantities.
+
+No measurement or quality inspection happens at inbound receipt — the vendor's Gate Pass quantities are trusted at face value. Processing begins at the folding and classification stages.
 
 Flow:
 
 ```
-  Outbound to Vendor         Vendor Processing          Inbound Receipt
-      [ENTRY]                  (External)                  [ENTRY]
-         |                                                     |
-    MRL_CREATED                                        INBOUND_RECEIVED
-         |                                                     |
-    (dispatch cloth)          (dyeing at mill)          (receive + store)
-         |                                                     |
-    MRL_DISPATCHED                                     INBOUND_RECEIVED
-         |                                              (partial returns)
-      [EXIT]                                                [EXIT]
+  First Inbound Receipt               Subsequent Inbound Receipts
+       [ENTRY]                                [ENTRY]
+          |                                      |
+   INBOUND_RECEIVED                       INBOUND_RECEIVED
+   (creates MRL + receipt)                (adds receipt to existing MRL)
+          |                                      |
+   MRL status = ACTIVE                    MRL status = ACTIVE
+          |                                      |
+   (material stored as                    (material stored as
+    Received inventory)                    Received inventory)
+          |                                      |
+       [EXIT]                                 [EXIT]
 ```
 
 ---
@@ -31,8 +37,8 @@ Flow:
 
 | Entity | Aggregate Type | Relationships |
 |---|---|---|
-| MRL (Miroli Lot) | `MRL` | Facility reference number for a grey lot. References Vendor. Contains many Inbound Receipts. Referenced by Folding, Grading, Packing, Todiya, NA Resolution. |
-| Inbound Receipt | `InboundReceipt` | Belongs to an MRL (grey lot). Each receipt represents one shipment returning from the vendor. Contains optional per-roll detail. |
+| MRL (Miroli Lot) | `MRL` | Facility reference number for a lot of finished material. References Vendor. Contains many Inbound Receipts. Referenced by Folding, Classification, Packing, Todiya, NA Resolution. |
+| Inbound Receipt | `InboundReceipt` | Belongs to an MRL. Each receipt represents one shipment of finished material arriving from the vendor. Contains optional per-roll detail. |
 | Inbound Receipt Roll | Part of `InboundReceipt` | Optional per-roll detail within an inbound receipt — metres and weight for each physical roll. |
 
 ### Entity Field Definitions
@@ -42,16 +48,15 @@ Flow:
 | Field | Type | Description |
 |---|---|---|
 | id | UUID | Primary key |
-| mrl_number | string | Human-readable MRL number (auto-generated) — facility reference for the grey lot |
-| vendor_id | UUID (FK) | Which vendor mill the grey lot was sent to |
-| quality_code_id | UUID (FK) | Quality code of the grey cloth |
-| tone_code_id | UUID (FK) | Optional — tone code if known at outbound |
-| metres_sent | decimal | Total metres dispatched to vendor |
-| date_sent | date | Date cloth was dispatched to vendor |
-| metres_received | decimal | Running total of metres received back (sum of all inbound receipts) |
-| pending_balance | decimal | Computed: metres_sent - metres_received |
-| status | string | Current lifecycle status |
-| created_at | datetime | When the MRL was created |
+| mrl_number | string | Human-readable MRL number (auto-generated with FY prefix) — facility reference for the lot |
+| vendor_id | UUID (FK) | Which vendor mill the material was received from |
+| quality_code_id | UUID (FK) | Quality code of the material |
+| tone_code_id | UUID (FK) | Optional — tone code if known at receipt |
+| metres_received | decimal | Running total of metres received (sum of all inbound receipts) |
+| vendor_reported_greige_sent | decimal | Optional — total greige metres the vendor reports having received for processing (from Gate Pass) |
+| vendor_reported_greige_pending | decimal | Optional — greige metres the vendor reports are still pending return (from Gate Pass) |
+| status | string | Current lifecycle status (`ACTIVE` or `CLOSED`) |
+| created_at | datetime | When the MRL was created (= first inbound receipt) |
 
 #### Inbound Receipt
 
@@ -62,12 +67,14 @@ Flow:
 | mrl_id | UUID (FK) | Which MRL this receipt is against |
 | avak_date | date | Date material arrived at Miroli |
 | lot_number | string | Vendor's lot number (from Gate Pass) |
-| grey_metres | decimal | Metres in this shipment (from Gate Pass, trusted) |
+| received_metres | decimal | Metres of finished material in this shipment (from Gate Pass, trusted) |
 | quality_code_id | UUID (FK) | Quality code from Gate Pass |
 | gsm | decimal | Grams per square metre (from Gate Pass) |
 | width | string | Fabric width (e.g., "58\"") |
 | rolls | integer | Number of physical rolls in shipment |
 | gate_pass_reference | string | Vendor's Gate Pass document number |
+| vendor_reported_greige_sent | decimal | Optional — total greige metres originally sent, as noted on Gate Pass |
+| vendor_reported_greige_pending | decimal | Optional — greige metres still pending, as noted on Gate Pass |
 | notes | string | Optional remarks |
 | created_at | datetime | When the receipt was recorded |
 
@@ -87,70 +94,108 @@ Note: Per-roll detail is optional. Users may record just the total rolls count o
 
 | Entity | Prefix | Format | Example |
 |---|---|---|---|
-| MRL | MRL | MRL-{NNNN} | MRL-0526 |
-| Inbound Receipt | IR | IR-{YYYY}-{NNNN} | IR-2026-0042 |
+| MRL | MRL | FY{YY}-MRL-{NNNN} | FY26-MRL-0526 |
+| Inbound Receipt | IR | FY{YY}-IR-{NNNN} | FY26-IR-0042 |
 
 ---
 
 ## 3. Process Steps
 
-### Step: Create MRL (Outbound to Vendor)
+### Step: Record Inbound Receipt (New MRL — Path A)
 
-Event type: `MRL_CREATED`
+Event type: `INBOUND_RECEIVED`
 
 Trigger:
-  Facility manager opens the Create MRL screen, selects a vendor from the dropdown, enters
-  the metres being sent for this grey lot, quality code, and date. Clicks Submit.
+  Supervisor opens the Record Inbound Receipt screen. No existing MRL is selected (or the user
+  chooses "New MRL"). The user enters vendor, quality code, Gate Pass data, and clicks Submit.
+  The system creates a new MRL and the first inbound receipt together in a single operation.
 
 Data points captured:
   - vendor_id: UUID — selected from vendor dropdown (filtered to DYEING_MILL type)
   - quality_code_id: UUID — selected from quality code dropdown
   - tone_code_id: UUID (optional) — tone code if known
-  - metres_sent: decimal — total metres dispatched
-  - date_sent: date — defaults to today, can be changed
+  - avak_date: date — date of arrival, defaults to today
+  - lot_number: string — vendor's lot number from Gate Pass
+  - received_metres: decimal — metres of finished material in this shipment from Gate Pass
+  - gsm: decimal (optional) — from Gate Pass
+  - width: string (optional) — from Gate Pass (e.g., "58\"")
+  - rolls: integer (optional) — number of physical rolls
+  - roll_details: list (optional) — per-roll breakdown, each containing:
+    - roll_number: integer — sequence (1, 2, 3...)
+    - metres: decimal (optional) — metres for this roll
+    - weight_kg: decimal (optional) — weight in kg for this roll
+  - gate_pass_reference: string — vendor's Gate Pass document number
+  - vendor_reported_greige_sent: decimal (optional) — from Gate Pass note
+  - vendor_reported_greige_pending: decimal (optional) — from Gate Pass note
+  - notes: string (optional) — remarks
 
 Payload:
-  id: UUID (generated)
-  mrl_number: string (generated)
-  vendor_id: UUID
-  quality_code_id: UUID
-  tone_code_id: UUID?
-  metres_sent: decimal
-  date_sent: date
+  mrl:
+    id: UUID (generated)
+    mrl_number: string (generated)
+    vendor_id: UUID
+    quality_code_id: UUID
+    tone_code_id: UUID?
+    vendor_reported_greige_sent: decimal?
+    vendor_reported_greige_pending: decimal?
+    status: ACTIVE
+  receipt:
+    id: UUID (generated)
+    receipt_number: string (generated)
+    mrl_id: UUID (= mrl.id)
+    avak_date: date
+    lot_number: string
+    received_metres: decimal
+    quality_code_id: UUID
+    gsm: decimal?
+    width: string?
+    rolls: integer?
+    roll_details:
+      - id: UUID (generated per roll)
+        roll_number: integer
+        metres: decimal?
+        weight_kg: decimal?
+    gate_pass_reference: string
+    vendor_reported_greige_sent: decimal?
+    vendor_reported_greige_pending: decimal?
+    notes: string?
 
-Aggregate: MRL / id
+Aggregate: MRL / mrl.id (created), InboundReceipt / receipt.id (created)
 
 Location: MIROLI
 
 Preconditions:
   - vendor_id must reference an active vendor of type DYEING_MILL
-  - metres_sent must be > 0
+  - received_metres must be > 0
 
 Side effects:
-  - fabric_inventory: creates "Sent to Vendor" inventory entry for this MRL
+  - MRL created with status ACTIVE, metres_received = received_metres
+  - fabric_inventory: Received inventory created at MIROLI-RECEIVED
 
 Projections updated:
-  - mrls: new row (status = SENT_TO_VENDOR)
-  - fabric_inventory: new entry (mrl_id, state = SENT_TO_VENDOR, metres = metres_sent)
+  - mrls: new row (status = ACTIVE, metres_received = received_metres)
+  - inbound_receipts: new row
+  - fabric_inventory: new entry (mrl_id, lot_number, state = RECEIVED, metres = received_metres, location = MIROLI-RECEIVED)
 
 Permissions:
-  - events:MRL_CREATED:emit
+  - events:INBOUND_RECEIVED:emit
 
 ---
 
-### Step: Record Inbound Receipt
+### Step: Record Inbound Receipt (Existing MRL — Path B)
 
 Event type: `INBOUND_RECEIVED`
 
 Trigger:
-  Supervisor opens the Inbound Receipt screen, selects a grey lot (MRL) from the dropdown (filtered to
-  MRLs with status SENT_TO_VENDOR or PARTIALLY_RECEIVED), enters Gate Pass data, and clicks Submit.
+  Supervisor opens the Record Inbound Receipt screen and selects an existing MRL from the
+  dropdown (filtered to MRLs with status ACTIVE). The user enters Gate Pass data for the new
+  shipment and clicks Submit. The system adds a new receipt to the existing MRL.
 
 Data points captured:
-  - mrl_id: UUID — selected from MRL dropdown (grey lot)
+  - mrl_id: UUID — selected from MRL dropdown (filtered to ACTIVE MRLs)
   - avak_date: date — date of arrival, defaults to today
   - lot_number: string — vendor's lot number from Gate Pass
-  - grey_metres: decimal — metres in this shipment from Gate Pass
+  - received_metres: decimal — metres of finished material in this shipment from Gate Pass
   - quality_code_id: UUID — quality code from Gate Pass
   - gsm: decimal (optional) — from Gate Pass
   - width: string (optional) — from Gate Pass (e.g., "58\"")
@@ -160,6 +205,8 @@ Data points captured:
     - metres: decimal (optional) — metres for this roll
     - weight_kg: decimal (optional) — weight in kg for this roll
   - gate_pass_reference: string — vendor's Gate Pass document number
+  - vendor_reported_greige_sent: decimal (optional) — from Gate Pass note
+  - vendor_reported_greige_pending: decimal (optional) — from Gate Pass note
   - notes: string (optional) — remarks
 
 Payload:
@@ -168,7 +215,7 @@ Payload:
   mrl_id: UUID
   avak_date: date
   lot_number: string
-  grey_metres: decimal
+  received_metres: decimal
   quality_code_id: UUID
   gsm: decimal?
   width: string?
@@ -179,6 +226,8 @@ Payload:
       metres: decimal?
       weight_kg: decimal?
   gate_pass_reference: string
+  vendor_reported_greige_sent: decimal?
+  vendor_reported_greige_pending: decimal?
   notes: string?
 
 Aggregate: InboundReceipt / id
@@ -186,22 +235,18 @@ Aggregate: InboundReceipt / id
 Location: MIROLI
 
 Preconditions:
-  - MRL status must be SENT_TO_VENDOR or PARTIALLY_RECEIVED
-  - grey_metres must be > 0
-  - grey_metres must not exceed MRL pending balance (metres_sent - metres_received)
+  - MRL must exist with status ACTIVE
+  - received_metres must be > 0
 
 Side effects:
-  - MRL metres_received incremented by grey_metres
-  - MRL pending_balance recalculated
-  - MRL status updated:
-    - If pending_balance > 0: PARTIALLY_RECEIVED
-    - If pending_balance = 0: FULLY_RECEIVED
-  - fabric_inventory: Grey inventory created at MIROLI-GREY
+  - MRL metres_received incremented by received_metres
+  - MRL vendor_reported_greige_sent and vendor_reported_greige_pending updated if provided (latest Gate Pass values overwrite previous)
+  - fabric_inventory: Received inventory created at MIROLI-RECEIVED
 
 Projections updated:
   - inbound_receipts: new row
-  - mrls: metres_received += grey_metres, pending_balance recalculated, status updated
-  - fabric_inventory: new entry (mrl_id, lot_number, state = GREY, metres = grey_metres, location = MIROLI-GREY)
+  - mrls: metres_received += received_metres, vendor-reported fields updated if provided
+  - fabric_inventory: new entry (mrl_id, lot_number, state = RECEIVED, metres = received_metres, location = MIROLI-RECEIVED)
 
 Permissions:
   - events:INBOUND_RECEIVED:emit
@@ -213,12 +258,12 @@ Permissions:
 Event type: `MRL_UPDATED`
 
 Trigger:
-  Manager opens an MRL record and corrects the metres_sent or other outbound details.
-  This is a correction, not a regular operation.
+  Manager opens an MRL record and corrects the vendor, quality code, tone code, or
+  vendor-reported greige values. This is a correction, not a regular operation.
 
 Payload:
   id: UUID
-  (only changed fields: metres_sent, vendor_id, quality_code_id, tone_code_id, date_sent)
+  (only changed fields: vendor_id, quality_code_id, tone_code_id, vendor_reported_greige_sent, vendor_reported_greige_pending)
 
 Aggregate: MRL / id
 
@@ -226,16 +271,46 @@ Location: MIROLI
 
 Preconditions:
   - MRL must exist
-  - If metres_sent is reduced, new value must be >= metres_received (can't go below what's already received)
 
 Side effects:
-  - pending_balance recalculated
+  - None (informational corrections only)
 
 Projections updated:
-  - mrls: partial update, pending_balance recalculated
+  - mrls: partial update of corrected fields
 
 Permissions:
   - events:MRL_UPDATED:emit
+
+---
+
+### Step: Close MRL
+
+Event type: `MRL_CLOSED`
+
+Trigger:
+  Manager opens an MRL record and marks it as closed, indicating no more material is expected
+  from the vendor for this lot. This can also be triggered automatically when all downstream
+  processing (folding, classification, packing) is complete for all receipts under the MRL.
+
+Payload:
+  id: UUID
+  closed_reason: string (optional) — e.g., "All material received", "Vendor confirmed complete"
+
+Aggregate: MRL / id
+
+Location: MIROLI
+
+Preconditions:
+  - MRL must exist with status ACTIVE
+
+Side effects:
+  - MRL status set to CLOSED
+
+Projections updated:
+  - mrls: status = CLOSED
+
+Permissions:
+  - events:MRL_CLOSED:emit
 
 ---
 
@@ -243,28 +318,28 @@ Permissions:
 
 ### MRL States
 
-Statuses: `SENT_TO_VENDOR`, `PARTIALLY_RECEIVED`, `FULLY_RECEIVED`
+Statuses: `ACTIVE`, `CLOSED`
 
 Transitions:
 
 | From Status | Event | To Status |
 |---|---|---|
-| (new) | `MRL_CREATED` | `SENT_TO_VENDOR` |
-| `SENT_TO_VENDOR` | `INBOUND_RECEIVED` (partial) | `PARTIALLY_RECEIVED` |
-| `SENT_TO_VENDOR` | `INBOUND_RECEIVED` (full) | `FULLY_RECEIVED` |
-| `PARTIALLY_RECEIVED` | `INBOUND_RECEIVED` (partial) | `PARTIALLY_RECEIVED` |
-| `PARTIALLY_RECEIVED` | `INBOUND_RECEIVED` (full — balance reaches 0) | `FULLY_RECEIVED` |
+| (new) | `INBOUND_RECEIVED` (first receipt — Path A) | `ACTIVE` |
+| `ACTIVE` | `INBOUND_RECEIVED` (subsequent receipt — Path B) | `ACTIVE` |
+| `ACTIVE` | `MRL_CLOSED` (manual or automatic) | `CLOSED` |
 
 ```
-SENT_TO_VENDOR --INBOUND_RECEIVED (partial)--> PARTIALLY_RECEIVED
-SENT_TO_VENDOR --INBOUND_RECEIVED (full)-----> FULLY_RECEIVED
-PARTIALLY_RECEIVED --INBOUND_RECEIVED (partial)--> PARTIALLY_RECEIVED
-PARTIALLY_RECEIVED --INBOUND_RECEIVED (full)-----> FULLY_RECEIVED
+(new) --INBOUND_RECEIVED (first receipt)--> ACTIVE
+ACTIVE --INBOUND_RECEIVED (subsequent)----> ACTIVE
+ACTIVE --MRL_CLOSED-----------------------> CLOSED
 ```
 
 Notes:
-- FULLY_RECEIVED is terminal for the MRL status. Downstream processing (folding, grading, packing) does not change the MRL status — it operates on the grey lot / inbound receipt level.
-- There is no "cancelled" MRL state. If cloth is not sent, the MRL is not created in the first place.
+- MRL is created in `ACTIVE` status at the first inbound receipt. There is no separate creation step.
+- `ACTIVE` means more material may still arrive from the vendor. The MRL stays `ACTIVE` as long as the user has not closed it.
+- `CLOSED` is terminal for the MRL status. It indicates no more inbound material is expected for this lot.
+- Downstream processing (folding, classification, packing) does not change the MRL status — it operates on the individual inbound receipt and lot level.
+- There is no "cancelled" MRL state. If material never arrives, no MRL is created in the first place.
 
 ---
 
@@ -274,12 +349,12 @@ Notes:
 
 | # | Business Question | Projection Table | Key Fields | Updated By Events |
 |---|---|---|---|---|
-| 1 | "What is the pending balance at each vendor?" | `mrls` | vendor_id, metres_sent, metres_received, pending_balance, status | `MRL_CREATED`, `INBOUND_RECEIVED` |
-| 2 | "Show me all grey lots with outstanding balances" | `mrls` | mrl_number, vendor, pending_balance (filtered: > 0) | `MRL_CREATED`, `INBOUND_RECEIVED` |
-| 3 | "What arrived today / this week?" | `inbound_receipts` | avak_date, mrl_number, lot_number, grey_metres | `INBOUND_RECEIVED` |
-| 4 | "Full history of MRL #526" | `movement_events` (aggregate query) | All events for aggregate_type=MRL, aggregate_id=id | Automatic |
-| 5 | "Total Grey inventory awaiting processing" | `fabric_inventory` | state=GREY, sum of metres | `INBOUND_RECEIVED` (and downstream events) |
-| 6 | "Vendor-wise total metres sent/received this month" | `mrls` | vendor_id, metres_sent, metres_received, date_sent | `MRL_CREATED`, `INBOUND_RECEIVED` |
+| 1 | "What arrived today / this week?" | `inbound_receipts` | avak_date, mrl_number, lot_number, received_metres | `INBOUND_RECEIVED` |
+| 2 | "Full history of MRL #526" | `movement_events` (aggregate query) | All events for aggregate_type=MRL, aggregate_id=id | Automatic |
+| 3 | "Total Received inventory awaiting processing" | `fabric_inventory` | state=RECEIVED, sum of metres | `INBOUND_RECEIVED` (and downstream events) |
+| 4 | "Vendor-wise total metres received this month" | `inbound_receipts` joined to `mrls` | vendor_id, received_metres, avak_date | `INBOUND_RECEIVED` |
+| 5 | "Vendor-reported greige pending balances" | `mrls` | vendor_id, mrl_number, vendor_reported_greige_sent, vendor_reported_greige_pending (filtered: pending > 0) | `INBOUND_RECEIVED`, `MRL_UPDATED` |
+| 6 | "All active MRLs (material may still arrive)" | `mrls` | mrl_number, vendor, status (filtered: ACTIVE) | `INBOUND_RECEIVED`, `MRL_CLOSED` |
 
 ---
 
@@ -289,16 +364,16 @@ Notes:
 
 | Role | Description | Permissions |
 |---|---|---|
-| Facility Manager | Creates MRLs, manages outbound decisions | `events:MRL_CREATED:emit`, `events:MRL_UPDATED:emit`, `events:INBOUND_RECEIVED:emit` |
-| Supervisor | Records inbound receipts | `events:INBOUND_RECEIVED:emit` |
+| Facility Manager | Manages MRL corrections and closures, can also record receipts | `events:MRL_UPDATED:emit`, `events:MRL_CLOSED:emit`, `events:INBOUND_RECEIVED:emit` |
+| Supervisor | Records inbound receipts (creates MRLs via first receipt) | `events:INBOUND_RECEIVED:emit` |
 
 ### Permissions
 
 | Permission Code | Description | Used By Step |
 |---|---|---|
-| `events:MRL_CREATED:emit` | Create a new MRL (outbound to vendor) | Create MRL |
+| `events:INBOUND_RECEIVED:emit` | Record an inbound receipt (creates MRL on first receipt) | Record Inbound Receipt (Path A & B) |
 | `events:MRL_UPDATED:emit` | Correct MRL details | Update MRL |
-| `events:INBOUND_RECEIVED:emit` | Record an inbound receipt | Record Inbound Receipt |
+| `events:MRL_CLOSED:emit` | Close an MRL (no more material expected) | Close MRL |
 
 ---
 
@@ -307,7 +382,7 @@ Notes:
 | Location | Type | Code | Parent | Purpose |
 |---|---|---|---|---|
 | Miroli Facility | warehouse | `MIROLI` | root | All events in this module happen at Miroli |
-| Grey Storage | zone | `MIROLI-GREY` | MIROLI | Where received material is stored as Grey inventory |
+| Received Storage | zone | `MIROLI-RECEIVED` | MIROLI | Where received finished material is stored awaiting processing |
 
 ---
 
@@ -315,13 +390,12 @@ Notes:
 
 | # | Screen Name | Type | Used By | Purpose | Key Actions |
 |---|---|---|---|---|---|
-| 1 | MRL Register | list | Manager, Supervisor | Browse all grey lots (MRLs) with status, vendor, and balance filters | Create New MRL, Filter by status/vendor |
-| 2 | MRL Detail | detail | Manager, Supervisor | View grey lot details, all inbound receipts against it, pending balance, full event history | Edit MRL, Record Receipt |
-| 3 | Create MRL | form | Manager | Enter outbound details — vendor, metres, quality code, date | Submit |
-| 4 | Record Inbound Receipt | form | Supervisor | Select grey lot (MRL), enter Gate Pass data — avak date, lot number, metres, quality, GSM, width, rolls (with optional per-roll metres and weight) | Submit |
-| 5 | Inbound Receipts | list | Supervisor | Browse recent inbound receipts with date and MRL filters | View Receipt Detail |
-| 6 | Inbound Receipt Detail | detail | Supervisor | View a single receipt — all Gate Pass data, linked MRL | — |
-| 7 | Vendor Pending Balances | dashboard | Manager | Summary view: total metres outstanding per vendor, MRLs with pending balance | Drill down to MRL |
+| 1 | Inbound Register | list | Manager, Supervisor | Browse all MRLs with status, vendor, and date filters. Shows MRL number, vendor, total received metres, vendor-reported greige pending, and status. | Record New Receipt, Filter by status/vendor |
+| 2 | MRL Detail | detail | Manager, Supervisor | View MRL details, all inbound receipts against it, vendor-reported greige balances, full event history | Edit MRL, Close MRL, Record Receipt |
+| 3 | Record Inbound Receipt | form | Supervisor | Two paths: (A) New MRL — enter vendor, quality code, and Gate Pass data to create MRL + receipt together; (B) Existing MRL — select MRL from dropdown, enter Gate Pass data. Both paths capture avak date, lot number, received metres, quality, GSM, width, rolls (with optional per-roll metres and weight), Gate Pass reference, vendor-reported greige values. | Submit |
+| 4 | Inbound Receipts | list | Supervisor | Browse recent inbound receipts with date and MRL filters | View Receipt Detail |
+| 5 | Inbound Receipt Detail | detail | Supervisor | View a single receipt — all Gate Pass data, linked MRL, vendor-reported greige values | -- |
+| 6 | Vendor Greige Pending | dashboard | Manager | Summary view: vendor-reported greige metres pending per vendor, based on latest Gate Pass notes for active MRLs | Drill down to MRL |
 
 ---
 
@@ -329,15 +403,17 @@ Notes:
 
 ```mermaid
 flowchart TD
-    A["Create MRL\n(SENT_TO_VENDOR)"] -->|MRL_CREATED| B["Cloth at Vendor\nAwaiting return"]
-    B -->|INBOUND_RECEIVED| C{"All metres\nreceived?"}
-    C -->|"No"| D["Partially Received\n(PARTIALLY_RECEIVED)"]
-    C -->|"Yes"| E["Fully Received\n(FULLY_RECEIVED)"]
-    D -->|INBOUND_RECEIVED| C
-    E -->|"Material stored as Grey"| F["Grey Inventory\nat MIROLI-GREY"]
-    D -->|"Received material stored as Grey"| F
-    F -->|"Picked up by"| G["Folding (Module 3)\nGrading (Module 4)"]
+    A["Finished material arrives\nfrom vendor with Gate Pass"] -->|"First receipt?"| B{"New MRL\nor Existing?"}
+    B -->|"New (Path A)"| C["Create MRL + Receipt\n(ACTIVE)"]
+    B -->|"Existing (Path B)"| D["Add Receipt to\nexisting MRL"]
+    C -->|INBOUND_RECEIVED| E["Material stored as\nReceived inventory"]
+    D -->|INBOUND_RECEIVED| E
+    E -->|"More material\nexpected?"| F{"MRL stays\nACTIVE"}
+    F -->|"Yes"| G["Awaiting further\nshipments"]
+    G -->|"Next shipment arrives"| B
+    F -->|"No — user closes"| H["MRL CLOSED"]
+    E -->|"Picked up by"| I["Folding (Module 3)\nClassification (Module 4)"]
 
-    style E fill:#6f6,stroke:#333
-    style F fill:#ff9,stroke:#333
+    style H fill:#6f6,stroke:#333
+    style E fill:#ff9,stroke:#333
 ```

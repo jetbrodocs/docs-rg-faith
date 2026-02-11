@@ -1,30 +1,31 @@
-# Module 04 — Quality Grading
+# Module 04 — Tone & Finish Classification
 
 ## 1. Process Overview
 
-### Process: Quality Inspection, Grade Classification, and Gradation Report
+### Process: Tone and Finish Classification of Folded Material
 
-This module covers the quality inspection of fabric at Miroli. Workers visually and tactilely inspect each fold or section and classify it into one of six grades: Fresh (best quality, in metres), Good Cut (second quality, in metres), Fent, Rags, Chindi (descending quality, in kilograms), or Not Acceptable (rejected, in metres). The output is a progressive Gradation Report — the single most important document in the facility — which tracks the yield breakdown for each lot. Cutting may happen during grading to separate defective sections from good material.
+This module covers the assignment of two classification attributes — **Tone** and **Finish** — to material after folding at Miroli. Classification determines the visual and tactile characteristics of the fabric, which are required before packing programs can be issued. This module does **not** handle quality grading. Gradation (Fresh, Good Cut, Fent, Rags, Chindi, Not Acceptable) happens only as a byproduct of packing execution in Module 05.
 
-Quality grading and folding (Module 03) are **independent activities**. Material can be graded before folded, after folded, or concurrently. The system must not enforce any sequence between them.
+The classification process involves coordination between the factory floor and the Head Office (HO). A rough visual inspection at the factory identifies candidate tone and finish values. Samples are then sent to HO for confirmation. Once HO confirms the tone and finish (via phone or message), a factory worker records the classification in the system. Material is then "Classified" and eligible for packing programs.
 
-Grading is judgment-based — no automated instruments or quantitative thresholds. Workers rely on experience to classify fabric. Borderline cases enter a "Decision Pending" state and must be revisited within 14 days.
+Classification granularity is flexible — it can be applied per roll, per lot, or per partial lot. The system must support classification at any of these levels.
 
-Fresh material flows to packing programs (Module 05). Good Cut, Fent, Rags, and Chindi flow to accumulation for Todiya (Module 07). Not Acceptable material flows to the resolution process (Module 08).
+Borderline or uncertain cases enter a "Decision Pending" state for classification uncertainty (not quality uncertainty). Decision Pending entries with no activity for 14 days are flagged for revisit.
+
+Tone is selected from the Tone Code master data (Module 01). Finish is selected from the Finish Code master data — a new master data entity (id, code, name, is_active, created_at) that must be added to Module 01.
 
 Flow:
 
 ```
-  Inspection              Classification            Routing
-    [ENTRY]                  [ENTRY]                 [ENTRY]
-       |                        |                       |
-  (visual/tactile)        GRADING_RECORDED         Material routed
-       |                        |                       |
-    inspect fabric         assign grade            ┌─ Fresh → Packing (5)
-       |                        |                  ├─ G/C,F,R,Ch → Todiya (7)
-    identify defects       weigh non-Fresh         ├─ N/A → Resolution (8)
-       |                        |                  └─ Decision Pending
-    [EXIT]                   [EXIT]                  [EXIT]
+  Rough Inspection          HO Confirmation           Record Classification
+     [ENTRY]                   [ENTRY]                    [ENTRY]
+        |                         |                           |
+  (visual inspection)        Samples sent to HO         CLASSIFICATION_RECORDED
+        |                         |                           |
+  identify candidate         HO confirms tone            (record in system)
+  tone + finish               and finish                      |
+        |                         |                     Material → CLASSIFIED
+     [EXIT]                    [EXIT]                      [EXIT]
 ```
 
 ---
@@ -35,51 +36,28 @@ Flow:
 
 | Entity | Aggregate Type | Relationships |
 |---|---|---|
-| Grading Entry | `GradingEntry` | Belongs to an Inbound Receipt / MRL. Multiple grading entries per lot (one per section graded). |
-| Gradation Report | `GradationReport` | One per MRL. Progressive — updated as grading entries are recorded. Computed projection, not directly created by user. |
-| Decision Pending Entry | `DecisionPendingEntry` | Belongs to an Inbound Receipt / MRL. Created when material quality is unclear. |
+| Classification Record | `ClassificationRecord` | Belongs to an MRL and optionally an Inbound Receipt. Multiple classification records per MRL (one per scope — roll, lot, or partial lot). |
+| Decision Pending Entry | `DecisionPendingEntry` | Belongs to an Inbound Receipt / MRL. Created when tone/finish classification is uncertain. |
 
 ### Entity Field Definitions
 
-#### Grading Entry
+#### Classification Record
 
 | Field | Type | Description |
 |---|---|---|
 | id | UUID | Primary key |
-| inbound_receipt_id | UUID (FK) | Which lot this grading applies to |
-| mrl_id | UUID (FK) | Denormalized — parent MRL |
-| grade | string | One of: FRESH, GOOD_CUT, FENT, RAGS, CHINDI, NOT_ACCEPTABLE |
-| metres | decimal | Metres for this section. Entered directly for Fresh, Good Cut, and Not Acceptable. Computed via Chadat for Fent, Rags, Chindi. |
-| kilograms | decimal | Weight in kg (for Fent, Rags, Chindi — converted via Chadat). Zero for Fresh, Good Cut, and Not Acceptable. |
-| chadat | decimal | Chadat used for kg-to-metres conversion (from folding record or manually entered). Only relevant for Fent, Rags, Chindi. |
-| grading_date | date | When grading was performed |
-| notes | string | Optional remarks (defect description, etc.) |
-| created_at | datetime | When the entry was created |
-
-#### Gradation Report (projection)
-
-| Field | Type | Description |
-|---|---|---|
-| id | UUID | Primary key |
-| mrl_id | UUID (FK) | One report per MRL |
-| mrl_number | string | Denormalized for display |
-| metres_sent | decimal | From MRL — original metres sent to vendor |
-| gate_pass_metres | decimal | From Inbound Receipt — what Gate Pass reported |
-| folding_metres | decimal | From Folding Record — RG Faith's measurement (null if not yet folded) |
-| total_graded_metres | decimal | Sum of all grading entries in metres |
-| fresh_metres | decimal | Sum of FRESH grading entries (in metres) |
-| fresh_percentage | decimal | (fresh_metres / total_graded_metres) * 100 |
-| good_cut_metres | decimal | Sum of GOOD_CUT grading entries (in metres) |
-| fent_kg | decimal | Sum of FENT in kg |
-| fent_metres | decimal | Converted via Chadat |
-| rags_kg | decimal | Sum of RAGS in kg |
-| rags_metres | decimal | Converted via Chadat |
-| chindi_kg | decimal | Sum of CHINDI in kg |
-| chindi_metres | decimal | Converted via Chadat |
-| not_acceptable_metres | decimal | Sum of NOT_ACCEPTABLE in metres |
-| shrinkage_metres | decimal | gate_pass_metres - total_graded_metres (ongoing) |
-| is_complete | boolean | True when total_graded_metres covers the full lot |
-| updated_at | datetime | Last time the report was updated |
+| mrl_id | UUID (FK) | Which MRL this classification applies to |
+| inbound_receipt_id | UUID (FK) | Which lot (optional — classification may span lots) |
+| tone_code_id | UUID (FK) | Assigned tone code from Tone Code master data (Module 01) |
+| finish_code_id | UUID (FK) | Assigned finish code from Finish Code master data (Module 01) |
+| scope_type | string | ROLL, LOT, or PARTIAL — granularity of this classification |
+| scope_roll_ids | list of UUID | If scope_type = ROLL, which specific rolls are covered by this classification |
+| metres_classified | decimal | Metres of material covered by this classification |
+| samples_sent_date | date | When samples were sent to HO (optional — may be skipped if HO confirms without samples) |
+| ho_confirmed_date | date | When HO confirmed tone and finish (optional — may be confirmed immediately) |
+| classification_date | date | When the factory worker recorded the classification in the system |
+| notes | string | Optional remarks |
+| created_at | datetime | When the record was created |
 
 #### Decision Pending Entry
 
@@ -88,81 +66,128 @@ Flow:
 | id | UUID | Primary key |
 | inbound_receipt_id | UUID (FK) | Which lot |
 | mrl_id | UUID (FK) | Denormalized |
-| metres | decimal | Metres of material with unclear quality |
-| remark | string | Why the decision is pending |
+| metres | decimal | Metres of material with unclear classification |
+| remark | string | Why tone/finish classification is uncertain |
 | status | string | PENDING, RESOLVED |
-| resolved_grade | string | The grade assigned when resolved (null while pending) |
+| resolved_tone_code_id | UUID (FK) | Tone code assigned when resolved (null while pending) |
+| resolved_finish_code_id | UUID (FK) | Finish code assigned when resolved (null while pending) |
 | resolved_at | datetime | When the decision was made (null while pending) |
 | last_activity_at | datetime | Last time a comment or update was made — used for 14-day aging |
 | created_at | datetime | When the entry was created |
 
 ### Numbering
 
-Grading entries do not have separate human-readable numbers. The Gradation Report is identified by MRL number.
+Classification records do not have separate human-readable numbers. They are identified by MRL number and scope (lot, roll, or partial lot).
 
 ---
 
 ## 3. Process Steps
 
-### Step: Record Grading Entry
+### Step: Record Classification
 
-Event type: `GRADING_RECORDED`
+Event type: `CLASSIFICATION_RECORDED`
 
 Trigger:
-  Worker or supervisor opens the Record Grading screen, selects an inbound receipt / lot,
-  enters the grade, metres or kg (with Chadat conversion), and any remarks. Clicks Submit.
-  This step is repeated for every section of fabric graded — grading is incremental.
+  Classification worker or supervisor opens the Record Classification screen, selects an MRL
+  (filtered to material in FOLDED or AWAITING_CLASSIFICATION state), selects a tone code and
+  finish code, specifies the scope (roll, lot, or partial lot), enters metres classified, and
+  optionally records sample and HO confirmation dates. Clicks Submit.
 
 Data points captured:
-  - inbound_receipt_id: UUID — which lot
-  - grade: string — FRESH, GOOD_CUT, FENT, RAGS, CHINDI, or NOT_ACCEPTABLE
-  - metres: decimal — metres of this section (for Fresh, Good Cut, and Not Acceptable, entered directly; for Fent/Rags/Chindi, converted from kg via Chadat)
-  - kilograms: decimal — weight in kg (for Fent, Rags, Chindi; zero for Fresh/Good Cut/NA)
-  - chadat: decimal — conversion factor used for kg grades (auto-filled from folding record if available, otherwise manually entered)
-  - grading_date: date — defaults to today
-  - notes: string (optional) — defect description
+  - mrl_id: UUID — which MRL
+  - inbound_receipt_id: UUID (optional) — which specific lot, if classification is lot-level
+  - tone_code_id: UUID — selected from Tone Code master data
+  - finish_code_id: UUID — selected from Finish Code master data
+  - scope_type: string — ROLL, LOT, or PARTIAL
+  - scope_roll_ids: list of UUID — if scope_type = ROLL, which rolls (empty otherwise)
+  - metres_classified: decimal — metres covered by this classification
+  - samples_sent_date: date (optional) — when samples were sent to HO
+  - ho_confirmed_date: date (optional) — when HO confirmed
+  - classification_date: date — defaults to today
+  - notes: string (optional)
 
 Payload:
   id: UUID (generated)
-  inbound_receipt_id: UUID
-  mrl_id: UUID (resolved)
-  grade: string
-  metres: decimal
-  kilograms: decimal
-  chadat: decimal
-  grading_date: date
+  mrl_id: UUID
+  inbound_receipt_id: UUID?
+  tone_code_id: UUID
+  finish_code_id: UUID
+  scope_type: string
+  scope_roll_ids: list of UUID
+  metres_classified: decimal
+  samples_sent_date: date?
+  ho_confirmed_date: date?
+  classification_date: date
   notes: string?
 
-Aggregate: GradingEntry / id
+Aggregate: ClassificationRecord / id
 
-Location: MIROLI-FG (Folding/Grading area)
+Location: MIROLI-FG (Folding/Classification area)
 
 Preconditions:
-  - Inbound receipt must exist
-  - Lot must have Grey or Folded inventory
-  - grade must be one of the six valid values
-  - For FRESH, GOOD_CUT, and NOT_ACCEPTABLE: metres must be > 0, kilograms = 0
-  - For FENT, RAGS, CHINDI: kilograms must be > 0, metres computed from chadat
-  - Cumulative graded metres must not exceed lot's available metres
+  - MRL must exist
+  - Material must be in FOLDED or AWAITING_CLASSIFICATION state
+  - tone_code_id must reference an active Tone Code
+  - finish_code_id must reference an active Finish Code
+  - scope_type must be one of: ROLL, LOT, PARTIAL
+  - If scope_type = ROLL, scope_roll_ids must not be empty
+  - metres_classified must be > 0
+  - Cumulative classified metres must not exceed the available folded metres for the MRL
 
 Side effects:
-  - Gradation Report projection updated (incremental recalculation)
-  - fabric_inventory updated based on grade:
-    - FRESH: state -> GRADED_FRESH, location -> MIROLI-FRESH
-    - GOOD_CUT: state -> ACCUMULATED, location -> MIROLI-ACCUM (metres)
-    - FENT: state -> ACCUMULATED, location -> MIROLI-ACCUM (kg)
-    - RAGS: state -> ACCUMULATED, location -> MIROLI-ACCUM (kg)
-    - CHINDI: state -> ACCUMULATED, location -> MIROLI-ACCUM (kg)
-    - NOT_ACCEPTABLE: state -> NOT_ACCEPTABLE, location -> MIROLI-NA
+  - fabric_inventory: state updated from FOLDED to CLASSIFIED for the classified metres
+  - fabric_inventory: location updated to MIROLI-CLASSIFIED
+  - fabric_inventory: tone_code_id and finish_code_id set on the classified inventory
 
 Projections updated:
-  - grading_entries: new row
-  - gradation_reports: incremental update (add metres/kg to grade totals, recalculate percentages)
-  - fabric_inventory: new entries per grade with appropriate state and location
-  - accumulation_stock: if grade is GOOD_CUT (metres), FENT/RAGS/CHINDI (kg), add to accumulation totals
+  - classification_records: new row
+  - fabric_inventory: state -> CLASSIFIED, location -> MIROLI-CLASSIFIED, tone and finish set
 
 Permissions:
-  - events:GRADING_RECORDED:emit
+  - events:CLASSIFICATION_RECORDED:emit
+
+---
+
+### Step: Update Classification (Re-classification)
+
+Event type: `CLASSIFICATION_UPDATED`
+
+Trigger:
+  Facility Manager opens an existing classification record and changes the tone code or finish
+  code. This is a re-classification — correcting or revising a previous classification.
+  No approval workflow — RBAC permission check only.
+
+Data points captured:
+  - id: UUID — which classification record to update
+  - tone_code_id: UUID (optional — only if changed)
+  - finish_code_id: UUID (optional — only if changed)
+  - notes: string (optional) — reason for re-classification
+
+Payload:
+  id: UUID
+  tone_code_id: UUID?
+  finish_code_id: UUID?
+  notes: string?
+
+Aggregate: ClassificationRecord / id
+
+Location: MIROLI-FG
+
+Preconditions:
+  - Classification record must exist
+  - If tone_code_id provided, must reference an active Tone Code
+  - If finish_code_id provided, must reference an active Finish Code
+  - User must have `events:CLASSIFICATION_UPDATED:emit` permission (RBAC check)
+
+Side effects:
+  - fabric_inventory: tone_code_id and/or finish_code_id updated for affected metres
+
+Projections updated:
+  - classification_records: partial update (tone and/or finish changed)
+  - fabric_inventory: tone and/or finish updated
+
+Permissions:
+  - events:CLASSIFICATION_UPDATED:emit
 
 ---
 
@@ -171,13 +196,14 @@ Permissions:
 Event type: `DECISION_PENDING_CREATED`
 
 Trigger:
-  Supervisor encounters fabric where quality is unclear. Opens the Decision Pending screen,
-  enters the metres and a remark explaining the uncertainty. Clicks Submit.
+  Supervisor encounters fabric where tone/finish classification is uncertain. Opens the Decision
+  Pending screen, enters the metres and a remark explaining the classification uncertainty.
+  Clicks Submit.
 
 Data points captured:
   - inbound_receipt_id: UUID — which lot
-  - metres: decimal — metres of material with unclear quality
-  - remark: string — why quality is uncertain
+  - metres: decimal — metres of material with unclear classification
+  - remark: string — why classification is uncertain
 
 Payload:
   id: UUID (generated)
@@ -192,6 +218,7 @@ Location: MIROLI-FG
 
 Preconditions:
   - Inbound receipt must exist
+  - Material must be in FOLDED state
   - metres must be > 0
 
 Side effects:
@@ -242,22 +269,20 @@ Permissions:
 Event type: `DECISION_PENDING_RESOLVED`
 
 Trigger:
-  Supervisor resolves a Decision Pending entry by assigning a grade. This effectively converts
-  the entry into a grading entry.
+  Supervisor resolves a Decision Pending entry by assigning a tone code and finish code. This
+  effectively converts the entry into a classification record.
 
 Data points captured:
   - id: UUID — which decision pending entry
-  - resolved_grade: string — the assigned grade (any of the six valid grades)
-  - kilograms: decimal — weight if resolved as non-Fresh grade
-  - chadat: decimal — conversion factor if needed
+  - tone_code_id: UUID — the assigned tone code
+  - finish_code_id: UUID — the assigned finish code
   - notes: string (optional)
 
 Payload:
   id: UUID
-  resolved_grade: string
+  tone_code_id: UUID
+  finish_code_id: UUID
   metres: decimal (from original entry)
-  kilograms: decimal
-  chadat: decimal
   notes: string?
 
 Aggregate: DecisionPendingEntry / id
@@ -266,15 +291,16 @@ Location: MIROLI-FG
 
 Preconditions:
   - Decision pending entry must exist with status = PENDING
-  - resolved_grade must be one of the six valid values
+  - tone_code_id must reference an active Tone Code
+  - finish_code_id must reference an active Finish Code
 
 Side effects:
-  - Creates a `GRADING_RECORDED` event for the resolved material (cascading event)
-  - All side effects of GRADING_RECORDED apply (inventory routing, gradation report update)
+  - Creates a `CLASSIFICATION_RECORDED` event for the resolved material (cascading event)
+  - All side effects of CLASSIFICATION_RECORDED apply (inventory state update, tone/finish assignment)
 
 Projections updated:
-  - decision_pending_entries: status -> RESOLVED, resolved_grade set, resolved_at set
-  - (Plus all projections from the cascaded GRADING_RECORDED event)
+  - decision_pending_entries: status -> RESOLVED, resolved_tone_code_id and resolved_finish_code_id set, resolved_at set
+  - (Plus all projections from the cascaded CLASSIFICATION_RECORDED event)
 
 Permissions:
   - events:DECISION_PENDING_RESOLVED:emit
@@ -283,23 +309,27 @@ Permissions:
 
 ## 4. State Machines
 
-### Material Grading States (per section of fabric)
+### Material Classification States (per section of fabric)
 
-Statuses: `GREY`, `FOLDED`, `GRADED_FRESH`, `ACCUMULATED`, `NOT_ACCEPTABLE`, `DECISION_PENDING`
+Statuses: `FOLDED`, `AWAITING_CLASSIFICATION`, `CLASSIFIED`, `DECISION_PENDING`
 
 Transitions:
 
 | From Status | Event | To Status |
 |---|---|---|
-| `GREY` or `FOLDED` | `GRADING_RECORDED` (grade=FRESH) | `GRADED_FRESH` |
-| `GREY` or `FOLDED` | `GRADING_RECORDED` (grade=GOOD_CUT/FENT/RAGS/CHINDI) | `ACCUMULATED` |
-| `GREY` or `FOLDED` | `GRADING_RECORDED` (grade=NOT_ACCEPTABLE) | `NOT_ACCEPTABLE` |
-| `GREY` or `FOLDED` | `DECISION_PENDING_CREATED` | `DECISION_PENDING` |
-| `DECISION_PENDING` | `DECISION_PENDING_RESOLVED` | Depends on resolved grade |
+| `FOLDED` | (classification begins — samples sent to HO) | `AWAITING_CLASSIFICATION` |
+| `AWAITING_CLASSIFICATION` | `CLASSIFICATION_RECORDED` | `CLASSIFIED` |
+| `FOLDED` | `CLASSIFICATION_RECORDED` (direct, no HO step) | `CLASSIFIED` |
+| `FOLDED` | `DECISION_PENDING_CREATED` | `DECISION_PENDING` |
+| `DECISION_PENDING` | `DECISION_PENDING_RESOLVED` | `CLASSIFIED` |
+| `CLASSIFIED` | `CLASSIFICATION_UPDATED` | `CLASSIFIED` (tone/finish changed) |
 
 Notes:
-- Grading can operate on GREY material (before folding) or FOLDED material (after folding). Both are valid entry states.
-- DECISION_PENDING lots with no activity for 14 days should be flagged for revisit.
+- Material enters this module in `FOLDED` state (from Module 03).
+- `AWAITING_CLASSIFICATION` is an optional intermediate state for when samples have been sent to HO but confirmation has not yet been received.
+- Classification can happen directly from `FOLDED` to `CLASSIFIED` if HO confirms immediately or if the classification is straightforward.
+- `DECISION_PENDING` entries with no activity for 14 days should be flagged for revisit.
+- Re-classification (`CLASSIFICATION_UPDATED`) keeps material in `CLASSIFIED` state but changes the tone/finish attributes.
 
 ### Decision Pending States
 
@@ -318,14 +348,13 @@ Statuses: `PENDING`, `RESOLVED`
 
 | # | Business Question | Projection Table | Key Fields | Updated By Events |
 |---|---|---|---|---|
-| 1 | "Gradation Report for MRL #526" | `gradation_reports` | All grade breakdowns, metres, percentages | `GRADING_RECORDED`, `FOLDING_COMPLETED` |
-| 2 | "What Fresh material is available for packing?" | `fabric_inventory` | state=GRADED_FRESH, mrl_number, metres | `GRADING_RECORDED` |
-| 3 | "What is the Fresh yield percentage across all lots this month?" | `gradation_reports` | fresh_percentage, mrl_id | `GRADING_RECORDED` |
-| 4 | "What lots have Decision Pending material?" | `decision_pending_entries` | status=PENDING, mrl_number, metres, last_activity_at | `DECISION_PENDING_CREATED`, `DECISION_PENDING_COMMENTED`, `DECISION_PENDING_RESOLVED` |
+| 1 | "What material is awaiting classification?" | `fabric_inventory` | state=FOLDED or AWAITING_CLASSIFICATION, mrl_number, metres | `FOLDING_COMPLETED`, `CLASSIFICATION_RECORDED` |
+| 2 | "What material has been classified with tone X / finish Y?" | `classification_records` + `fabric_inventory` | tone_code_id, finish_code_id, mrl_number, metres_classified | `CLASSIFICATION_RECORDED`, `CLASSIFICATION_UPDATED` |
+| 3 | "Classification history for MRL #526" | `classification_records` | mrl_id, tone_code_id, finish_code_id, scope_type, classification_date | `CLASSIFICATION_RECORDED`, `CLASSIFICATION_UPDATED` |
+| 4 | "What lots have Decision Pending entries (classification uncertainty)?" | `decision_pending_entries` | status=PENDING, mrl_number, metres, last_activity_at | `DECISION_PENDING_CREATED`, `DECISION_PENDING_COMMENTED`, `DECISION_PENDING_RESOLVED` |
 | 5 | "Decision Pending entries older than 14 days with no activity" | `decision_pending_entries` | status=PENDING, last_activity_at < 14 days ago | `DECISION_PENDING_CREATED`, `DECISION_PENDING_COMMENTED` |
-| 6 | "How much Not Acceptable material is pending return?" | `fabric_inventory` | state=NOT_ACCEPTABLE, mrl_number, metres | `GRADING_RECORDED` |
-| 7 | "Grade breakdown: what percentage goes to each grade overall?" | `gradation_reports` | All grade totals aggregated | `GRADING_RECORDED` |
-| 8 | "What material has been graded but not yet folded?" | `fabric_inventory` + `folding_records` | Cross-reference: graded lots without folding records | `GRADING_RECORDED`, `FOLDING_COMPLETED` |
+| 6 | "Classification summary: how many metres classified today?" | `classification_records` | classification_date, metres_classified | `CLASSIFICATION_RECORDED` |
+| 7 | "Tone distribution: what percentage of classified material has each tone?" | `classification_records` | tone_code_id, metres_classified (aggregated) | `CLASSIFICATION_RECORDED`, `CLASSIFICATION_UPDATED` |
 
 ---
 
@@ -335,18 +364,19 @@ Statuses: `PENDING`, `RESOLVED`
 
 | Role | Description | Permissions |
 |---|---|---|
-| Grading Worker | Records grades for inspected fabric | `events:GRADING_RECORDED:emit` |
-| Supervisor | Grades, manages Decision Pending entries | `events:GRADING_RECORDED:emit`, `events:DECISION_PENDING_CREATED:emit`, `events:DECISION_PENDING_COMMENTED:emit`, `events:DECISION_PENDING_RESOLVED:emit` |
-| Facility Manager | Full access to grading module | All grading permissions |
+| Classification Worker | Records tone and finish classification for inspected fabric | `events:CLASSIFICATION_RECORDED:emit` |
+| Supervisor | Records classifications, manages Decision Pending entries | `events:CLASSIFICATION_RECORDED:emit`, `events:DECISION_PENDING_CREATED:emit`, `events:DECISION_PENDING_COMMENTED:emit`, `events:DECISION_PENDING_RESOLVED:emit` |
+| Facility Manager | Full access to classification module including re-classification | All classification permissions + `events:CLASSIFICATION_UPDATED:emit` |
 
 ### Permissions
 
 | Permission Code | Description | Used By Step |
 |---|---|---|
-| `events:GRADING_RECORDED:emit` | Record a grading entry | Record Grading Entry |
-| `events:DECISION_PENDING_CREATED:emit` | Create a Decision Pending entry | Record Decision Pending |
+| `events:CLASSIFICATION_RECORDED:emit` | Record a tone and finish classification | Record Classification |
+| `events:CLASSIFICATION_UPDATED:emit` | Re-classify material (change tone/finish) — RBAC only, no approval workflow | Update Classification |
+| `events:DECISION_PENDING_CREATED:emit` | Create a Decision Pending entry for classification uncertainty | Record Decision Pending |
 | `events:DECISION_PENDING_COMMENTED:emit` | Comment on a Decision Pending entry | Add Comment |
-| `events:DECISION_PENDING_RESOLVED:emit` | Resolve a Decision Pending entry with a grade | Resolve Decision Pending |
+| `events:DECISION_PENDING_RESOLVED:emit` | Resolve a Decision Pending entry with tone and finish | Resolve Decision Pending |
 
 ---
 
@@ -354,10 +384,8 @@ Statuses: `PENDING`, `RESOLVED`
 
 | Location | Type | Code | Parent | Purpose |
 |---|---|---|---|---|
-| Folding/Grading Area | zone | `MIROLI-FG` | MIROLI | Where inspection and grading happen |
-| Graded Storage (Fresh) | zone | `MIROLI-FRESH` | MIROLI | Fresh material routed here after grading |
-| Accumulation Area | zone | `MIROLI-ACCUM` | MIROLI | Good Cut, Fent, Rags, Chindi routed here |
-| Not Acceptable Storage | zone | `MIROLI-NA` | MIROLI | Not Acceptable material stored separately |
+| Folding/Classification Area | zone | `MIROLI-FG` | MIROLI | Where rough inspection and classification recording happen |
+| Classified Storage | zone | `MIROLI-CLASSIFIED` | MIROLI | Where classified material awaits packing programs |
 
 ---
 
@@ -365,13 +393,13 @@ Statuses: `PENDING`, `RESOLVED`
 
 | # | Screen Name | Type | Used By | Purpose | Key Actions |
 |---|---|---|---|---|---|
-| 1 | Pending Grading | list | Worker, Supervisor | Browse lots with Grey or Folded material awaiting grading | Select lot to grade |
-| 2 | Record Grading | form | Worker, Supervisor | Enter grade for a section — select grade, enter metres/kg, Chadat auto-filled | Submit |
-| 3 | Gradation Report | detail | Supervisor, Manager | View progressive report for one MRL — metre progression, grade breakdown, percentages | Print, Export |
-| 4 | Gradation Reports | list | Manager | Browse all gradation reports — filter by MRL, date range, vendor | View report |
-| 5 | Decision Pending | list | Supervisor, Manager | Browse all pending decisions — shows ageing (days since last activity), 14-day alerts | Add Comment, Resolve |
-| 6 | Decision Pending Detail | detail | Supervisor, Manager | View one pending entry — history of comments, resolve with grade | Comment, Resolve |
-| 7 | Grading Summary Dashboard | dashboard | Manager | Today's grading activity, Fresh yield trend, grade distribution | Drill down to reports |
+| 1 | Pending Classification | list | Worker, Supervisor | Browse folded material awaiting tone/finish classification — shows MRL number, lot, metres | Select material to classify |
+| 2 | Record Classification | form | Worker, Supervisor | Enter tone code and finish code — select scope (roll/lot/partial), enter metres, optional HO dates | Submit |
+| 3 | Classification Records | list | Supervisor, Manager | Browse all classification records — filter by MRL, tone, finish, date range | View detail |
+| 4 | Classification Detail | detail | Supervisor, Manager | View one classification — tone, finish, scope, metres, dates. Re-classification available here for Facility Manager. | Edit (re-classify) |
+| 5 | Decision Pending | list | Supervisor, Manager | Browse all pending classification decisions — shows aging (days since last activity), 14-day alerts | Add Comment, Resolve |
+| 6 | Decision Pending Detail | detail | Supervisor, Manager | View one pending entry — history of comments, resolve with tone and finish | Comment, Resolve |
+| 7 | Classification Dashboard | dashboard | Manager | Today's classification activity, pending vs classified totals, tone/finish distribution | Drill down to records |
 
 ---
 
@@ -379,26 +407,30 @@ Statuses: `PENDING`, `RESOLVED`
 
 ```mermaid
 flowchart TD
-    A["Grey or Folded\nInventory"] -->|"Material selected for grading"| B["Visual/Tactile\nInspection"]
-    B -->|"Quality clear"| C{"Classify\nGrade"}
-    B -->|"Quality unclear"| D["Decision Pending\n(PENDING)"]
+    A["Folded Inventory\n(from Module 03)"] -->|"Material selected for classification"| B["Rough Visual\nInspection"]
+    B -->|"Classification clear"| C["Send Samples\nto Head Office"]
+    B -->|"Classification uncertain"| D["Decision Pending\n(PENDING)"]
+    B -->|"HO not needed\n(straightforward)"| F
 
-    C -->|"GRADING_RECORDED\n(FRESH)"| E["Graded — Fresh\n→ MIROLI-FRESH"]
-    C -->|"GRADING_RECORDED\n(GOOD_CUT in m / FENT,RAGS,CHINDI in kg)"| F["Accumulated\n→ MIROLI-ACCUM"]
-    C -->|"GRADING_RECORDED\n(NOT_ACCEPTABLE)"| G["Not Acceptable\n→ MIROLI-NA"]
+    C -->|"Samples sent"| E["AWAITING_CLASSIFICATION\n(waiting for HO)"]
+    E -->|"HO confirms tone + finish"| F["Record Classification\n(CLASSIFICATION_RECORDED)"]
 
-    D -->|"DECISION_PENDING_RESOLVED"| C
+    F --> G["Classified Inventory\n→ MIROLI-CLASSIFIED"]
 
-    E -->|"Available for"| H["Packing Program\n(Module 5)"]
-    F -->|"Accumulates for"| I["Todiya\n(Module 7)"]
-    G -->|"Enters"| J["NA Resolution\n(Module 8)"]
+    D -->|"DECISION_PENDING_RESOLVED\n(tone + finish assigned)"| F
 
-    D -->|"No activity 14 days"| K["⚠ Flag for Revisit"]
+    G -->|"Ready for"| H["Packing Program\n(Module 05)"]
+
+    D -->|"No activity 14 days"| K["Flag for Revisit"]
     K -->|"Manager reviews"| D
 
-    style E fill:#6f6,stroke:#333
-    style F fill:#ff9,stroke:#333
-    style G fill:#f96,stroke:#333
+    G -->|"Re-classification needed"| L["CLASSIFICATION_UPDATED\n(RBAC permission)"]
+    L --> G
+
+    style G fill:#6f6,stroke:#333
+    style E fill:#ff9,stroke:#333
     style D fill:#fcf,stroke:#333
     style K fill:#f66,stroke:#333
 ```
+
+Note: Classification determines tone (e.g., O1W) and finish (e.g., 01, 02, 03) — these are visual/tactile attributes, not quality grades. Gradation (Fresh, Good Cut, Fent, Rags, Chindi, Not Acceptable) happens during packing execution in Module 05 as thaans are logged, and feeds the Gradation Report. These are strict terminology distinctions: "classification" = tone/finish assignment; "gradation" = quality sorting during packing.

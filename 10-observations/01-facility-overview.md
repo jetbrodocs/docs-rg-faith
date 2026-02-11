@@ -2,7 +2,7 @@
 title: "Facility Overview and Material Lifecycle"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-11
 tags: [observation, overview, facility, lifecycle]
 ---
 
@@ -72,75 +72,86 @@ The woven cloth is sent out to external vendor mills for dyeing. RG Faith works 
 | Shreeji | — |
 | Om Shakthi | — |
 
-The dyeing process itself is out of scope, but the **interfaces** are critical:
-- **Outbound interface:** RG Faith assigns an MRL (Miroli) number when sending cloth to a vendor. This MRL number becomes the round-trip tracking identifier.
-- **Inbound interface:** Vendor returns dyed cloth with a Gate Pass referencing the original MRL number. Material may return in partial shipments.
+The dyeing process itself is out of scope, but the **inbound interface** is critical:
+- **Inbound interface:** Vendor returns dyed (finished) cloth with a Gate Pass. On first receipt, RG Faith generates an MRL (Miroli) number — the central tracking identifier for the lot through all processing stages. The Gate Pass also carries the vendor's note of total greige metres sent and any pending balance. Material may return in partial shipments.
+- **Outbound:** RG Faith sends greige cloth to vendors for dyeing using a Greige Challan (also called L.R. No.). The system does not track this outbound step — it begins at inbound receipt.
 
 ### 3. Finishing (In-house, primary scope)
 
-This is the core of what we're documenting — everything that happens at Miroli from the moment dyed cloth returns from a vendor to the moment finished bales are dispatched to customers. The stages are:
+This is the core of what we're documenting — everything that happens at Miroli from the moment finished cloth returns from a vendor to the moment finished bales are dispatched to customers. The stages are:
 
 ```
-INBOUND (receive dyed cloth from vendor)
+INBOUND (receive finished material from vendor, generate MRL number)
     │
     ▼
-FOLDING (unfold, measure every meter, record measurements)
+FOLDING (fold, measure every meter per roll, record measurements)
     │
     ▼
-GRADING (quality check, classify into grades)
+TONE & FINISH CLASSIFICATION (samples to HO, classify tone + finish per roll/lot)
     │
     ▼
-PACKING PROGRAM (manager creates cutting/folding/branding instructions)
+PACKING PROGRAM (manager creates instructions: which rolls, fold type, brand, trade, cut metres, bale count)
     │
     ▼
-CUTTING & PACKING (cut to lengths, fold, brand stamp, box into bales)
+PACKING EXECUTION (cut + fold → thaan → bale; non-Fresh pieces logged as gradation)
     │
     ▼
-DISPATCH (delivery form, bales go to customer)
+DISPATCH (pickup scheduled → dispatched, bales go to customer)
 ```
 
 Parallel to this main flow:
-- **Packaging materials** — tracked separately (inward from vendors, consumption during packing)
-- **Todiya** — reassignment/repacking of accumulated leftover material when a buyer is found
+- **Todiya** — when a buyer is found for accumulated non-Fresh material, unpack existing bales and repack unchanged thaans into new bales
 - **Not acceptable resolution** — informal issue/ticket workflow for rejected material sent back to mills
 - **Decision pending** — lots awaiting quality decisions, can sit for extended periods
+
+> **Note:** Packaging materials (inward from vendors, consumption during packing) are deferred to a future phase.
 
 ## Material Lifecycle and Inventory States
 
 The material goes through the following **inventory states**, which are the heart of what the system needs to track:
 
-### State 1: Grey (Unclassified)
+### State 1: Received (Inbound)
 
-All incoming material starts as **grey**. "Grey meters" is the default state for any fabric that has arrived at Miroli but has not yet been through folding and grading. The grey meter count comes from the vendor's Gate Pass and is trusted at face value — no re-verification on arrival.
+All incoming material starts as **received**. The metre count comes from the vendor's Gate Pass and is trusted at face value — no re-verification on arrival. An MRL number is generated with the first inbound receipt. The Gate Pass also notes total greige metres sent and any pending balance.
 
-Grey material can sit in this state for varying durations. Most lots move to folding within days, but some (especially those with quality concerns) can remain as grey/decision-pending for months or even years.
+Received material can sit in this state for varying durations. Most lots move to folding within days, but some (especially those with quality concerns) can remain as received/decision-pending for months or even years.
 
 ### State 2: Folded / Measured
 
-After the folding station processes the material, every meter has been physically handled, unfolded, and measured. The **folding meters** are recorded and represent RG Faith's own measurement. At this point, the material transitions from a vendor-reported quantity to a facility-verified quantity.
+After folding, every roll has been physically handled, folded, and measured. The **folding metres** are recorded and represent RG Faith's own measurement. At this point, the material transitions from a vendor-reported quantity to a facility-verified quantity.
 
-### State 3: Graded
+### State 3: Awaiting Classification
 
-Quality inspection classifies the material into grades. This is where the material gets split:
+Samples have been sent to head office for tone and finish determination. The material is waiting for HO to confirm the classification.
+
+### State 4: Classified
+
+Tone and finish have been assigned to each roll (or group of rolls). The material is now ready for a packing program. Two attributes are set: **tone** (e.g., O1W) and **finish** (e.g., 01, 02, 03).
+
+> **Note:** Classification (tone/finish assignment) is distinct from gradation (quality sorting during packing). These are separate steps with different terminology.
+
+### State 5: Packing Program Assigned
+
+A packing program allocates classified material (typically Fresh-quality) to specific fold type, cutting, branding, and baling instructions. In ~95% of cases, this is triggered by a sales order from head office. In ~5% of cases, the facility manager proactively creates a packing program. The program specifies which rolls to pick (can be cross-lot), fold type (Book, Roof, etc.), brand, trade, cut metres, and target bale count (advisory). Material is committed and physically moved to the cutting area.
+
+### State 6: Packed (Bale)
+
+During packing execution, rolls are cut and folded into **thaans** (tracked intermediate units). Each thaan has metres and a source roll reference. Multiple thaans are assembled into a **bale**. Bale-to-thaan mapping is tracked.
+
+Non-Fresh pieces identified during cutting are logged as thaans with their grade — this is **gradation**, which only happens as a byproduct of packing execution.
 
 | Grade | Unit | Disposition | Notes |
 |---|---|---|---|
-| **Fresh** | Meters | Ready for packing program | Best quality. Typically ~96-97% of a lot. |
+| **Fresh** | Meters | Packed into bales | Best quality. Typically ~96-97% of a lot. |
 | **Good Cut** | Metres | Accumulate for Todiya | Second grade. |
 | **Fent** | Kilograms | Accumulate for Todiya | Lower grade. ~50% considered loss. |
 | **Rags** | Kilograms | Accumulate for Todiya | Lower grade. |
 | **Chindi** | Kilograms | Accumulate for Todiya | Lowest grade. 100% loss. |
 | **Not Acceptable** | Meters | Send back to vendor | Rejected. Informal resolution process. |
 
-**Critical concept — Chadat:** Fresh and Good Cut are measured in metres. Fent, Rags, and Chindi are measured in kilograms. The **Chadat** is a conversion factor between metres and kilograms, calculated for each specific lot. It's used to convert Fent, Rags, and Chindi from kg to metres for reporting, to determine the percentage breakdown of a lot and track loss.
+**Critical concept — Chadat:** Fresh and Good Cut are measured in metres. Fent, Rags, and Chindi are measured in kilograms. The **Chadat** is a conversion factor between metres and kilograms, calculated for each specific lot. Must be recorded before any gradation entry. Used to convert kg to metres for reporting and loss tracking.
 
-### State 4: Packing Program Assigned
-
-A packing program allocates graded material (typically Fresh) to specific cutting, folding, and branding instructions. In ~95% of cases, this is triggered by a sales order from head office. In ~5% of cases, the facility manager proactively creates a packing program to move inventory forward — converting graded material into finished bales so it's ready for dispatch when an order comes in. At this point, the material is committed and physically moved to the cutting area, but hasn't been cut/packed yet.
-
-### State 5: Packed (Bale)
-
-After cutting, folding, branding, and boxing, the material becomes a **bale** — the finished product unit. Each bale gets:
+Each bale gets:
 - A **Bale Number** (assigned at packing)
 - A **Brand Stamp** (e.g., SSTM)
 - A **Product Name** (e.g., Sportsman)
@@ -148,9 +159,9 @@ After cutting, folding, branding, and boxing, the material becomes a **bale** �
 - A **Packing Slip** (computer-generated, one copy goes inside the bale)
 - A **Bale Label** (attached externally)
 
-### State 6: Dispatched
+### State 7: Dispatched
 
-Bales leave the facility via a **Delivery Form** to the designated customer (identified by "Haste" — the party name).
+Dispatch is two-step: **pickup scheduled** then **dispatched**. Bales leave the facility via a **Delivery Form** to the designated customer (identified by "Haste" — the party name).
 
 ## Key Identifiers
 
@@ -158,9 +169,10 @@ The material is tracked through several identifiers at different stages:
 
 | Identifier | Created By | When | Purpose |
 |---|---|---|---|
-| **MRL Number** | RG Faith (Miroli) | When sending cloth to vendor for dyeing | Round-trip tracking. Links outbound grey cloth to inbound dyed cloth. |
+| **MRL Number** | RG Faith (Miroli) | At first inbound receipt (GRN) | Central tracking ID for the lot through all processing stages. Generated on first inbound, not at outbound. |
+| **Greige Challan No / L.R. No** | RG Faith | When sending greige to vendor | Outbound reference. System does not track this — vendor-side reference only. |
 | **Lot Number** | Vendor (mill) | During vendor's processing | Vendor's internal reference. Stays with material through all downstream processes at RG Faith. |
-| **Gate Pass** | Vendor (mill) | When shipping back to RG Faith | Dispatch document with roll-by-roll measurements. Accompanies the truck. |
+| **Gate Pass** | Vendor (mill) | When shipping back to RG Faith | Dispatch document with roll-by-roll measurements. Also notes total greige metres and pending balance. Accompanies the truck. |
 | **Bale Number** | RG Faith (Miroli) | At packing time | Identifies each finished bale. Physical label on the box. |
 | **Trade Number** | RG Faith | At packing time | Finished product SKU reference. |
 
@@ -168,15 +180,15 @@ The material is tracked through several identifiers at different stages:
 
 | What | Unit | Notes |
 |---|---|---|
-| Grey material (incoming) | Meters | From vendor's Gate Pass |
-| Folded material | Meters | RG Faith's own measurement |
+| Finished material (incoming) | Meters | From vendor's Gate Pass |
+| Folded material | Meters | RG Faith's own measurement per roll |
 | Fresh grade | Meters | Primary output |
 | Good Cut | Metres | Second grade, measured in metres |
 | Fent, Rags, Chindi | Kilograms | Converted to metres via Chadat |
-| Shrinkage | Meters (loss) | Grey meters minus finished meters |
+| Shrinkage | Meters (loss) | Greige metres minus finished metres (vendor-reported) |
 | Chadat | Meters per kilogram | Lot-specific conversion factor |
 | Finished bales | Pieces + meters | Pieces per bale and total meters per bale |
-| Packaging materials | Various (units, kg, rolls) | Per SKU |
+| Thaan | Meters | Cut and folded piece from a roll, tracked individually |
 
 ## Throughput and Scale
 
@@ -189,18 +201,21 @@ The material is tracked through several identifiers at different stages:
 
 ## What the System Will Track
 
-The project scope is an **inventory tracking system** for the Miroli facility. Three inventory domains:
+The project scope is an **inventory tracking system** for the Miroli facility. Two inventory domains:
 
-1. **Grey material inventory** — what's been received from vendors, tracked by MRL number, lot number, and meters
-2. **Stage-wise material inventory** — where material is in the process (grey → folded → graded → packing program assigned → packed → dispatched), how much, in meters or kg
-3. **Packaging material inventory** — inward from vendors, current stock, consumption during packing
+1. **Inbound material inventory** — what's been received from vendors, tracked by MRL number, lot number, and meters
+2. **Stage-wise material inventory** — where material is in the process (received → folded → awaiting classification → classified → packing program assigned → packed → dispatched), how much, in meters or kg. Includes thaan-level tracking during packing and bale-to-thaan mapping.
 
 **Explicitly out of scope:**
 - Financial data (pricing, billing, invoicing, credit notes)
 - Sales order management
 - Head office ERP integration (future import/export utility only)
 - Weaving process
-- Dyeing process (only the send/receive interfaces)
+- Dyeing process (only the inbound interface)
+- Outbound tracking to vendors (system starts at inbound receipt)
+
+**Deferred to future phase:**
+- Packaging material inventory (inward from vendors, current stock, consumption during packing)
 
 **Future scope (not for current phase):**
 - Integration of dyeing process into the system

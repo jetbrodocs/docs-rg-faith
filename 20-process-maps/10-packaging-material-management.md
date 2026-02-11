@@ -1,12 +1,14 @@
 ---
 title: "Process 10 — Packaging Material Management"
-status: draft
+status: deferred
 created: 2026-02-07
-updated: 2026-02-07
-tags: [process, packaging, materials, inventory, consumables, stamps]
+updated: 2026-02-11
+tags: [process, packaging, materials, inventory, consumables, stamps, deferred]
 ---
 
 # Process 10 — Packaging Material Management
+
+> **DEFERRED:** Packaging material management is not in the current scope of the system. This process has been deferred to a future phase. The content below is retained for reference but should not be treated as an active requirement.
 
 ## Overview
 

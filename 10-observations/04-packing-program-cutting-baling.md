@@ -2,7 +2,7 @@
 title: "Packing Program, Cutting, and Baling"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-11
 tags: [observation, packing, cutting, baling, brand, sku, packing-program]
 ---
 
@@ -16,12 +16,14 @@ tags: [observation, packing, cutting, baling, brand, sku, packing-program]
 
 ## Activity
 
-Once fabric has been folded and graded as Fresh, it enters the packing pipeline. This pipeline has two distinct phases:
+Once fabric has been folded and classified (tone + finish assigned), it enters the packing pipeline. This pipeline has two distinct phases:
 
-1. **Packing Program creation** — A planning/instruction step where the facility manager defines how the material should be cut, folded, branded, and packed to fulfill a sales order.
-2. **Cutting and baling execution** — The physical work of cutting fabric to specified lengths, folding it in the specified pattern, applying brand stamps, and boxing it into bales.
+1. **Packing Program creation** — A planning/instruction step where the facility manager defines which rolls to pick (can be cross-lot), how to cut and fold them, which brand/trade to assign, and how many bales to create.
+2. **Packing execution** — The physical work of cutting fabric, folding it into thaans, applying brand stamps, assembling thaans into bales, and logging non-Fresh material as gradation output.
 
-This is where raw, graded material transforms into a **branded finished product** — and it's where the most complexity lives. The same incoming lot can become multiple different branded products, in different cut lengths, with different fold patterns, for different customers, all specified in a single packing program (or multiple programs on one sheet of paper).
+This is where classified material transforms into a **branded finished product** — and it's also where **gradation happens**. As workers cut and fold, non-Fresh pieces (Good Cut, Fent, Chindi, Rags) are identified and logged. Gradation is not a standalone step — it is a byproduct of packing execution.
+
+> **Terminology:** "Gradation" or "grading" refers to quality sorting that happens here during packing. This is distinct from "classification" (tone/finish assignment) which happens earlier after folding.
 
 ## The Packing Program — The Master Instruction Document
 
@@ -30,14 +32,15 @@ This is where raw, graded material transforms into a **branded finished product*
 The Packing Program is a handwritten instruction document created by the **head supervisor or facility manager**. It is the single most important operational document at Miroli — it tells the cutting and packing team exactly what to do with a lot of fabric.
 
 Think of it as a **work order** that specifies:
-- Which lot(s) to process
-- How to cut the fabric (lengths per piece)
-- How to fold each piece (fold type)
+- Which rolls to pick up (can be from different lots — cross-lot selection)
+- How to cut the fabric (metres per piece)
+- How to fold each piece (fold type — Book, Roof, 2Fold, B1F, etc.)
 - Which brand to stamp on each piece
 - Which product/trade number to assign
 - Which customer (Haste) each set of pieces is for
+- Target number of bales (advisory — not mandatory)
 - Whether samples are required and what packaging SKU the sample needs
-- The Chadat value for the lot (for reference during cutting)
+- The Chadat value for the lot (for reference during gradation)
 
 ### Who Creates It
 
@@ -68,7 +71,9 @@ When accumulated leftover material (Good Cut, Fent, etc.) finds a buyer, the man
 
 ### Execution
 
-Currently, packing programs are executed **one at a time**, but there may be pending programs queued up. The system should support **multiple concurrent packing programs**. When a packing program is created, Fresh material is **physically moved** from the graded storage area to the cutting area.
+Currently, packing programs are executed **one at a time**, but there may be pending programs queued up. The system should support **multiple concurrent packing programs**. When a packing program is created, classified material is **physically moved** from storage to the cutting area.
+
+The bale count specified in the program is **advisory, not mandatory**. For example, the instruction might say create three bales, but depending on how production actually happens, you might create two instead.
 
 ### Packing Program Form — Detailed Breakdown
 
@@ -135,26 +140,31 @@ Each cutting number is a distinct set of instructions, potentially for different
 
 ### Two Types of Packing Programs
 
-#### 1. Regular Packing Program (Fresh material)
+#### 1. Regular Packing Program (Classified material)
 
-Triggered by a sales order. Uses Fresh-graded material. The typical flow:
+Triggered by a sales order. Uses classified material (typically Fresh quality). The typical flow:
 - Sales order comes in
-- Manager identifies available Fresh lots
-- Creates cutting/packing instructions
-- Team executes
+- Manager identifies available classified rolls (can pick from multiple lots)
+- Creates packing instructions specifying rolls, fold type, brand, trade, cut metres, bale count
+- Team executes — during execution, non-Fresh pieces identified as gradation output
 
 Example: Scan page 13 — Uniform fabric from Kalapurna, 5688 meters, being cut into various lengths for different customers (Rame, CB, VS, L.K.Soul, Jay Shree) under the SSTM brand with product names Officer, RG Special, Sportsman, and KT-11058.
 
-#### 2. Todiya Packing Program (Leftover/accumulated material)
+#### 2. Todiya Program (Repack of accumulated material)
 
-Triggered by accumulated leftovers finding a buyer. Uses Good Cut, Fent, or other non-Fresh grades that have been sitting in the accumulation area.
+Triggered by a buyer being found for accumulated non-Fresh material. Todiya is **unpack + repack only** — no re-cutting or re-folding.
 
-Example: Scan page 14 — "Lot Pending" range, with instructions mixing Good Cut and Fent ("G/C + Fent"), and explicit note "Good cut only!" for certain lines. This is repacking accumulated leftover material for a buyer.
+The process:
+- Existing bales containing non-Fresh thaans are unpacked (original bale marked as "unpacked")
+- The unchanged thaans are repacked into new bales under a new program for the buyer
+- Thaans from multiple unpacked bales can go into one new Todiya bale
+- The thaans themselves are unchanged (same metres, same identity)
 
 Key differences from regular programs:
-- Material comes from accumulated stock, not a freshly graded lot
+- Material comes from existing bales (accumulated stock), not classified rolls
 - Multiple grades may be mixed in a single bale (G/C + Fent)
-- May reference multiple MRLs combined together
+- May combine thaans from multiple original MRLs
+- No cutting or folding — just unpack and repack
 - Triggered by finding a buyer for the leftovers, not by a specific sales order
 
 ## Brand and Product Assignment — No Fixed Rules
@@ -187,45 +197,54 @@ A finished bale has multiple identity attributes, all assigned during packing:
 | Pieces per Bale | Counted during packing | 15 |
 | Total Meters | Sum of all pieces | 342 |
 
-## Cutting and Packing Execution
+## Packing Execution
 
-### Step 1: Receive Packing Program
+Packing execution happens in two batches: first the **fold and cut batch** (producing thaans), then the **baling batch** (assembling thaans into bales).
 
-The cutting team receives the handwritten Packing Program from the manager.
+### Phase 1: Fold and Cut → Thaan
 
-### Step 2: Retrieve Material
+#### Step 1: Receive Packing Program
 
-The team retrieves the specified lot(s) of Fresh material from the graded inventory area.
+The packing team receives the Packing Program from the manager.
 
-### Step 3: Cut to Specified Lengths
+#### Step 2: Retrieve Material
 
-Following the Packing Program, the fabric is cut into pieces of the specified lengths. For example:
+The team retrieves the specified rolls. Rolls can be from different lots (cross-lot selection as specified in the program).
+
+#### Step 3: Cut and Fold
+
+Following the Packing Program, the fabric is cut to specified lengths and folded per the specified fold type (Book, Roof, 2Fold, B1F, etc.). For example:
 - 9 pieces of 20m, 1 of 30m, 2 of 25m, 1 of 22m, 1 of 29m, 1 of 31m = 15 pieces totaling 342 meters (from scan page 18, bale label)
-- Or: 43m, 48m, 38m, 35m, 28m, 26m, 33m, 36m, 24m = 9 pieces totaling 311m (from scan page 11, packing steps)
 
-### Step 4: Fold per Specification
+Each cut and folded piece is called a **thaan**.
 
-Each cut piece is folded according to the specified fold type. Known fold types (user-configurable):
-- **Book fold** — folded like a book
-- **Book 3 fold** — three-fold book style
-- **Roof fold** — folded from the top
-- **2Fold** — two-fold
-- **B1F** — user-defined fold type notation (likely a book fold variant)
+#### Step 4: Log Thaans
 
-The fold type affects the final appearance and dimensions of the packed product. Different customers or markets may prefer different folds.
+Each thaan is logged in the system as a tracked intermediate unit:
+- **Metres** per thaan
+- **Source roll** reference (one thaan = one source roll, never from two rolls)
+- **Grade**: Fresh (good quality) or non-Fresh (Good Cut, Fent, Rags, Chindi)
 
-### Step 5: Apply Brand and Packaging
+This is where **gradation** happens — as workers cut and fold, they identify non-Fresh pieces and log them with their grade. Non-Fresh thaans are set aside for accumulation.
 
-For each piece/set:
+> **Important:** Gradation is not a standalone step. It happens here as a byproduct of packing execution. Non-Fresh thaans are the gradation output. The Chadat must already be recorded for the lot before non-Fresh thaans (measured in kg) can be logged.
+
+### Phase 2: Baling
+
+#### Step 5: Assemble Thaans into Bales
+
+Multiple Fresh thaans are assembled into a bale:
 1. **Plastic layer** added per fold
 2. **Brand stamp** applied (e.g., SSTM)
 3. **Product stickers** applied
 4. **Brochure/booklet** inserted (if sample or as specified)
-5. Pieces placed into **cardboard box**
+5. Thaans placed into **cardboard box**
 6. **Thread** wrapped around the box to secure and tighten
-7. **Bale label** attached externally (see below)
+7. **Bale label** attached externally
 
-### Step 6: Assign Bale Number and Generate Packing Slip
+The **bale-to-thaan mapping is tracked** — the system knows which bale contains which specific thaans.
+
+#### Step 6: Assign Bale Number and Generate Packing Slip
 
 Each completed bale gets:
 
@@ -243,18 +262,17 @@ Each completed bale gets:
 
 One copy of the packing slip goes **inside the bale** physically. The other is filed.
 
-Note: The packing slip is generated by the head office system, and workers add handwritten notes for details the system doesn't capture (format code, exact cut length, Haste, new bale number). This is a gap the new system should fill.
+#### Step 7: Record Non-Fresh Material (Gradation Output)
 
-### Step 7: Record Leftover Material
+Non-Fresh thaans identified during cutting are logged with their grade and added to accumulation stock:
+- **Good Cut** thaans — measured in metres
+- **Fent** thaans — measured in kg (using Chadat)
+- **Rags** thaans — measured in kg
+- **Chindi** thaans — measured in kg (100% loss)
 
-After cutting is complete, any leftover material (from the Fresh lot) is sorted into:
-- **Good Cut** pieces
-- **Fent** pieces
-- **Chindi** waste
+These feed the Gradation Report progressively and become available for future Todiya programs.
 
-These leftovers are weighed (in kg), recorded, and added to the accumulation stock for future Todiya sale.
-
-The waste calculations appear at the bottom of Packing Programs (e.g., scan page 15 and 20):
+The gradation calculations appear at the bottom of Packing Programs (e.g., scan page 15 and 20):
 ```
 Total lot: 8785 meters
 Packed as Fresh: 5558 meters
@@ -301,8 +319,8 @@ The system should support sample instructions as an attribute of each packing pr
 
 | Input | Source | Format | Notes |
 |---|---|---|---|
-| Fresh-graded fabric | Grading output | Physical rolls | From the folding/grading stage |
-| Accumulated leftovers (for Todiya) | Accumulation area | Physical rolls/pieces (weighed in kg) | Good Cut, Fent, etc. |
+| Classified fabric (rolls with tone + finish) | Folding/classification output | Physical rolls | From the classification stage. Can be cross-lot. |
+| Existing bales (for Todiya) | Accumulation area | Physical bales containing non-Fresh thaans | For Todiya: unpack and repack only |
 | Sales order (conceptual) | Sales team / head office | Verbal or paper | Triggers the packing program. System does not manage sales orders. |
 | Packing Program | Facility manager | Handwritten form | The master instruction document |
 | Packaging materials | Packaging inventory | Physical materials | Plastic, stickers, stamps, cardboard, thread, brochures |
@@ -311,11 +329,12 @@ The system should support sample instructions as an attribute of each packing pr
 
 | Output | Destination | Format | Notes |
 |---|---|---|---|
-| Finished bales | Storage / dispatch area | Physical boxes | Ready for customer delivery |
+| Thaans (logged) | System + physical | Tracked intermediate units | Each thaan: metres, source roll, grade (Fresh or non-Fresh) |
+| Finished bales | Storage / dispatch area | Physical boxes | Contains specific thaans. Bale-to-thaan mapping tracked. |
 | Packing slip (inside bale) | Inside the bale | Computer-generated print | One copy sealed inside |
 | Packing slip (office copy) | Filed | Computer-generated print | Reference copy |
 | Bale label | On the bale | Printed label | External identification |
-| Leftover material | Accumulation area | Physical fabric | Good Cut, Fent, Chindi from cutting waste |
+| Non-Fresh thaans (gradation output) | Accumulation area | Physical fabric | Good Cut (metres), Fent/Rags/Chindi (kg). Feeds Gradation Report. |
 | Packed Bales List entry | Monthly register | Handwritten | Bale number recorded in monthly packed bales register |
 | Cutting tally sheet | Filed | Handwritten | Execution record of what was cut and packed |
 
@@ -360,8 +379,8 @@ The system should support sample instructions as an attribute of each packing pr
 
 ## Handoffs
 
-- **Comes from:** Folding/grading station (Fresh material) or accumulation area (Todiya material).
-- **Goes to:** Dispatch area (finished bales) or accumulation area (cutting waste/leftovers).
+- **Comes from:** Classification stage (classified rolls with tone + finish) or accumulation area (existing bales for Todiya unpack/repack).
+- **Goes to:** Dispatch area (finished bales) or accumulation area (non-Fresh thaans from gradation output).
 
 ## Problems and Workarounds
 
@@ -377,13 +396,14 @@ The system should support sample instructions as an attribute of each packing pr
 ## Design Implications for the System
 
 ### Must Have
-1. **Packing Program record** — Digital version of the handwritten form. Fields: MRL, lot, meters, product, brand, fold type, trade number, Haste, cut lengths, pieces, sample instructions.
+1. **Packing Program record** — Digital version of the handwritten form. Fields: which rolls (cross-lot allowed), fold type, brand, trade number, Haste, cut metres, target bale count (advisory), sample instructions.
 2. **Multiple programs per lot** — Support multiple packing programs against the same MRL/lot.
-3. **Regular vs Todiya flag** — Distinguish between regular (Fresh) and Todiya (leftover) packing programs.
-4. **Bale registration** — Assign bale number, record contents (pieces, meters, brand, product, trade no, fold type, Haste).
-5. **Packing slip generation** — Replace the head office-generated slip with one that captures all fields (eliminating the need for handwritten additions).
-6. **Waste/leftover tracking** — Record Good Cut, Fent, Chindi produced as cutting waste from each packing program.
-7. **Packed bales register** — Digital version of the monthly packed bales list.
+3. **Regular vs Todiya flag** — Distinguish between regular (classified material) and Todiya (unpack/repack) programs.
+4. **Thaan registration** — Log each thaan: metres, source roll, grade (Fresh or non-Fresh type).
+5. **Bale registration** — Assign bale number, record which thaans are in the bale (bale-to-thaan mapping), brand, product, trade no, fold type, Haste, total pieces and metres.
+6. **Packing slip generation** — Replace the head office-generated slip with one that captures all fields.
+7. **Gradation output** — Non-Fresh thaans logged with grade (Good Cut, Fent, Rags, Chindi) during packing. Feeds the Gradation Report.
+8. **Packed bales register** — Digital version of the monthly packed bales list.
 
 ### Nice to Have
 8. **Packing progress tracking** — Show which packing programs are in progress, completed, or pending.

@@ -4,7 +4,7 @@
 
 ### Process: Master Data Management
 
-Master data provides the configurable reference entities that all other modules depend on. This includes vendors (mills), customers (Haste), brands, products, fold types, tone codes, quality codes, trade numbers, and packaging SKUs.
+Master data provides the configurable reference entities that all other modules depend on. This includes vendors (mills), customers (Haste), brands, products, fold types, tone codes, finish codes, quality codes, and trade numbers. Packaging SKUs are deferred to a future phase.
 
 All master data entities are user-configurable — the facility manager and supervisors can create, update, and deactivate entries as needed. There are no hard-coded product lists, brand lists, or quality codes. The system ships with an empty configuration that users populate during onboarding and extend over time.
 
@@ -18,15 +18,16 @@ Master data has no linear process flow — it is a CRUD module. Entities are cre
 
 | Entity | Aggregate Type | Relationships |
 |---|---|---|
-| Vendor | `Vendor` | Referenced by MRL (outbound/inbound), Not Acceptable Resolution, Packaging GRN |
+| Vendor | `Vendor` | Referenced by MRL (inbound), Not Acceptable Resolution |
 | Customer | `Customer` | Referenced by Packing Program (Haste), Delivery Form, Todiya |
 | Brand | `Brand` | Referenced by Packing Program, Bale |
 | Product | `Product` | Belongs to a Brand. Referenced by Packing Program, Bale |
 | Fold Type | `FoldType` | Referenced by Packing Program |
-| Tone Code | `ToneCode` | Referenced by MRL, Packing Program, Bale |
-| Quality Code | `QualityCode` | Referenced by MRL (outbound), Inbound Receipt (Gate Pass) |
+| Tone Code | `ToneCode` | Referenced by Classification (Module 04), Packing Program, Bale |
+| Finish Code | `FinishCode` | Referenced by Classification (Module 04), Packing Program, Bale |
+| Quality Code | `QualityCode` | Referenced by MRL (inbound), Inbound Receipt (Gate Pass) |
 | Trade Number | `TradeNumber` | References a Product. Referenced by Bale, Delivery Form |
-| Packaging SKU | `PackagingSku` | Referenced by Packaging GRN, Packaging Consumption |
+| Packaging SKU | `PackagingSku` | Deferred to future phase |
 
 ### Entity Field Definitions
 
@@ -96,6 +97,16 @@ Master data has no linear process flow — it is a CRUD module. Entities are cre
 | is_active | boolean | Soft-delete flag |
 | created_at | datetime | When the record was created |
 
+#### Finish Code
+
+| Field | Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| code | string | Short code (e.g., `01`, `02`, `03`) |
+| name | string | Display name (e.g., "Finish 01", "Finish 02") |
+| is_active | boolean | Soft-delete flag |
+| created_at | datetime | When the record was created |
+
 #### Quality Code
 
 | Field | Type | Description |
@@ -118,7 +129,9 @@ Master data has no linear process flow — it is a CRUD module. Entities are cre
 | is_active | boolean | Soft-delete flag |
 | created_at | datetime | When the record was created |
 
-#### Packaging SKU
+#### Packaging SKU (Deferred)
+
+> **Deferred to future phase.** Packaging material management is out of scope for the initial build. The Packaging SKU entity definition is retained here for reference but will not be implemented in Phase 1.
 
 | Field | Type | Description |
 |---|---|---|
@@ -551,6 +564,48 @@ Permissions: master_data:tone_codes:write
 
 ---
 
+### Step: Create Finish Code
+
+Event type: `FINISH_CODE_CREATED`
+
+Payload:
+  id: UUID (generated)
+  code: string
+  name: string
+
+Aggregate: FinishCode / id
+Location: None
+Preconditions: Code must be unique among active finish codes
+Side effects: None beyond projection update
+Projections updated: finish_codes: new row
+Permissions: master_data:finish_codes:write
+
+---
+
+### Step: Update Finish Code
+
+Event type: `FINISH_CODE_UPDATED`
+
+Payload: id: UUID, (changed fields)
+Aggregate: FinishCode / id
+Preconditions: Must exist and be active
+Projections updated: finish_codes: partial update
+Permissions: master_data:finish_codes:write
+
+---
+
+### Step: Deactivate Finish Code
+
+Event type: `FINISH_CODE_DEACTIVATED`
+
+Payload: id: UUID
+Aggregate: FinishCode / id
+Preconditions: Must exist and be active
+Projections updated: finish_codes: is_active -> false
+Permissions: master_data:finish_codes:write
+
+---
+
 ### Step: Create Quality Code
 
 Event type: `QUALITY_CODE_CREATED`
@@ -640,12 +695,11 @@ Permissions: master_data:trade_numbers:write
 
 ---
 
-### Step: Create Packaging SKU
+### Step: Create Packaging SKU (Deferred)
+
+> **Deferred to future phase.** The following Packaging SKU CRUD steps are retained for reference but will not be implemented in Phase 1.
 
 Event type: `PACKAGING_SKU_CREATED`
-
-Trigger:
-  Manager enters packaging item details, selects type (consumable/reusable) and UOM.
 
 Payload:
   id: UUID (generated)
@@ -657,13 +711,12 @@ Payload:
 Aggregate: PackagingSku / id
 Location: None
 Preconditions: Code must be unique among active packaging SKUs
-Side effects: None beyond projection update
 Projections updated: packaging_skus: new row
 Permissions: master_data:packaging_skus:write
 
 ---
 
-### Step: Update Packaging SKU
+### Step: Update Packaging SKU (Deferred)
 
 Event type: `PACKAGING_SKU_UPDATED`
 
@@ -675,7 +728,7 @@ Permissions: master_data:packaging_skus:write
 
 ---
 
-### Step: Deactivate Packaging SKU
+### Step: Deactivate Packaging SKU (Deferred)
 
 Event type: `PACKAGING_SKU_DEACTIVATED`
 
@@ -717,8 +770,10 @@ Notes:
 | 2 | "Show me all customers (Haste)" | `customers` | code, name, is_active | `CUSTOMER_CREATED`, `CUSTOMER_UPDATED`, `CUSTOMER_DEACTIVATED` |
 | 3 | "What brands and products do we have?" | `brands`, `products` | code, name, brand_id, is_active | Brand and Product events |
 | 4 | "What fold types are available?" | `fold_types` | code, name, is_active | Fold Type events |
-| 5 | "What packaging items do we track?" | `packaging_skus` | code, name, sku_type, uom, is_active | Packaging SKU events |
-| 6 | "What trade numbers exist for product X?" | `trade_numbers` | code, product_id, width, is_active | Trade Number events |
+| 5 | "What tone codes are available?" | `tone_codes` | code, name, is_active | Tone Code events |
+| 6 | "What finish codes are available?" | `finish_codes` | code, name, is_active | Finish Code events |
+| 7 | "What trade numbers exist for product X?" | `trade_numbers` | code, product_id, width, is_active | Trade Number events |
+| ~~8~~ | ~~"What packaging items do we track?"~~ | ~~`packaging_skus`~~ | ~~code, name, sku_type, uom, is_active~~ | ~~Packaging SKU events~~ — Deferred |
 
 ---
 
@@ -742,9 +797,10 @@ Notes:
 | `master_data:products:write` | Create, update, deactivate products | Product CRUD |
 | `master_data:fold_types:write` | Create, update, deactivate fold types | Fold Type CRUD |
 | `master_data:tone_codes:write` | Create, update, deactivate tone codes | Tone Code CRUD |
+| `master_data:finish_codes:write` | Create, update, deactivate finish codes | Finish Code CRUD |
 | `master_data:quality_codes:write` | Create, update, deactivate quality codes | Quality Code CRUD |
 | `master_data:trade_numbers:write` | Create, update, deactivate trade numbers | Trade Number CRUD |
-| `master_data:packaging_skus:write` | Create, update, deactivate packaging SKUs | Packaging SKU CRUD |
+| `master_data:packaging_skus:write` | Create, update, deactivate packaging SKUs | Packaging SKU CRUD (Deferred) |
 | `master_data:*:read` | View any master data entity | All list/detail screens |
 
 ---
@@ -768,11 +824,12 @@ This module does not involve physical locations. Master data events will not car
 | 7 | Product Detail | detail | Manager | View/edit product, see its trade numbers | Edit, Deactivate |
 | 8 | Fold Types | list | Manager | Browse all fold types | Create New, Edit inline, Deactivate |
 | 9 | Tone Codes | list | Manager | Browse all tone codes | Create New, Edit inline, Deactivate |
-| 10 | Quality Codes | list | Manager | Browse all quality codes | Create New, Edit inline, Deactivate |
-| 11 | Trade Numbers | list | Manager | Browse all trade numbers with product filter | Create New, Edit, Deactivate |
-| 12 | Packaging SKUs | list | Manager | Browse all packaging items | Create New, Edit, Deactivate |
+| 10 | Finish Codes | list | Manager | Browse all finish codes | Create New, Edit inline, Deactivate |
+| 11 | Quality Codes | list | Manager | Browse all quality codes | Create New, Edit inline, Deactivate |
+| 12 | Trade Numbers | list | Manager | Browse all trade numbers with product filter | Create New, Edit, Deactivate |
+| ~~13~~ | ~~Packaging SKUs~~ | ~~list~~ | ~~Manager~~ | ~~Browse all packaging items~~ | ~~Deferred to future phase~~ |
 
-Note: Simple entities (Fold Types, Tone Codes, Quality Codes) use inline editing on the list screen rather than a separate detail screen.
+Note: Simple entities (Fold Types, Tone Codes, Finish Codes, Quality Codes) use inline editing on the list screen rather than a separate detail screen.
 
 ---
 

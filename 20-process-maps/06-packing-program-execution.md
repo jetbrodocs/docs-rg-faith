@@ -2,8 +2,8 @@
 title: "Process 06 — Packing Program & Execution"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
-tags: [process, packing, cutting, baling, brand, product, bale, packing-program]
+updated: 2026-02-11
+tags: [process, packing, cutting, baling, brand, product, bale, packing-program, thaan, gradation]
 ---
 
 # Process 06 — Packing Program & Execution
@@ -12,9 +12,9 @@ tags: [process, packing, cutting, baling, brand, product, bale, packing-program]
 
 | Field | Value |
 |---|---|
-| **Purpose** | Transform graded Fresh material into branded, packed bales — creating the finished product. The facility manager creates a Packing Program (work order) specifying how to cut, fold, brand, and package the material, and the team executes it. |
-| **Trigger** | (1) Sales order from head office (~95%), (2) proactive inventory advancement (~5%), or (3) Todiya (leftover repacking). |
-| **End condition** | Finished bales produced with bale number, brand stamp, product name, trade number, packing slip. Cutting waste recorded. |
+| **Purpose** | Transform classified rolls into branded, packed bales — creating the finished product. The facility manager creates a Packing Program (work order) specifying which rolls to use, fold type, brand, trade, cut metres, and advisory bale count. During execution, thaans are tracked and gradation (quality sorting) happens as non-Fresh material is identified. |
+| **Trigger** | (1) Sales order from head office (~95%), or (2) proactive inventory advancement (~5%). |
+| **End condition** | Finished bales produced with bale-to-thaan mapping, bale number, brand stamp, product name, trade number, packing slip. Gradation data recorded for non-Fresh thaans. |
 | **Frequency** | Continuous. Multiple programs may be pending or in execution. |
 | **Typical duration** | Small orders (5 bales): hours. Large orders (50+ bales): days. |
 
@@ -31,20 +31,22 @@ tags: [process, packing, cutting, baling, brand, product, bale, packing-program]
 
 | Input | Source | Format | Notes |
 |---|---|---|---|
-| Fresh-graded fabric | Grading output (Process 05) | Physical rolls (metres) | Best-quality material, ready for packing. |
-| Accumulated leftovers (for Todiya) | Accumulation area | Physical pieces (metres/kg) | Good Cut (metres), Fent (kg) — only for Todiya programs. |
-| Sales order / packing slip (when applicable) | Head office | Paper / verbal | Triggers the program in ~95% of cases. |
-| Packaging materials | Packaging inventory (Process 10) | Physical materials | Plastic, stickers, stamps, cardboard, thread, brochures. |
+| Classified rolls | Classification output (Process 05) | Physical rolls (metres, with tone + finish) | Rolls in Awaiting Program status. Cross-lot selection allowed (program can pull rolls from multiple MRLs). |
+| Sales order (when applicable) | Head office | Paper / verbal | Triggers the program in ~95% of cases. |
+| Chadat value | Recorded as a separate event | Number | Must be recorded before any gradation entry. Chadat = metres / kg. Lot-specific. |
+| Packaging materials | Packaging inventory (future scope) | Physical materials | Plastic, stickers, stamps, cardboard, thread, brochures. |
 
 ## Outputs
 
 | Output | Destination | Format | Notes |
 |---|---|---|---|
-| Finished bales | Storage / dispatch area | Physical boxes | Ready for customer delivery (Process 07). |
+| Finished bales | Storage / dispatch area | Physical boxes | Ready for customer delivery (Process 07). Bale-to-thaan mapping tracked. |
 | Packing slip (inside bale) | Inside the bale | Generated document | One copy sealed inside each bale. |
 | Packing slip (office copy) | Filed | Generated document | Reference copy. |
 | Bale label | On the bale | Printed label | External identification. |
-| Cutting waste (Good Cut, Fent, Chindi) | Accumulation area | Physical fabric (Good Cut in metres; Fent/Chindi in kg) | Leftover from cutting — added to Todiya stock. |
+| Thaan records | System / paper register | Per-thaan data | Each thaan: metres, source roll reference. One thaan = one roll source. |
+| Non-Fresh material (gradation output) | Accumulation area | Physical fabric (Good Cut in metres; Fent/Rags/Chindi in kg) | Identified during cutting, logged with grade. Added to accumulation stock. |
+| Gradation Report (progressive) | Head office / system | Computer-generated report | Updated as packing produces gradation data. |
 | Cutting tally sheet | Filed | Handwritten | Execution record of what was cut and packed. |
 
 ## Process Steps
@@ -52,17 +54,19 @@ tags: [process, packing, cutting, baling, brand, product, bale, packing-program]
 ### Phase 1: Packing Program Creation
 
 ```
-START — Trigger received (sales order / proactive / Todiya)
+START — Trigger received (sales order / proactive)
   │
   ▼
 ┌─────────────────────────────────────┐
 │ 1. Manager identifies available     │
 │    material                         │
-│    • Check Fresh inventory          │
+│    • Check classified rolls in      │
+│      Awaiting Program status        │
 │    • Match to order requirements    │
-│      (quality, width, quantity)     │
-│    • For Todiya: check accumulated  │
-│      leftover stock                 │
+│      (tone, finish, width, qty)     │
+│    • Cross-lot selection allowed:   │
+│      program can pull rolls from    │
+│      multiple MRLs                  │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -74,6 +78,7 @@ START — Trigger received (sales order / proactive / Todiya)
 │    • Determine number of pieces     │
 │      per bale                       │
 │    • Determine number of bales      │
+│      (advisory — actual may differ) │
 │    • Calculate total metres needed  │
 │    ★ Phase 2: system may assist     │
 │      with calculations              │
@@ -83,17 +88,15 @@ START — Trigger received (sales order / proactive / Todiya)
 ┌─────────────────────────────────────┐
 │ 3. Manager writes Packing Program   │
 │                                     │
-│  HEADER:                            │
-│    Date, Process House (mill),      │
-│    Lot No, Pcs, MRL No, Product,   │
-│    Mtrs, Shrinkage, Width,          │
-│    Whiteness (tone), Chadat         │
-│                                     │
-│  BODY (per line item):              │
-│    No., Fold type, Brand stamp,     │
-│    Trade stamp (product), Metres    │
-│    per piece × count, No of bales,  │
-│    Total metres, Haste (customer)   │
+│  Single instruction entity with:    │
+│    • Which rolls (cross-lot allowed)│
+│    • Fold type (Book, Roof, 2Fold,  │
+│      B1F, etc.)                     │
+│    • Brand stamp (e.g., SSTM)      │
+│    • Trade (product / SKU ref)     │
+│    • Cut metres per piece           │
+│    • Bale count (advisory)          │
+│    • Haste (customer)               │
 │                                     │
 │  NOTES:                             │
 │    Sample instructions, quality     │
@@ -103,8 +106,8 @@ START — Trigger received (sales order / proactive / Todiya)
                ▼
 ┌─────────────────────────────────────┐
 │ 4. Material physically moved        │
-│    • Fresh material moved from      │
-│      graded storage to cutting area │
+│    • Classified rolls moved from    │
+│      storage to cutting area        │
 │    • Material is now "allocated"    │
 │      to this packing program        │
 └──────────────┬──────────────────────┘
@@ -113,35 +116,65 @@ START — Trigger received (sales order / proactive / Todiya)
 Proceed to Phase 2: Execution
 ```
 
-### Phase 2: Cutting & Packing Execution
+### Phase 2: Execution — Cut, Fold, and Create Thaans
 
 ```
 ┌─────────────────────────────────────┐
-│ 5. Cut to specified lengths         │
+│ 5. Cut and fold to create thaans    │
 │    • Follow Packing Program specs   │
+│    • Cut roll to specified length   │
+│    • Fold per specification (fold   │
+│      type from Packing Program:     │
+│      Book, Roof, 2Fold, B1F, etc.) │
+│    • Each cut+fold = one thaan      │
+│    • Thaan data logged:             │
+│      - Metres                       │
+│      - Source roll reference        │
+│    • One thaan = one roll source    │
 │    • Example: "350 × 02 = 700"     │
-│      means cut 2 pieces of 350m    │
-│    • Note leftover material         │
+│      means cut 2 thaans of 350m    │
+│      from a roll                    │
 └──────────────┬──────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────┐
-│ 6. Fold per specification           │
-│    • Apply the fold type from the   │
-│      Packing Program                │
-│    • Fold types (user-configurable):│
-│      Book, Book 3 fold, Roof,       │
-│      2Fold, B1F                     │
+│ 6. Embedded gradation (during       │
+│    cutting)                         │
+│    • Non-Fresh thaans identified    │
+│      during cutting are logged with │
+│      a grade:                       │
+│      - Good Cut (metres)            │
+│      - Fent (kg)                    │
+│      - Rags (kg)                    │
+│      - Chindi (kg)                  │
+│      - Not Acceptable (metres)      │
+│    • VALIDATION: Chadat must be     │
+│      recorded before any gradation  │
+│      entry (system enforced)        │
+│    • Chadat used for kg ↔ metre     │
+│      conversion (Fent, Rags, Chindi)│
+│    • Non-Fresh material routed to   │
+│      accumulation area              │
+│    • Not Acceptable routed to       │
+│      Process 09                     │
+│    • Gradation Report updated       │
+│      progressively as packing       │
+│      produces data                  │
 └──────────────┬──────────────────────┘
                │
                ▼
+```
+
+### Phase 3: Assemble Thaans into Bales
+
+```
 ┌─────────────────────────────────────┐
 │ 7. Apply brand and packaging        │
 │    • Plastic layer added per fold   │
 │    • Brand stamp applied (SSTM etc.)│
 │    • Product stickers applied       │
 │    • Brochure/booklet if sample     │
-│    • Pieces placed in cardboard box │
+│    • Thaans placed in cardboard box │
 │    • Thread wrapped around box      │
 │    • Bale label attached externally │
 └──────────────┬──────────────────────┘
@@ -150,16 +183,18 @@ Proceed to Phase 2: Execution
 ┌─────────────────────────────────────┐
 │ 8. Assign Bale Number               │
 │    • Unique bale number assigned    │
+│    • Bale-to-thaan mapping tracked  │
 │    • Bale identity recorded:        │
 │      - Bale Number                  │
 │      - Brand Stamp                  │
 │      - Product Name                 │
 │      - Trade Number (SKU ref)       │
 │      - Fold Type                    │
-│      - Tone, Width                  │
+│      - Tone, Finish, Width          │
 │      - Haste (customer)             │
 │      - Cut Length, Pieces per Bale  │
 │      - Total Metres                 │
+│      - List of thaans in this bale  │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -174,19 +209,10 @@ Proceed to Phase 2: Execution
 └──────────────┬──────────────────────┘
                │
                ▼
-┌─────────────────────────────────────┐
-│ 10. Record cutting waste            │
-│     • Leftover material sorted:     │
-│       Good Cut, Fent, Chindi        │
-│     • Good Cut measured in metres;  │
-│       Fent/Chindi weighed in kg     │
-│     • Added to accumulation stock   │
-│       for future Todiya             │
-└──────────────┬──────────────────────┘
-               │
-               ▼
 END — Finished bales ready for dispatch.
-      Waste recorded and accumulated.
+      Thaan-to-bale mapping recorded.
+      Gradation data captured for non-Fresh.
+      Non-Fresh material accumulated.
 ```
 
 ### Multiple Programs on One Sheet
@@ -212,19 +238,23 @@ In the system, each cutting number is a **separate packing program record**.
 
 | Exception | How Handled |
 |---|---|
-| Not enough Fresh material for the order | Manager adjusts cutting pattern or waits for more material to be graded. |
+| Not enough classified material for the order | Manager adjusts cutting pattern or waits for more material to be classified. |
 | Sample required | Noted on Packing Program. Sample piece cut from same lot, packaged with brochure/booklet per manager's specification. |
-| Todiya packing program | Uses accumulated leftover stock. May mix grades (G/C + Fent). Different material source but same execution flow. |
 | Manager wants to pack proactively (no sales order) | Allowed — program created without sales order reference. ~5% of cases. |
+| Chadat not yet recorded for a lot | Gradation entries blocked until Chadat is recorded. Must be captured before packing begins for the lot. |
 
 ## State Transition
 
 ```
-Graded — Fresh ──► Packing Program Assigned ──► Packed (Bale)
-                          │
-                          └──► (Reversal allowed) ──► Graded — Fresh
-                               Rare in practice, but system should
-                               not block this transition.
+Classified (Awaiting Program) ──► Packing Program Assigned ──► Packed (Bale)
+                                       │
+                                       └──► (Reversal allowed) ──► Awaiting Program
+                                            Rare in practice, but system should
+                                            not block this transition.
+
+Non-Fresh thaans identified during cutting:
+  ──► Accumulated (Good Cut, Fent, Rags, Chindi → Process 08: Todiya)
+  ──► Not Acceptable (→ Process 09: Resolution)
 ```
 
 **Dispatch-ready trigger:** A bale is ready for dispatch once its packing slip has been generated. No separate approval step.
@@ -252,21 +282,82 @@ Incoming Lot (MRL 1782, KT-11000)
 | Product Name | Packing Program | Sportsman |
 | Trade Number | Packing Program | S8072-58" |
 | Fold Type | Packing Program | Book 3 fold |
-| Tone | Inherited from lot | O1W |
+| Tone | From classification (Process 05) | O1W |
+| Finish | From classification (Process 05) | 01 |
 | Width | Inherited from lot | 58" |
 | Haste (Customer) | Packing Program | Patawli |
 | Cut Length | Packing Program | 20 metre cut |
 | Pieces per Bale | Counted at packing | 15 |
 | Total Metres | Sum of pieces | 342 |
 
+## Thaan Tracking
+
+The thaan is the unit created when a roll is cut and folded to specification:
+
+```
+Roll (source) ──► Cut + Fold ──► Thaan (logged: metres + source roll)
+                                     │
+                                     ▼
+                                 Bale (assembly of thaans)
+```
+
+**Key rules:**
+- One thaan comes from one roll (single source roll reference)
+- Each thaan records: metres and source roll reference
+- Bale-to-thaan mapping is tracked (which thaans are in which bale)
+- Thaan identity persists through Todiya (unpack/repack does not change thaans)
+
+## Gradation During Packing
+
+Gradation (quality grading) is NOT a standalone process. It happens as an embedded step during packing execution. When a non-Fresh thaan is identified during cutting, it is logged with its grade:
+
+| Grade | Unit | Destination |
+|---|---|---|
+| Fresh | metres | Into bale (normal flow) |
+| Good Cut | metres | Accumulation area (Todiya) |
+| Fent | kg | Accumulation area (Todiya) |
+| Rags | kg | Accumulation area (Todiya) |
+| Chindi | kg | Accumulation area (Todiya) — 100% loss |
+| Not Acceptable | metres | Process 09 (vendor return) |
+
+**Validation rule:** Chadat must be recorded before any gradation entry. The system should enforce this.
+
+**Gradation Report:** A progressive report updated as packing produces data. Shows metre progression, grade breakdown, shrinkage, and Fresh yield percentage. See the Gradation Report section below.
+
+### The Gradation Report
+
+The Gradation Report is the **single most important document** in the process. It is a progressive, running report that captures data as packing execution proceeds:
+
+#### Metre Progression
+```
+Grey U/S Mtrs:     6,006.80   (vendor's original measurement)
+Gate Pass Mtrs:    5,826.00   (what arrived per Gate Pass)
+F.H. Avak Mtrs:   5,825.00   (what reached folding area)
+F.H. Fold Mtrs:   5,644.33   (after folding — RG Faith's count)
+F.H. Plk Mtrs:    5,644.33   (after packing)
+```
+
+#### Grade Breakdown (example)
+| Grade | Kg | Metres | % of Total | Loss Factor | Loss % |
+|---|---|---|---|---|---|
+| Fresh | — | 5,470.02 | 96.91% | 0% | 0% |
+| Good Cut | — | 52.00 | 0.92% | 0% | — |
+| Fent | 11.46 | 64.44 | 1.14% | 50% | 0.58% |
+| Rags | — | 6.48 | 0.15% | 0% | — |
+| Chindi | 2.00 | 16.82 | 0.35% | 100% | 0.35% |
+| **Total** | | **5,644.32** | **100%** | | |
+
+#### Progressive Nature
+If only 4,000 of 6,000 metres have been packed, the report shows data for only those 4,000 metres. It updates as more material is processed.
+
 ## Connected Processes
 
 | Direction | Process | How Connected |
 |---|---|---|
-| **Upstream (Fresh)** | [05 — Quality Grading](05-quality-grading.md) | Fresh-graded material is the primary input. |
-| **Upstream (Todiya)** | [08 — Todiya](08-todiya.md) | Accumulated leftovers trigger Todiya packing programs. |
-| **Upstream (Materials)** | [10 — Packaging Material Management](10-packaging-material-management.md) | Packaging materials consumed during execution. |
-| **Downstream** | [07 — Dispatch](07-dispatch.md) | Finished bales shipped to customers. |
+| **Upstream** | [05 — Tone & Finish Classification](05-tone-finish-classification.md) | Classified rolls (Awaiting Program) are the primary input. |
+| **Downstream (Fresh bales)** | [07 — Dispatch](07-dispatch.md) | Finished bales shipped to customers. |
+| **Downstream (Non-Fresh)** | [08 — Todiya](08-todiya.md) | Non-Fresh material identified during gradation goes to accumulation for Todiya. |
+| **Downstream (Not Acceptable)** | [09 — Not Acceptable Resolution](09-not-acceptable-resolution.md) | Rejected material identified during gradation enters return pipeline. |
 
 ## Systems / Tools
 

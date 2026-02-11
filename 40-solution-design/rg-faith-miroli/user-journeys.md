@@ -1,10 +1,11 @@
 # User Journeys — RG Faith Miroli Inventory System
 
-This document describes how real users experience the system day-to-day. It is structured in three parts:
+This document describes how real users experience the system day-to-day. It is structured in four parts:
 
 1. **Roles** — who uses the system and what they are responsible for
 2. **A Day at Miroli** — a full timeline narrative following all roles through a typical day, showing how actions flow between people
 3. **Role Reference** — per-role task breakdowns for quick reference
+4. **Edge Cases and Error Scenarios** — how the system handles non-standard situations
 
 ---
 
@@ -12,13 +13,13 @@ This document describes how real users experience the system day-to-day. It is s
 
 | Role | Person | Location | Responsibility | Primary Screens |
 |---|---|---|---|---|
-| **Facility Manager** | Ramesh | Miroli floor | Decision-maker. Creates grey lots, packing programs, delivery forms. Reviews dashboards. Handles vendor issues. | Dashboards, Grey Lot Register, Create Packing Program, Ready for Dispatch, Reprocess List |
-| **Supervisor** | Kiran | Miroli floor (folding/grading/packing areas) | Operational lead. Records inbound receipts, fold measurements, grading entries. Registers bales. Manages Decision Pending entries. | Record Inbound, Record Fold Measurement, Record Grading, Register Bale, Decision Pending |
-| **Receiving Worker** | Anil | Miroli receiving area | Unloads trucks. Records packaging material GRNs. | Record Packaging GRN, Packaging Stock |
-| **Packing Worker** | Deepa | Miroli packing area | Executes packing programs — cuts, folds, stamps, packs. Registers completed bales. | Packing Program Detail, Register Bale |
-| **Head Office User** | Priyanka | Ahmedabad head office (New Cloth Market) | Remote monitoring. Reviews dashboards and reports. Answers management queries. | Stage-wise Dashboard, Gradation Reports, Dispatch history |
+| **Facility Manager** | Ramesh | Miroli floor | Decision-maker. Creates packing programs and Todiya instructions. Creates delivery forms and confirms dispatch (two-step). Reviews dashboards. Handles vendor issues. | Dashboards, Create Packing Program, Create Todiya Instruction, Ready for Dispatch, Scheduled Pickups, Reprocess List |
+| **Supervisor** | Kiran | Miroli floor (folding/classification/packing areas) | Operational lead. Records inbound receipts (creates MRLs on first receipt). Records per-roll folding measurements and Chadat. Records tone and finish classification. Logs thaans during packing. Manages Decision Pending entries. | Record Inbound Receipt, Record Folding, Record Chadat, Record Classification, Log Thaan, Decision Pending |
+| **Receiving Worker** | Anil | Miroli receiving area | Unloads trucks. Assists with bale loading for dispatch. | (physical — no primary screens in current scope) |
+| **Packing Worker** | Deepa | Miroli packing area | Executes packing programs — logs thaans (cut + fold + grade) in Phase 1, then registers bales in Phase 2. | Log Thaan, Register Bale, Packing Program Detail |
+| **Head Office User** | Priyanka | Ahmedabad head office (New Cloth Market) | Remote monitoring. Reviews dashboards and reports. Answers management queries. | Stage-wise Dashboard, Gradation Reports, Dispatch Dashboard |
 
-All factory roles use a shared tablet or phone on the floor. Workers are multi-skilled — the same person may fold, grade, and pack depending on the day. The system roles above represent the *typical* primary responsibility, not rigid assignments.
+All factory roles use a shared tablet or phone on the floor. Workers are multi-skilled — the same person may fold, classify, and pack depending on the day. The system roles above represent the *typical* primary responsibility, not rigid assignments.
 
 ---
 
@@ -32,71 +33,50 @@ A single day at the facility, told chronologically. Every action by every role, 
 
 Ramesh arrives at Miroli and opens the system on the shared tablet near the office area. He navigates to the **Stage-wise Inventory Dashboard**. The numbers refresh from last night's closing state:
 
-- Grey inventory: 12,400 metres across 4 MRLs awaiting processing
-- Folded (pending grading): 3,200 metres
-- Fresh (available for packing): 8,750 metres across 3 lots
-- Packing programs in progress: 2 programs, 14 bales completed of 22 planned
+- Received inventory: 12,400 metres across 4 MRLs awaiting processing
+- Folded (pending classification): 3,200 metres
+- Classified (available for packing): 8,750 metres across 3 lots
+- Packing programs in progress: 2 programs, 320 thaans logged, 14 bales completed of 22 planned
 - Packed bales awaiting dispatch: 31 bales for 4 customers
-- Accumulated stock (Todiya): 42.5 metres Good Cut, 7.2 kg Fent
+- Scheduled pickups (not yet dispatched): 1 delivery form, 8 bales for customer VS
 
-He switches to **Vendor Pending Balances**. MRL-0542 shows 2,800 metres outstanding at Kalapurna Mills — it has been 9 days since dispatch. He makes a mental note to call them after breakfast.
+He switches to **Vendor Greige Pending**. FY26-MRL-0542 shows 2,800 metres of vendor-reported greige pending at Kalapurna Mills — it has been 9 days since that Gate Pass note. He makes a mental note to call them after breakfast.
 
-He checks the **Decision Pending** screen. One entry has a red flag: "No activity for 16 days" — 100 metres from MRL-0531 with a remark about colour variation. He will need to look at the physical material later.
+He checks the **Decision Pending** screen. One entry has a red flag: "No activity for 16 days" — 100 metres from FY26-MRL-0531 with a remark about tone variation between rolls. He will need to look at the physical material later.
 
-He checks the **Reprocess List**. Three open entries. One is 47 days old with no comments — MRL-0526 at PSJC, 1,408 metres of rejected fabric.
+He checks the **Reprocess List**. Three open entries. One is 47 days old with no comments — FY26-MRL-0526 at PSJC, 1,408 metres of rejected fabric.
 
 ---
 
 ### 7:00 AM — Truck arrives from Kalapurna Mills
 
-RG Faith's truck returns from Kalapurna Mills with dyed cloth. **Anil** is at the gate. He helps the driver unload 6 rolls of fabric from the truck and stacks them in the grey storage area. The driver hands over the Gate Pass — a printed form from Kalapurna listing roll-by-roll metres, lot number 7993, quality code 44x45P6, 5,826.00 total metres.
+RG Faith's truck returns from Kalapurna Mills with dyed cloth. **Anil** is at the gate. He helps the driver unload 6 rolls of fabric from the truck and stacks them in the received storage area. The driver hands over the Gate Pass — a printed form from Kalapurna listing roll-by-roll metres, lot number 7993, quality code 44x45P6, 5,826.00 total metres. The Gate Pass also notes that 8,200 greige metres were originally sent and 2,374 greige metres remain pending.
 
-**Kiran** arrives at the receiving area with the tablet. She opens **Record Inbound Receipt** and selects MRL-0538 from the dropdown (this was the outbound record Ramesh created when the cloth was sent to Kalapurna 12 days ago). She enters the Gate Pass data:
+**Kiran** arrives at the receiving area with the tablet. She opens **Record Inbound Receipt** and sees two options: "New MRL" and "Existing MRL." She has not received material from Kalapurna against this quality before, so she chooses **New MRL** (Path A). She enters the data:
 
+- Vendor: Kalapurna Mills
+- Quality Code: 44x45P6
 - Avak Date: today
 - Lot Number: 7993
-- Grey Metres: 5,826.00
-- Quality Code: 44x45P6
+- Received Metres: 5,826.00
 - GSM: 120
 - Width: 58"
 - Rolls: 6
 - Gate Pass Reference: KM-2026-4421
+- Vendor Reported Greige Sent: 8,200 (from Gate Pass note)
+- Vendor Reported Greige Pending: 2,374 (from Gate Pass note)
 
-She clicks Submit. Receipt IR-2026-0042 is created. MRL-0538 status changes to FULLY_RECEIVED — all 5,826 metres accounted for. The grey inventory at MIROLI-GREY increases by 5,826 metres.
+She clicks Submit. The system creates **FY26-MRL-0548** (new MRL, status ACTIVE) and receipt **FY26-IR-0042** together in one operation. The received inventory at MIROLI-RECEIVED increases by 5,826 metres. Material state is RECEIVED.
 
 Kiran files the physical Gate Pass in the paper folder (old habit, still useful as backup). The digital record is now the source of truth.
 
 ---
 
-### 7:15 AM — Packaging vendor delivers supplies
+### 7:30 AM — Folding team starts on yesterday's received lot
 
-While the fabric truck is being unloaded, a packaging vendor's auto-rickshaw pulls up with boxes of cardboard and plastic sheets. **Anil** takes delivery. He opens **Record Packaging GRN** on the shared tablet and enters two receipts:
+The folding workers pick up a lot that arrived yesterday — FY26-MRL-0535, Lot 7890, 4,200 received metres. They begin folding the rolls using a standard fold (~95-100cm) and measuring each roll as they go. This is physical, continuous work that takes most of the morning.
 
-- SKU = Cardboard Box (large), Vendor = ABC Packaging, Quantity = 200 units, Reference = INV-4412. Submit.
-- SKU = Plastic Sheet (standard), Vendor = ABC Packaging, Quantity = 500 sheets, Reference = INV-4412. Submit.
-
-He checks **Packaging Stock** — cardboard boxes went from 45 to 245. Plastic sheets from 120 to 620. Enough for the day's packing work.
-
----
-
-### 7:30 AM — Folding team starts on yesterday's grey lot
-
-The folding workers pick up a grey lot that arrived yesterday — MRL-0535, Lot 7890, 4,200 grey metres. They begin folding the rolls into standard 2-metre folds and measuring each section. This is physical, continuous work that takes most of the morning.
-
-Meanwhile, **Kiran** opens **Pending Folding** on her tablet. She sees the lot the team is working on, plus the lot that just arrived (MRL-0538, 5,826 metres) — that one will be next.
-
----
-
-### 8:30 AM — Ramesh creates an MRL for outbound
-
-Woven cloth has arrived from the weaving facility (separate location, out of scope). Ramesh needs to send 8,200 metres to RSK Industries for dyeing. He opens **Create Grey Lot**:
-
-- Vendor: RSK Industries
-- Metres Sent: 8,200
-- Quality Code: 44x45P6
-- Date Sent: today
-
-He clicks Submit. MRL-0548 is created — 8,200 metres at status SENT_TO_VENDOR. He tells the transport team to load the cloth and deliver it to RSK today.
+Meanwhile, **Kiran** opens **Pending Folding** on her tablet. She sees the lot the team is working on, plus the lot that just arrived (FY26-MRL-0548, 5,826 metres) — that one will be next.
 
 ---
 
@@ -104,7 +84,7 @@ He clicks Submit. MRL-0548 is created — 8,200 metres at status SENT_TO_VENDOR.
 
 At the Ahmedabad head office, **Priyanka** opens the **Stage-wise Inventory Dashboard**. She sees the same real-time data as Ramesh — including the 5,826 metres that Kiran just received 2 hours ago. No waiting for paper.
 
-She checks **Total dispatch volume this month** — 847 bales, 86,420 metres across 23 delivery forms. She opens **Vendor Pending Balances** — 42,600 metres outstanding across 8 vendors. She makes a note for the weekly management report.
+She checks **Total dispatch volume this month** — 847 bales, 86,420 metres across 23 delivery forms. She opens **Vendor Greige Pending** — 42,600 metres of vendor-reported greige outstanding across 8 vendors. She makes a note for the weekly management report.
 
 Management asks her: "How much did we ship to customer S.P. this month?" She opens **Delivery Forms**, filters by customer = S.P. and date range = this month. The answer is immediate: 12 delivery forms, 74 bales, 7,820 metres.
 
@@ -114,85 +94,102 @@ Management asks her: "How much did we ship to customer S.P. this month?" She ope
 
 Ramesh receives a phone call from head office. Customer Rame needs 5 bales of Officer brand — 20m cut, Book fold, SSTM stamp, trade number S8072-58".
 
-He opens **Fresh Material Available**. He sees:
-- MRL-0538, Lot 7993: 5,644 metres of Fresh at MIROLI-FRESH (this lot was graded yesterday, the receipt Kiran just recorded was for a different shipment against the same MRL — but in this case it's a lot graded earlier that is sitting as Fresh)
-- MRL-0533, Lot 7801: 2,100 metres
-- MRL-0530, Lot 7756: 1,006 metres
+He opens **Classified Material Available**. He sees material that has been classified (tone and finish assigned) and is eligible for packing programs:
+- FY26-MRL-0533, Lot 7801: 5,644 metres, Tone O1W, Finish 01
+- FY26-MRL-0530, Lot 7756: 2,100 metres, Tone O1W, Finish 01
+- FY26-MRL-0528, Lot 7702: 1,006 metres, Tone O1W, Finish 02
 
-He chooses MRL-0538. He clicks **Create Program from this lot** and fills in the **Create Packing Program** form:
+He chooses FY26-MRL-0533. He clicks **Create Program from this lot** and fills in the **Create Packing Program** form. He selects source rolls from the lot (the system shows individual rolls with their measured metres from folding), sets the fold type to Book at the program level, and enters the line item:
 
-- Line 1: Brand = SSTM, Product = Officer, Trade Number = S8072-58", Fold Type = Book, Customer = Rame, Cut Length = 20m, Pieces/Bale = 15, Planned Bales = 5
+- Line 1: Brand = SSTM, Product = Officer, Trade Number = S8072-58", Customer = Rame, Cut Length = 20m, Pieces/Bale = 15, Planned Bales = 5
 
-The system calculates: 20m × 15 pieces × 5 bales = 1,500 metres allocated.
+The system calculates: 20m x 15 pieces x 5 bales = 1,500 metres allocated across the selected source rolls.
 
-Ramesh reviews and clicks Submit. Program PP-2026-0087 is created. 1,500 metres move from GRADED_FRESH to PROGRAM_ASSIGNED at MIROLI-PACK.
+Ramesh reviews and clicks Submit. Program **PP-2026-0087** is created. The selected source rolls move from CLASSIFIED to PROGRAM_ASSIGNED at MIROLI-PACK.
 
 He walks to the packing area and tells the team: "PP-2026-0087, five bales, Officer for Rame."
 
 ---
 
-### 10:00 AM — Packing team starts execution
+### 10:00 AM — Packing team starts execution: Phase 1 (Log Thaans)
 
 **Deepa** opens **Packing Program Detail** for PP-2026-0087 on the tablet mounted near the cutting table. She sees the specifications clearly:
 
 - SSTM / Officer / S8072-58" / Book fold / 20m cut / 15 pieces per bale / 5 bales planned
+- Source rolls: 4 rolls from FY26-MRL-0533
 
-She and two other workers begin cutting the fabric into 20-metre pieces. Each piece is folded in Book style. They apply the SSTM stamp, add product stickers, layer each piece with plastic, place 15 pieces into a cardboard box, and wrap the box with thread. The bale label is attached externally.
+She and two other workers begin cutting rolls into thaans. For each cut piece, Deepa opens the **Log Thaan** screen:
+
+- Source Roll: Roll 1 (from MRL-0533)
+- Grade: FRESH
+- Metres: 20.00
+
+She clicks Submit. The system auto-assigns thaan number **104832**. She continues logging thaans as each piece is cut and folded in Book style. Most pieces are Fresh. Occasionally the end of a roll yields a short piece or a section with a defect:
+
+- Thaan 104847: Source Roll 2, Grade = GOOD_CUT, Metres = 4.25. Submit. (This Good Cut thaan goes to accumulation — it is not used for baling in this regular program.)
+- Thaan 104851: Source Roll 3, Grade = FENT, Kilograms = 0.8. Submit. (Chadat was already recorded for this lot: 5.12 metres/kg. The system converts 0.8 kg to 4.10 equivalent metres and updates the Gradation Report.)
+
+Each thaan logged updates the **Gradation Report** for FY26-MRL-0533 progressively — this IS the gradation. There is no standalone grading step.
 
 ---
 
-### 10:30 AM — Folding in progress, Kiran records measurements
+### 10:30 AM — Folding in progress, Kiran records per-roll measurements
 
-The folding team is working through grey lot MRL-0535, Lot 7890 (4,200 grey metres). As the workers fold the rolls at 2-metre intervals, **Kiran** periodically records measurements on the **Record Fold Measurement** screen. Each entry captures the cumulative metres measured at that fold point:
+The folding team is working through lot FY26-MRL-0535, Lot 7890 (4,200 received metres). As the workers fold each roll at the standard fold (~95-100cm), **Kiran** records the metres for each roll on the **Record Folding** screen:
 
-- Entry 1: 502.00 metres. Submit.
-- Entry 2: 1,018.50 metres. Submit.
-- Entry 3: 1,530.25 metres. Submit.
-- ... (continues through the morning)
+- Roll 1: 712.50 metres. Submit.
+- Roll 2: 685.25 metres. Submit.
+- Roll 3: 698.00 metres. Submit.
+- ... (continues through the morning as each roll is completed)
 
-By the time the team finishes the full lot, the final measurement reads **4,082.50 metres** — RG Faith's own verified count. Kiran also records the Chadat: 5.12 (a known length weighed and calculated: metres/kg = 5.12). The lot moves from GREY to FOLDED.
+By the time the team finishes the full lot (6 rolls), the total folding metres read **4,082.50 metres** — RG Faith's own verified count versus the vendor's reported 4,200 metres (shrinkage of 117.50 metres, 2.80%). The lot state changes from RECEIVED to FOLDED.
+
+Kiran also records the **Chadat** as a separate event. She opens **Record Chadat**, selects the lot, and enters the value: 5.12 metres/kg (calculated by weighing a known length of fabric). This Chadat must be recorded before any non-Fresh thaan can be logged during future packing of this lot.
 
 ---
 
-### 10:45 AM — Grading begins on the freshly folded lot
+### 10:45 AM — Classification begins on the freshly folded lot
 
-The same workers (multi-skilled) now start inspecting the folded material from Lot 7890. They work through the lot visually and by feel, identifying sections by quality. Grading is not done fold-by-fold — the workers assess stretches of fabric at whatever granularity the material demands.
+Workers inspect the folded material from Lot 7890 (FY26-MRL-0535). They assess the fabric visually and by feel, identifying the tone (colour shade) and finish (surface texture/hand). For this lot, the fabric appears uniformly Off-White with a standard finish.
 
-As they work, **Kiran** records grading output on the **Record Grading** screen. Each entry captures a grade and the quantity for that grade:
+A sample is cut and sent to head office for confirmation. **Kiran** notes this on the system — samples sent today.
 
-- Grade = FRESH, Metres = 3,938.50. Submit.
-- Grade = GOOD_CUT, Metres = 10.75. Submit.
-- Grade = FENT, Kg = 6.2. Submit. (Chadat auto-filled: 5.12 → 31.74 equivalent metres)
-- Grade = RAGS, Kg = 1.1. Submit. (→ 5.63 equivalent metres)
-- Grade = CHINDI, Kg = 0.8. Submit. (→ 4.10 equivalent metres)
-- Grade = NOT_ACCEPTABLE, Metres = 5.00. Submit.
+Later in the morning, HO calls back: "Tone is O1W, Finish is 01 — confirmed."
 
-Grading may happen progressively — Kiran can submit entries as sections are graded rather than waiting for the full lot. The **Gradation Report** for MRL-0535 updates with each entry.
+**Kiran** opens **Record Classification** and enters:
 
-The 5 metres of Not Acceptable fabric automatically creates an entry on the **Reprocess List**: NA-2026-0034, MRL-0535, 5 metres, remark "stain found during grading, approx 65m mark."
+- MRL: FY26-MRL-0535
+- Tone Code: O1W
+- Finish Code: 01
+- Scope: LOT (the full lot has the same tone and finish)
+- Metres Classified: 4,082.50
+- HO Confirmed Date: today
 
-The Good Cut goes to the accumulation area. The **Accumulation Dashboard** updates: Good Cut increases from 42.5 metres to 53.25 metres.
+She clicks Submit. The material state changes from FOLDED to CLASSIFIED at MIROLI-CLASSIFIED. This lot is now eligible for a packing program.
 
 ---
 
 ### 11:00 AM — Ramesh handles the stale Decision Pending entry
 
-Between activities, Ramesh walks to the storage area and physically examines the 100 metres from MRL-0531 that has been sitting as Decision Pending for 16 days. He looks at the colour variation. It is subtle but acceptable.
+Between activities, Ramesh walks to the storage area and physically examines the 100 metres from FY26-MRL-0531 that has been sitting as Decision Pending for 16 days. The classification uncertainty was about tone variation between two rolls — one appears slightly warmer than the other.
 
-He opens **Decision Pending Detail** on his phone and resolves the entry: Resolved Grade = FRESH. The 100 metres immediately move to GRADED_FRESH and appear in the **Fresh Material Available** screen.
+He compares them carefully. The difference is subtle but real — they should be classified separately. He opens **Decision Pending Detail** on his phone and resolves the entry: Resolved Tone = O1W, Resolved Finish = 01. The 100 metres move from DECISION_PENDING to CLASSIFIED and appear in the **Classified Material Available** screen.
+
+(If the rolls had truly different tones, he would have split the resolution into two separate classification records — one per roll — with different tone codes.)
 
 ---
 
-### 11:30 AM — First bale completed
+### 11:30 AM — Phase 1 continues, Phase 2 begins: first bale registered
 
-**Deepa** and the team finish the first bale from PP-2026-0087. She opens **Register Bale** on the tablet:
+Back at the packing area, **Deepa** and the team have logged enough Fresh thaans for the first bale from PP-2026-0087 — 15 thaans of 20 metres each. She switches to Phase 2.
+
+She opens **Register Bale** on the tablet:
 
 - Program: PP-2026-0087
 - Line: Line 1 (SSTM / Officer / Rame)
-- Pieces: 15
-- Total Metres: 300
+- Selected Thaans: 15 Fresh thaans (104832, 104833, ... 104846)
 
-She clicks Submit. The system auto-assigns bale number **37432**. A packing slip is generated — one copy will go inside the bale, the office copy is available for printing. The system also backflushes packaging materials per the product BOM: 1 cardboard box, 2 plastic sheets, and 1 sticker set are auto-deducted from packaging stock. The program shows progress: 1 of 5 bales complete. Status changes to IN_PROGRESS.
+She clicks Submit. The system auto-assigns bale number **37432**. The selected thaans change status from CREATED to BALED. A packing slip is generated — one copy will go inside the bale, the office copy is available for printing. The system also emits a PACKAGING_BACKFLUSHED event — packaging materials are auto-deducted per the product BOM: 1 cardboard box, 2 plastic sheets, and 1 sticker set deducted from packaging stock. The program shows progress: 1 of 5 bales complete. Status changes to IN_PROGRESS.
 
 ---
 
@@ -202,74 +199,80 @@ Work pauses. The system state is frozen — everything recorded so far is persis
 
 ---
 
-### 1:00 PM — Packing resumes
+### 1:00 PM — Packing resumes: alternating Phase 1 and Phase 2
 
-The team continues executing PP-2026-0087. **Deepa** registers bales as they are completed:
+The team continues executing PP-2026-0087. **Deepa** alternates between logging thaans (Phase 1) and registering bales (Phase 2) as enough Fresh thaans accumulate for each bale:
 
-- 1:30 PM: Bale 37433 registered. 2 of 5 complete.
+- 1:30 PM: Bale 37433 registered (15 Fresh thaans). 2 of 5 complete.
 - 2:15 PM: Bale 37434 registered. 3 of 5 complete.
 - 3:00 PM: Bale 37435 registered. 4 of 5 complete.
 
+Non-Fresh thaans logged during cutting (Good Cut ends, Fent offcuts, etc.) are automatically routed to accumulation at MIROLI-ACCUM. They remain as individual thaans with status CREATED awaiting a future Todiya sale.
+
 ---
 
-### 3:30 PM — Grading wraps up for the day
+### 3:30 PM — Classification wraps up, Gradation Report reviewed
 
-**Kiran** finishes recording the last grading entries for MRL-0535, Lot 7890. She opens the **Gradation Report** and sees the final breakdown:
+**Kiran** checks the **Gradation Report** for FY26-MRL-0533 (the lot being packed today). The report has been updated progressively as Deepa logged thaans during packing:
 
 | Grade | Metres | % |
 |---|---|---|
-| Fresh | 3,938.50 | 96.47% |
-| Good Cut | 10.75 | 0.26% |
-| Fent (6.2 kg = 31.74m via Chadat) | 31.74 | 0.78% |
-| Rags (1.1 kg = 5.63m via Chadat) | 5.63 | 0.14% |
-| Chindi (0.8 kg = 4.10m via Chadat) | 4.10 | 0.10% |
-| Not Acceptable | 5.00 | 0.12% |
-| **Total** | **3,995.72** | — |
+| Fresh | 1,425.00 | 96.53% |
+| Good Cut | 10.75 | 0.73% |
+| Fent (1.2 kg = 6.14m via Chadat) | 6.14 | 0.42% |
+| Rags (0.4 kg = 2.05m via Chadat) | 2.05 | 0.14% |
+| Chindi (0.3 kg = 1.54m via Chadat) | 1.54 | 0.10% |
+| Not Acceptable | 5.00 | 0.34% |
+| **Total graded** | **1,450.48** | -- |
 
-The lot is fully graded. 3,938.50 metres of Fresh are now available at MIROLI-FRESH for the next packing program.
+The 5 metres of Not Acceptable fabric identified during thaan logging automatically created an entry on the **Reprocess List**: NA-2026-0034, FY26-MRL-0533, 5 metres, remark "stain found during cutting, roll 3, approx 65m mark."
+
+Note: This report is progressive. Not all of this MRL's material has been packed yet — only the portion allocated to PP-2026-0087. The remaining classified metres from this MRL will be graded when they are assigned to future packing programs.
 
 ---
 
 ### 3:45 PM — Ramesh contacts PSJC about the old rejection
 
-Ramesh calls PSJC about the 47-day-old Reprocess List entry (MRL-0526, 1,408 metres). They say they will send a truck next week to pick it up.
+Ramesh calls PSJC about the 47-day-old Reprocess List entry (FY26-MRL-0526, 1,408 metres). They say they will send a truck next week to pick it up.
 
 He opens **NA Entry Detail** for the entry and adds a comment: "Called PSJC. They confirmed pickup next week — tentatively Thursday." The last_activity_at resets. The aging clock restarts.
 
 ---
 
-### 4:00 PM — Last bale completed, waste recorded
+### 4:00 PM — Last bale completed
 
-**Deepa** registers the 5th and final bale from PP-2026-0087:
+**Deepa** logs the final batch of thaans and registers the 5th and final bale from PP-2026-0087:
 
-- Bale 37436. Pieces = 15. Total Metres = 300. Submit.
+- Bale 37436. 15 Fresh thaans. Total Metres = 300. Submit.
 
 The program status changes to COMPLETED. All 5 bales are packed and at MIROLI-FG-OUT.
 
-**Kiran** records the cutting waste: 8.5 metres Good Cut, 0.5 kg Fent. She opens **Record Cutting Waste** for PP-2026-0087 and enters the numbers. Submit. The accumulation stock updates: Good Cut now at 61.75 metres, Fent at 7.7 kg.
-
 ---
 
-### 4:30 PM — Ramesh creates the Delivery Form
+### 4:30 PM — Ramesh creates the Delivery Form (Step 1: Schedule Pickup)
 
-Ramesh opens **Ready for Dispatch**. He sees:
+Ramesh opens **Ready for Dispatch**. He sees packed bales grouped by customer:
 
 - Customer Rame: 5 bales (37432-37436) — the ones just packed
 - Customer S.P.: 6 bales — from an earlier program
 - Customer VS: 12 bales
 - Customer CB: 8 bales
 
-He creates a Delivery Form for Rame. He selects the 5 bales, enters today's date, and clicks Submit. **DF-2026-0123** is generated.
+He creates a Delivery Form for Rame. He selects the 5 bales, enters today's date, and clicks Submit. **DF-2026-0123** is generated with status PICKUP_SCHEDULED.
 
-He prints the Delivery Form. The bale list, metres, pieces — all correct. He tells **Anil** and the loading team to load the 5 bales onto the truck.
+He prints the Delivery Form. The bale list, metres, pieces — all correct. He tells **Anil** and the loading team to prepare the 5 bales for the truck.
+
+The 5 bales now show status = PICKUP_SCHEDULED. They are earmarked for this delivery but the truck has not yet departed.
 
 ---
 
-### 4:45 PM — Truck departs
+### 4:45 PM — Truck departs (Step 2: Confirm Dispatch)
 
-Anil and another worker load the 5 bales. The truck departs with the original Delivery Form. The office copy stays at Miroli.
+Anil and another worker load the 5 bales. The truck is ready to depart.
 
-The 5 bales now show status = DISPATCHED. The **Stage-wise Inventory Dashboard** updates: packed bales awaiting dispatch drops from 31 to 26.
+Ramesh opens **DF-2026-0123** on the **Scheduled Pickups** screen and clicks **Confirm Dispatch**. He enters the dispatch date (today). The delivery status changes from PICKUP_SCHEDULED to DISPATCHED. The 5 bales now show status = DISPATCHED.
+
+The truck departs with the original Delivery Form. The office copy stays at Miroli. The **Stage-wise Inventory Dashboard** updates: packed bales awaiting dispatch drops from 31 to 26.
 
 ---
 
@@ -278,9 +281,9 @@ The 5 bales now show status = DISPATCHED. The **Stage-wise Inventory Dashboard**
 **Priyanka** opens the system. She sees:
 
 - 5 new bales dispatched to Rame today (DF-2026-0123)
-- 1 new MRL created (MRL-0548 to RSK, 8,200 metres)
-- 1 inbound receipt (IR-2026-0042, MRL-0538, 5,826 metres from Kalapurna)
-- Gradation Report for MRL-0535 completed: 96.47% Fresh yield
+- 1 new MRL created (FY26-MRL-0548, 5,826 metres from Kalapurna)
+- Gradation Report for FY26-MRL-0533 in progress: 96.53% Fresh yield so far
+- Classification completed for FY26-MRL-0535: Tone O1W, Finish 01, 4,082.50 metres
 
 She updates her daily summary for management. Everything is visible in real time — no waiting for paper.
 
@@ -290,13 +293,13 @@ She updates her daily summary for management. Everything is visible in real time
 
 Ramesh does a final check of the dashboard:
 
-- Grey inventory: 17,826 metres (up from morning — new inbound receipt, minus the lot that was folded/graded)
-- Fresh available: 11,188.50 metres (up — new graded lot added, minus what was packed today)
+- Received inventory: 17,826 metres (up from morning — new inbound receipt added)
+- Classified (available for packing): 12,231 metres (up — newly classified lot added, minus what was packed today)
 - Packed awaiting dispatch: 26 bales
-- MRLs pending at vendors: 6 (including the new MRL-0548)
-- Accumulation: Good Cut 61.75 metres, Fent 7.7 kg
+- Scheduled pickups: 0 (the Rame delivery was confirmed)
+- Active MRLs: 6 (including the new FY26-MRL-0548)
 
-Tomorrow, the folding team will start on the 5,826 metres that arrived today (MRL-0538, Lot 7993). Ramesh will check if any more sales orders come in from head office.
+Tomorrow, the folding team will start on the 5,826 metres that arrived today (FY26-MRL-0548, Lot 7993). Ramesh will check if any more sales orders come in from head office.
 
 The day is done. Every transaction is recorded. Every metre is accounted for.
 
@@ -311,45 +314,45 @@ Quick reference for each role's tasks, organized for onboarding and training.
 | Task | Screen | Frequency |
 |---|---|---|
 | Review stage-wise inventory | Stage-wise Dashboard | Daily (start of shift) |
-| Check vendor pending balances | Vendor Pending Balances | Daily |
-| Review Decision Pending alerts | Decision Pending list | Daily |
-| Create grey lot (outbound to vendor) | Create Grey Lot | As needed (several per week) |
-| Create packing program | Create Packing Program | As needed (triggered by sales orders) |
-| Create Todiya program | Create Todiya Program | Occasional (when buyer found for leftovers) |
-| Create delivery form (dispatch) | Create Delivery Form | Multiple times per week |
+| Check vendor-reported greige pending | Vendor Greige Pending | Daily |
+| Review Decision Pending alerts (classification uncertainty) | Decision Pending list | Daily |
+| Create packing program (select rolls from 1+ MRLs) | Create Packing Program | As needed (triggered by sales orders) |
+| Create Todiya instruction (unpack + repack) | Create Todiya Instruction | Occasional (when buyer found for non-Fresh material) |
+| Create delivery form (schedule pickup) | Create Delivery Form | Multiple times per week |
+| Confirm dispatch (truck departs) | Scheduled Pickups / Delivery Form Detail | Multiple times per week |
 | Review/comment on Reprocess List | Reprocess List, NA Entry Detail | Weekly |
-| Resolve Decision Pending entries | Decision Pending Detail | As flagged |
+| Resolve Decision Pending entries (classification) | Decision Pending Detail | As flagged |
 | Cancel a packing program (rare) | Packing Program Detail | Rare |
 
 ### Supervisor (Kiran)
 
 | Task | Screen | Frequency |
 |---|---|---|
-| Record inbound receipt | Record Inbound Receipt | Per truck arrival (multiple/week) |
-| Record fold measurements | Record Fold Measurement | Per lot being folded (continuous) |
-| Record grading entries | Record Grading | Continuous throughout day |
-| Check Gradation Report progress | Gradation Report | Per lot being graded |
-| Register bales | Register Bale | Per bale completed (multiple/day) |
-| Record cutting waste | Record Cutting Waste | Per program completed |
-| Create Decision Pending entry | Decision Pending | When quality is unclear |
+| Record inbound receipt (creates MRL on first receipt) | Record Inbound Receipt | Per truck arrival (multiple/week) |
+| Record per-roll folding measurements | Record Folding | Per lot being folded (continuous) |
+| Record Chadat (metres-to-kg conversion factor) | Record Chadat | Per lot (separate event, before non-Fresh thaan logging) |
+| Record tone and finish classification | Record Classification | Per lot or per roll after folding |
+| Log thaans during packing (cut + fold + grade) | Log Thaan | Continuous throughout packing |
+| Register bales (assemble Fresh thaans) | Register Bale | Per bale completed (multiple/day) |
+| Create Decision Pending entry (classification uncertainty) | Decision Pending | When tone/finish classification is unclear |
 | Resolve Decision Pending | Decision Pending Detail | When decision is made |
-| Adjust packaging stock (physical count) | Stock Adjustment | Weekly or as needed |
 
 ### Receiving Worker (Anil)
 
 | Task | Screen | Frequency |
 |---|---|---|
-| Record packaging GRN | Record Packaging GRN | Per vendor delivery |
-| Check packaging stock levels | Packaging Stock | As needed |
 | Assist with truck unloading | (physical — no screen) | Per truck arrival |
-| Assist with bale loading | (physical — no screen) | Per dispatch |
+| Assist with bale loading for dispatch | (physical — no screen) | Per dispatch |
+
+Note: Packaging material GRN tracking is deferred in the current system scope. Anil's role in the system is currently limited to physical operations.
 
 ### Packing Worker (Deepa)
 
 | Task | Screen | Frequency |
 |---|---|---|
 | View packing program specs | Packing Program Detail | Start of each program |
-| Register completed bale | Register Bale | Per bale completed |
+| Log thaans (Phase 1 — cut roll, fold, assign grade) | Log Thaan | Per thaan produced (many per day) |
+| Register bales (Phase 2 — assemble Fresh thaans into bale) | Register Bale | Per bale completed |
 | Print packing slip | Bale Detail | Per bale |
 
 ### Head Office User (Priyanka)
@@ -358,8 +361,8 @@ Quick reference for each role's tasks, organized for onboarding and training.
 |---|---|---|
 | Review factory dashboard | Stage-wise Dashboard | Daily |
 | Check dispatch volume | Delivery Forms, Dispatch Dashboard | Daily/weekly |
-| Review Gradation Reports | Gradation Reports list | Per completed lot |
-| Check vendor pending balances | Vendor Pending Balances | Weekly |
+| Review Gradation Reports | Gradation Reports list | Per lot (progressive updates) |
+| Check vendor-reported greige pending | Vendor Greige Pending | Weekly |
 | Answer management queries | Various lists with filters | Ad hoc |
 
 ---
@@ -367,33 +370,43 @@ Quick reference for each role's tasks, organized for onboarding and training.
 ## Part 4: Edge Cases and Error Scenarios
 
 ### Partial shipment from vendor
-- **7:00 AM:** Kiran records inbound receipt for 4,000 of 6,000 metres against MRL-0540. MRL status changes to PARTIALLY_RECEIVED with 2,000 metres pending.
-- **9:00 AM:** Ramesh sees MRL-0540 on the **Vendor Pending Balances** dashboard — 2,000 metres outstanding. He calls the vendor.
-- **Three days later:** The remaining 2,000 metres arrive. Kiran records another receipt. MRL status changes to FULLY_RECEIVED.
+- **7:00 AM:** Kiran records an inbound receipt for 4,000 of the expected 6,000 metres. This is the first receipt, so it creates a new MRL (Path A). The MRL status is ACTIVE. The Gate Pass note says 2,000 greige metres are still pending at the vendor.
+- **9:00 AM:** Ramesh sees the MRL on the **Vendor Greige Pending** dashboard — 2,000 metres of vendor-reported greige outstanding. He calls the vendor.
+- **Three days later:** The remaining material arrives. Kiran records another inbound receipt against the existing MRL (Path B — "Existing MRL"). The MRL stays ACTIVE (same status — more material could theoretically still arrive). The vendor-reported greige pending on the Gate Pass now shows 0.
+- **Eventually:** Ramesh closes the MRL manually when he is satisfied no more material is expected.
 
-### Decision Pending lot forgotten
-- **Day 1:** Kiran records a Decision Pending entry for 100 metres — subtle colour variation.
+### Decision Pending lot forgotten (classification uncertainty)
+- **Day 1:** Kiran records a Decision Pending entry for 100 metres — subtle tone variation between rolls, unclear whether they should be classified as O1W or O2W.
 - **Day 14:** No comments or resolution. The system flags the entry with a red warning: "No activity for 14 days."
-- **Day 15:** Ramesh sees the alert on the **Decision Pending** screen during his morning review. He inspects the physical material, decides it is acceptable, and resolves it as FRESH. The 100 metres become available.
+- **Day 15:** Ramesh sees the alert on the **Decision Pending** screen during his morning review. He inspects the physical material, determines the tone is acceptable as O1W, and resolves the entry with Tone = O1W and Finish = 01. The 100 metres move to CLASSIFIED and become available for packing programs.
 
 ### Packing program cancelled
-- **10:00 AM:** Ramesh creates PP-2026-0088 for customer CB — 3 bales of Sportsman.
+- **10:00 AM:** Ramesh creates PP-2026-0088 for customer CB — 3 bales of Sportsman. Source rolls are allocated and move to PROGRAM_ASSIGNED.
 - **10:15 AM:** Head office calls — CB cancelled the order.
-- **10:20 AM:** No bales have been produced yet. Ramesh opens the program, clicks Cancel, enters reason: "Customer cancelled order." The allocated Fresh material returns to GRADED_FRESH and is available for a different program.
+- **10:20 AM:** No thaans have been logged yet. Ramesh opens the program, clicks Cancel, enters reason: "Customer cancelled order." The allocated source rolls return from PROGRAM_ASSIGNED to their previous state (CLASSIFIED). The rolls are available for a different program.
 
 ### Not Acceptable material never picked up
-- **Month 1:** MRL-0526 entry created on Reprocess List. 1,408 metres rejected at PSJC.
+- **Month 1:** FY26-MRL-0526 entry created on Reprocess List. 1,408 metres rejected at PSJC.
 - **Month 2:** Ramesh adds comments documenting three phone calls. PSJC keeps promising pickup.
 - **Month 6:** Ramesh decides they will never pick up. He resolves the entry as "Unresolved — vendor non-responsive after 6 months." The material remains at MIROLI-NA. It is no longer on the active Reprocess List but exists in the resolution history.
 
 ### Packaging material runs out mid-program
-- **2:00 PM:** During packing, the team reaches for plastic sheets — none left. Work pauses. (The system already shows low stock — backflush from earlier bales today has been deducting automatically.)
-- **2:05 PM:** Ramesh checks **Packaging Stock** — confirms 0 plastic sheets. He calls the packaging vendor.
-- **3:00 PM:** Vendor delivers emergency stock. **Anil** records the GRN: 200 plastic sheets. Stock replenishes. Packing resumes.
+- **2:00 PM:** During bale registration, the team reaches for plastic sheets — none left. Phase 2 (bale assembly) pauses, but Phase 1 (thaan logging) can continue since thaan logging does not consume packaging materials.
+- **2:05 PM:** Ramesh checks with the packaging vendor — confirms supplies are low. He calls the vendor for an emergency delivery.
+- **3:00 PM:** Vendor delivers emergency stock. Stock replenishes. Bale registration resumes.
+- Note: Packaging material tracking (GRN, stock levels, backflush) is deferred in the current system scope. This scenario describes the physical reality but the system tracking is not yet implemented.
 
-### Todiya sale opportunity
+### Cross-lot packing program
+- **9:30 AM:** Ramesh needs to create a program for 8 bales, but no single MRL has enough classified material. FY26-MRL-0533 has 3,200 metres and FY26-MRL-0530 has 1,800 metres — together they cover the 4,800 metres needed.
+- He opens **Create Packing Program** and selects source rolls from both MRLs. The system allows cross-lot selection as long as the quality code, tone, and finish match across the selected rolls.
+- During Phase 1, Deepa logs thaans against specific source rolls — each thaan is traced to its source roll and therefore its source MRL. The Gradation Report updates for each MRL independently.
+
+### Todiya sale opportunity (unpack and repack)
 - **Morning:** A buyer calls asking for 40 metres of Good Cut fabric.
-- Ramesh checks the **Accumulation Dashboard** — 61.75 metres Good Cut available.
-- He creates a Todiya program: source = GOOD_CUT, 40 metres, customer = Todiya Buyer X, brand = SSTM, product = KT-555.
-- The packing team executes it using the same workflow as regular packing. Bales are registered, waste recorded, delivery form created.
-- Accumulation stock drops from 61.75 metres to 21.75 metres Good Cut.
+- Ramesh opens **Todiya Candidates** — a list of bales containing non-Fresh thaans. He sees 3 bales with Good Cut thaans totaling 53.25 metres.
+- He creates a **Todiya Instruction**: selects the 3 source bales, enters buyer = Todiya Buyer X, brand = SSTM, product = KT-555.
+- **Execution — Unpack:** Workers physically open the 3 source bales. Kiran opens **Unpack Bale** for each source bale and clicks Unpack. The bales move to UNPACKED status. Their thaans are released (status = UNPACKED) and available for repacking.
+- **Execution — Repack:** From the pool of unpacked thaans, workers select the Good Cut thaans that add up to approximately 40 metres. Kiran opens **Register Todiya Bale**, selects the thaans, and clicks Submit. A new Todiya bale is created with a new bale number, packing slip, and the buyer's branding. The selected thaans move from UNPACKED to BALED (in the new bale).
+- Any leftover unpacked thaans (e.g., Fent or Rags thaans from the same source bales) remain in the unpacked pool for a future Todiya instruction.
+- The new Todiya bale is dispatch-ready — Ramesh creates a Delivery Form and dispatches it via the normal two-step process.
+- No re-cutting or re-folding occurs. Thaans pass through unchanged — same metres, same source roll, same grade. Only the bale assignment changes.

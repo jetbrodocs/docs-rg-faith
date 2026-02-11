@@ -8,74 +8,83 @@ Master Data,6,Brand Detail,detail,Manager,"View/edit brand, see its products","E
 Master Data,7,Product Detail,detail,Manager,"View/edit product, see its trade numbers","Edit, Deactivate"
 Master Data,8,Fold Types,list,Manager,Browse all fold types,"Create New, Edit inline, Deactivate"
 Master Data,9,Tone Codes,list,Manager,Browse all tone codes,"Create New, Edit inline, Deactivate"
-Master Data,10,Quality Codes,list,Manager,Browse all quality codes,"Create New, Edit inline, Deactivate"
-Master Data,11,Trade Numbers,list,Manager,Browse all trade numbers with product filter,"Create New, Edit, Deactivate"
-Master Data,12,Packaging SKUs,list,Manager,Browse all packaging items,"Create New, Edit, Deactivate"
-Master Data,13,Packaging BOM,list,Manager,"Define packaging materials per bale for each product — e.g., 1 cardboard box, 2 plastic sheets, 1 sticker set","Create New, Edit, Deactivate"
-Outbound & Inbound,1,Grey Lot Register,list,"Manager, Supervisor","Browse all grey lots with status, vendor, and balance filters","Create New Grey Lot, Filter by status/vendor"
-Outbound & Inbound,2,Grey Lot Detail,detail,"Manager, Supervisor","View grey lot details, all inbound receipts against it, pending balance, full event history","Edit Grey Lot, Record Receipt"
-Outbound & Inbound,3,Create Grey Lot,form,Manager,"Enter outbound details — vendor, metres, quality code, date",Submit
-Outbound & Inbound,4,Record Inbound Receipt,form,Supervisor,"Select grey lot, enter Gate Pass data — avak date, lot number, metres, quality, GSM, width, rolls (with optional per-roll metres and weight)",Submit
-Outbound & Inbound,5,Inbound Receipts,list,Supervisor,Browse recent inbound receipts with date and grey lot filters,View Receipt Detail
-Outbound & Inbound,6,Inbound Receipt Detail,detail,Supervisor,"View a single receipt — all Gate Pass data, linked grey lot",—
-Outbound & Inbound,7,Vendor Pending Balances,dashboard,Manager,"Summary view: total metres outstanding per vendor, grey lots with pending balance",Drill down to grey lot
-Folding & Measurement,1,Pending Folding,list,Supervisor,"Browse grey lots awaiting folding — shows grey lot number, lot number, grey metres",Select lot to fold
-Folding & Measurement,2,Record Fold Measurement,form,Supervisor,"Record measurement at a fold point — select grey lot, enter cumulative metres at this fold",Submit
-Folding & Measurement,3,Folding Records,list,"Supervisor, Manager","Browse folding records with grey lot and date filters","View detail, Edit (correction)"
-Folding & Measurement,4,Folding Record Detail,detail,"Supervisor, Manager","View all fold measurements for a lot — individual fold readings, total measured metres, Chadat",Edit (correct values)
-Quality Grading,1,Pending Grading,list,"Worker, Supervisor",Browse lots with Grey or Folded material awaiting grading,Select lot to grade
-Quality Grading,2,Record Grading,form,"Worker, Supervisor","Enter grading output for a lot — select grade, enter metres (or kg for Fent/Rags/Chindi), Chadat auto-filled",Submit
-Quality Grading,3,Gradation Report,detail,"Supervisor, Manager","View progressive report for one grey lot — metre progression, grade breakdown, percentages","Print, Export"
-Quality Grading,4,Gradation Reports,list,Manager,"Browse all gradation reports — filter by grey lot, date range, vendor",View report
-Quality Grading,5,Decision Pending,list,"Supervisor, Manager","Browse all pending decisions — shows ageing (days since last activity), 14-day alerts","Add Comment, Resolve"
-Quality Grading,6,Decision Pending Detail,detail,"Supervisor, Manager","View one pending entry — history of comments, resolve with grade","Comment, Resolve"
-Quality Grading,7,Grading Summary Dashboard,dashboard,Manager,"Today's grading activity, Fresh yield trend, grade distribution",Drill down to reports
-Packing Program,1,Packing Programs,list,Manager,"Browse all programs with status, grey lot, progress filters",Create New Program
-Packing Program,2,Packing Program Detail,detail,"Manager, Supervisor","View program header, line items, bales produced, waste recorded, progress","Register Bale, Record Waste, Cancel"
-Packing Program,3,Create Packing Program,form,Manager,"Select Fresh material source, add line items with brand/product/customer/cut specs",Submit
-Packing Program,4,Register Bale,form,"Supervisor, Worker","Select program line, enter pieces and metres. On submit: auto-assigns bale number, backflushes packaging materials per BOM",Submit (auto-assigns bale number + auto-deducts packaging)
-Packing Program,5,Record Cutting Waste,form,Supervisor,Enter waste by grade (Good Cut in metres / Fent in kg / Chindi in kg) for a program,Submit
-Packing Program,6,Bale Register,list,"Manager, Supervisor","Browse all bales — filter by date, brand, product, customer, status",View bale detail
-Packing Program,7,Bale Detail,detail,"Manager, Supervisor","View full bale identity — all attributes, packing slip preview, event history",Print Packing Slip
-Packing Program,8,Fresh Material Available,list,Manager,"Browse GRADED_FRESH inventory — shows grey lot, lot, metres available for allocation",Create Program from this lot
-Packing Program,9,Packing Dashboard,dashboard,Manager,"Today's packing activity, bales produced, programs in progress, waste summary",Drill down
-Dispatch,1,Ready for Dispatch,list,"Manager, Supervisor","Browse packed bales awaiting dispatch, grouped by customer",Create Delivery Form
-Dispatch,2,Create Delivery Form,form,"Manager, Supervisor","Select customer, check bales to include, enter date and notes",Submit
-Dispatch,3,Delivery Forms,list,Manager,Browse all delivery forms — filter by date and customer,View detail
-Dispatch,4,Delivery Form Detail,detail,Manager,"View form header, all bale lines, totals",Print Delivery Form
-Dispatch,5,Dispatch Dashboard,dashboard,Manager,"Today's dispatches, total bales/metres, bales awaiting dispatch count",Drill down
-Todiya,1,Accumulation Dashboard,dashboard,Manager,"Current accumulated stock by grade (Good Cut in metres; Fent/Rags/Chindi in kg with approx metres equivalent), trend over time",Create Todiya Program
-Todiya,2,Create Todiya Program,form,Manager,"Select grades, enter quantity (metres for Good Cut / kg for others), add line items with brand/product/customer",Submit
-Todiya,3,Todiya Programs,list,Manager,Browse Todiya programs (filter from Packing Programs list by type=TODIYA),View detail
-Todiya,4,Todiya Program Detail,detail,"Manager, Supervisor","View program details, bales produced, progress","Register Bale, Record Waste"
-NA Resolution,1,Reprocess List,list,"Supervisor, Manager","Browse all open NA entries — filter by vendor, age, grey lot","Add Comment, Resolve"
+Master Data,10,Finish Codes,list,Manager,Browse all finish codes,"Create New / Edit inline / Deactivate"
+Master Data,11,Quality Codes,list,Manager,Browse all quality codes,"Create New, Edit inline, Deactivate"
+Master Data,12,Trade Numbers,list,Manager,Browse all trade numbers with product filter,"Create New, Edit, Deactivate"
+Master Data,13,Packaging SKUs,list,Manager,(DEFERRED) Browse all packaging items,"Create New, Edit, Deactivate"
+Master Data,14,Packaging BOM,list,Manager,(DEFERRED) Define packaging materials per bale for each product,"Create New, Edit, Deactivate"
+Inbound Receipt,1,Inbound Register,list,Manager / Supervisor,Browse all MRLs with status / vendor / date filters — shows MRL number / vendor / received metres / vendor-reported greige pending / status,Record New Receipt / Filter by status/vendor
+Inbound Receipt,2,MRL Detail,detail,Manager / Supervisor,View MRL details / all inbound receipts / vendor-reported greige balances / full event history,Edit MRL / Close MRL / Record Receipt
+Inbound Receipt,3,Record Inbound Receipt,form,Supervisor,Two paths: (A) New MRL — enter vendor / quality code / Gate Pass data; (B) Existing MRL — select from dropdown / enter Gate Pass data,Submit
+Inbound Receipt,4,Inbound Receipts,list,Supervisor,Browse recent inbound receipts with date and MRL filters,View Receipt Detail
+Inbound Receipt,5,Inbound Receipt Detail,detail,Supervisor,View a single receipt — all Gate Pass data / linked MRL / vendor-reported greige values,—
+Inbound Receipt,6,Vendor Greige Pending,dashboard,Manager,Summary: vendor-reported greige metres pending per vendor / based on latest Gate Pass notes for active MRLs,Drill down to MRL
+Folding & Measurement,1,Pending Folding,list,Supervisor,Browse lots with received material awaiting folding — shows MRL number / lot number / received metres,Select lot to fold
+Folding & Measurement,2,Record Folding,form,Supervisor,Enter per-roll folding data — add roll measurements (roll number + metres),Submit
+Folding & Measurement,3,Record Chadat,form,Supervisor,Enter Chadat value for a lot — metres per kg,Submit
+Folding & Measurement,4,Folding Records,list,Supervisor / Manager,Browse completed folding records with MRL / shrinkage / date filters,View detail / Edit (correction)
+Folding & Measurement,5,Folding Record Detail,detail,Supervisor / Manager,View full folding data — per-roll metres / total metres / shrinkage / linked Chadat,Edit (correct values)
+Folding & Measurement,6,Metre Reconciliation,dashboard,Manager,Side-by-side comparison: Gate Pass metres vs folding metres for recent lots / shrinkage trends,Drill down to lot
+Classification,1,Pending Classification,list,Worker / Supervisor,Browse folded material awaiting tone/finish classification — shows MRL number / lot / metres,Select material to classify
+Classification,2,Record Classification,form,Worker / Supervisor,Enter tone code and finish code — select scope (roll/lot/partial) / enter metres / optional HO dates,Submit
+Classification,3,Classification Records,list,Supervisor / Manager,Browse all classification records — filter by MRL / tone / finish / date range,View detail
+Classification,4,Classification Detail,detail,Supervisor / Manager,View one classification — tone / finish / scope / metres / dates. Re-classification for Manager.,Edit (re-classify)
+Classification,5,Decision Pending,list,Supervisor / Manager,Browse all pending classification decisions — shows aging / 14-day alerts,Add Comment / Resolve
+Classification,6,Decision Pending Detail,detail,Supervisor / Manager,View one pending entry — history of comments / resolve with tone and finish,Comment / Resolve
+Classification,7,Classification Dashboard,dashboard,Manager,Today's classification activity / pending vs classified totals / tone/finish distribution,Drill down to records
+Packing Program,1,Packing Programs,list,Manager,Browse all programs with status / source MRLs / progress filters,Create New Program
+Packing Program,2,Packing Program Detail,detail,Manager / Supervisor,View program header / source rolls / line items / thaans logged (by grade) / bales produced / gradation summary / progress,Log Thaan / Register Bale / Cancel
+Packing Program,3,Create Packing Program,form,Manager,Select source rolls from one or more MRLs / set fold type / add line items with brand/product/customer/cut specs / advisory bale count,Submit
+Packing Program,4,Log Thaan,form,Supervisor / Worker,Select source roll / enter grade (Fresh or non-Fresh) / enter metres or kg,Submit (auto-assigns thaan number)
+Packing Program,5,Register Bale,form,Supervisor / Worker,Select program line / select Fresh thaans to assemble into bale,Submit (auto-assigns bale number / generates packing slip / backflushes packaging)
+Packing Program,6,Bale Register,list,Manager / Supervisor,Browse all bales — filter by date / brand / product / customer / status,View bale detail
+Packing Program,7,Bale Detail,detail,Manager / Supervisor,View full bale identity — all attributes / thaans included / packing slip preview / event history,Print Packing Slip
+Packing Program,8,Gradation Report,detail,Supervisor / Manager,View progressive gradation report for one MRL — Fresh metres / grade breakdown / fresh percentage / shrinkage,Print / Export
+Packing Program,9,Gradation Reports,list,Manager,Browse all gradation reports — filter by MRL / date range,View report
+Packing Program,10,Packing Dashboard,dashboard,Manager,Today's packing activity — thaans logged / bales produced / programs in progress / gradation summary,Drill down
+Dispatch,1,Ready for Dispatch,list,Manager / Supervisor,Browse packed bales awaiting dispatch / grouped by customer,Create Delivery Form
+Dispatch,2,Create Delivery Form,form,Manager / Supervisor,Select customer / check bales to include / enter scheduled date and notes,Submit
+Dispatch,3,Scheduled Pickups,list,Manager / Supervisor,Browse delivery forms with status PICKUP_SCHEDULED,Dispatch (confirm departure)
+Dispatch,4,Delivery Forms,list,Manager,Browse all delivery forms — filter by date / customer / status,View detail
+Dispatch,5,Delivery Form Detail,detail,Manager,View form header / all bale lines / totals / status (scheduled/dispatched),Print Delivery Form / Dispatch
+Dispatch,6,Dispatch Dashboard,dashboard,Manager,Today's dispatches / scheduled pickups / total bales/metres / bales awaiting dispatch count,Drill down
+Todiya,1,Todiya Candidates,list,Manager,List of bales containing non-Fresh thaans with status PACKED — available for unpacking,Create Todiya Instruction
+Todiya,2,Create Todiya Instruction,form,Manager,Select bales to unpack / specify buyer / brand / product / trade number,Submit
+Todiya,3,Todiya Instructions,list,Manager,Browse all Todiya Instructions with status / customer / progress filters,View detail
+Todiya,4,Todiya Instruction Detail,detail,Manager / Supervisor,View instruction details / source bales / unpacked bales / Todiya bales produced / thaan disposition,Unpack Bale / Register Todiya Bale / Complete
+Todiya,5,Unpack Bale,form,Supervisor,Select a bale from the instruction's source list / confirm unpack,Unpack
+Todiya,6,Register Todiya Bale,form,Supervisor,Select thaans from unpacked pool / assemble into new bale,Submit (auto-assigns bale number / generates packing slip)
+NA Resolution,1,Reprocess List,list,"Supervisor, Manager","Browse all open NA entries — filter by vendor, age, MRL","Add Comment, Resolve"
 NA Resolution,2,NA Entry Detail,detail,"Supervisor, Manager","View one entry — full details, comment history, aging info","Comment, Resolve (Pickup / Write-off)"
-NA Resolution,3,Create NA Entry,form,Supervisor,Record a new Not Acceptable entry (if not auto-created from grading),Submit
+NA Resolution,3,Create NA Entry,form,Supervisor,Record a new Not Acceptable entry (if not auto-created from packing execution),Submit
 NA Resolution,4,Vendor Rejection Summary,dashboard,Manager,"Vendor-wise rejection totals, aging distribution, resolution stats",Drill down to vendor entries
-Packaging Materials,1,Packaging Stock,list,"Supervisor, Manager",Current stock levels for all packaging items — consumption auto-deducted via backflush on bale registration,"Record GRN, Adjust Stock"
-Packaging Materials,2,Record Packaging GRN,form,"Worker, Supervisor",Enter receipt details — SKU / vendor / quantity / reference,Submit
-Packaging Materials,3,Stock Adjustment,form,Supervisor,"Enter physical count, system shows difference — reconciles backflushed quantities with actual usage",Submit
-Packaging Materials,4,Packaging GRN History,list,Manager,"Browse all packaging GRNs — filter by SKU, vendor, date",View detail
-Packaging Materials,5,Consumption History,list,Manager,"Browse backflushed consumption records — filter by SKU, program, bale, date",View detail
-Reports,R01,Stage-wise Inventory Report,report,"Manager, Head Office",Real-time material at each stage — Grey / Folded / Fresh / Packed / Accumulated / NA,"Drill down, Export, Print"
-Reports,R02,Grey Lot Lifecycle Report,report,"Manager, Supervisor, Head Office",Complete history of one grey lot from creation through dispatch — all events in one view,"Export, Print"
-Reports,R03,Monthly Throughput Report,report,"Manager, Head Office","Period summary — grey lots created, receipts, lots folded/graded, bales packed/dispatched","Filter by date, Export"
+Packaging Materials,1,Packaging Stock,list,"Supervisor, Manager",(DEFERRED) Current stock levels for all packaging items — consumption auto-deducted via backflush on bale registration,"Record GRN, Adjust Stock"
+Packaging Materials,2,Record Packaging GRN,form,"Worker, Supervisor",(DEFERRED) Enter receipt details — SKU / vendor / quantity / reference,Submit
+Packaging Materials,3,Stock Adjustment,form,Supervisor,(DEFERRED) Enter physical count — system shows difference — reconciles backflushed quantities with actual usage,Submit
+Packaging Materials,4,Packaging GRN History,list,Manager,(DEFERRED) Browse all packaging GRNs — filter by SKU / vendor / date,View detail
+Packaging Materials,5,Consumption History,list,Manager,(DEFERRED) Browse backflushed consumption records — filter by SKU / program / bale / date,View detail
+Reports,R01,Stage-wise Inventory Report,report,"Manager, Head Office",Real-time material at each stage — Received / Folded / Classified / Packed / Accumulated / NA,"Drill down, Export, Print"
+Reports,R02,MRL Lifecycle Report,report,"Manager, Supervisor, Head Office",Complete history of one MRL from creation through dispatch — all events in one view,"Export, Print"
+Reports,R03,Monthly Throughput Report,report,"Manager, Head Office","Period summary — MRLs created, receipts, lots folded/classified, bales packed/dispatched","Filter by date, Export"
 Reports,R04,End-to-End Cycle Time Report,report,"Manager, Head Office","Average/median/min/max time from inbound receipt to dispatch, by vendor or lot","Filter by date/vendor, Export"
-Reports,R05,Vendor Pending Balance Report,report,"Manager, Head Office","Total outstanding metres at each vendor, oldest grey lot age, drill down to individual grey lots","Drill down, Export"
-Reports,R06,Vendor Sent/Received Summary,report,"Manager, Head Office","Period report — metres sent/received per vendor, average turnaround days","Filter by date/vendor, Export"
+Reports,R05,Vendor-Reported Greige Pending,report,"Manager, Head Office","Total outstanding greige metres at each vendor, oldest MRL age, drill down to individual MRLs","Drill down, Export"
+Reports,R06,Vendor-wise Inbound Summary,report,"Manager, Head Office","Period report — metres received per vendor, average turnaround days","Filter by date/vendor, Export"
 Reports,R07,Vendor Quality Performance Report,report,"Manager, Head Office","Vendor-wise Fresh yield %, NA rate %","Filter by date/vendor, Export"
-Reports,R09,Gradation Report (Printable),report,"Manager, Supervisor, Head Office","Print-ready Gradation Report — metre progression, grade breakdown with kg/metres/percentages","Print, Export to PDF"
-Reports,R10,Fresh Yield Trend Report,report,"Manager, Head Office","Fresh yield % over time (weekly/monthly), trend line, vendor breakdown","Filter by date/vendor, Chart + table"
+Reports,R08,Shrinkage Report,report,"Manager, Head Office","Shrinkage % per lot — received metres vs folded metres, trend over time","Filter by date/vendor, Export"
+Reports,R08b,Classification Summary Report,report,"Manager, Head Office","Tone/finish distribution across classified material / classification rates","Filter by date/tone/finish, Export"
+Reports,R09,Gradation Report (Printable),report,"Manager, Supervisor, Head Office","Print-ready Gradation Report for Module 05 — metre progression, grade breakdown with kg/metres/percentages","Print, Export to PDF"
+Reports,R10,Fresh Yield Trend Report,report,"Manager, Head Office","Fresh yield % over time (weekly/monthly) from gradation (THAAN_LOGGED), trend line, vendor breakdown","Filter by date/vendor, Chart + table"
 Reports,R11,Bale Production Report,report,"Manager, Head Office","Bales packed per period — count, metres, by brand/product/customer","Filter by date/brand/product/customer, Export"
-Reports,R12,Cutting Waste Report,report,Manager,"Waste per program — Good Cut (metres) / Fent (kg) / Chindi (kg), waste ratio, trend","Filter by date/grey lot, Export"
-Reports,R13,Packing Program Summary (Printable),report,"Manager, Supervisor","Print-ready program summary — header, line items, bales produced, waste","Print, Export to PDF"
+Reports,R12,Non-Fresh Thaan Report,report,Manager,"Non-Fresh thaans per program — Good Cut (metres) / Fent (kg) / Chindi (kg), ratio, trend","Filter by date/MRL, Export"
+Reports,R12b,Thaan Register,report,"Manager, Supervisor","All thaans with grade / metres / source roll / MRL / bale assignment","Filter by date/grade/MRL, Export"
+Reports,R13,Packing Program Summary (Printable),report,"Manager, Supervisor","Print-ready program summary — header, source rolls, line items, thaans logged (cross-lot), bales produced","Print, Export to PDF"
 Reports,R14,Dispatch Register,report,"Manager, Head Office","All dispatches for a period — delivery form no, date, customer, bales, metres","Filter by date/customer, Export"
 Reports,R15,Customer-wise Dispatch Report,report,"Manager, Head Office","Total bales/metres shipped per customer, products shipped, last dispatch date","Filter by date/customer, Drill down, Export"
 Reports,R16,Delivery Form (Printable),report,"Manager, Supervisor","Print-ready Delivery Form matching physical format — header, bale lines, totals, signatures",Print
-Reports,R17,Decision Pending Aging Report,report,Manager,"Pending entries with aging — green/yellow/red flags at 7/14 day thresholds","Filter by age, Export"
+Reports,R17,Decision Pending Aging Report,report,Manager,"Pending classification entries with aging — green/yellow/red flags at 7/14 day thresholds","Filter by age, Export"
 Reports,R18,Not Acceptable Aging Report,report,Manager,"Open NA entries by age — grouped by vendor, total pending metres per vendor","Filter by vendor/age, Export"
 Reports,R19,NA Resolution History Report,report,"Manager, Head Office","Resolved entries — days to resolve, resolution type, vendor-wise averages","Filter by date/vendor, Export"
-Reports,R20,Accumulation Trend Report,report,Manager,"Good Cut (metres) / Fent/Rags/Chindi (kg) over time — inflow vs outflow, stacked area chart","Filter by date/grade, Chart + table"
-Reports,R21,Packaging Stock Report,report,"Manager, Supervisor","Current stock of all packaging items, low stock warnings, last received/consumed dates","Export, Print"
-Reports,R22,Packaging GRN Register,report,Manager,"All packaging receipts for a period — GRN no, date, SKU, vendor, quantity","Filter by date/vendor/SKU, Export"
-Reports,R23,Packaging Consumption Report,report,Manager,"Backflushed consumption by SKU for a period — total consumed, bales linked, variance from stock adjustments","Filter by date/SKU, Export"
+Reports,R20,Todiya Candidate Report,report,Manager,"Bales with non-Fresh thaans available for Todiya — by grade, metres/kg, age","Filter by date/grade, Export"
+Reports,R21,(DEFERRED) Packaging Stock Report,report,"Manager, Supervisor","(DEFERRED) Current stock of all packaging items, low stock warnings, last received/consumed dates","Export, Print"
+Reports,R22,(DEFERRED) Packaging GRN Register,report,Manager,"(DEFERRED) All packaging receipts for a period — GRN no, date, SKU, vendor, quantity","Filter by date/vendor/SKU, Export"
+Reports,R23,(DEFERRED) Packaging Consumption Report,report,Manager,"(DEFERRED) Backflushed consumption by SKU for a period — total consumed, bales linked, variance from stock adjustments","Filter by date/SKU, Export"

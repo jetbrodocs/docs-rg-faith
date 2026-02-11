@@ -2,7 +2,7 @@
 title: "Process 09 — Not Acceptable Resolution"
 status: draft
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-11
 tags: [process, not-acceptable, reprocess, vendor, exception, resolution]
 ---
 
@@ -12,8 +12,8 @@ tags: [process, not-acceptable, reprocess, vendor, exception, resolution]
 
 | Field | Value |
 |---|---|
-| **Purpose** | Track and resolve material graded as "Not Acceptable" — rejected fabric that needs to be returned to the vendor mill. Functions as an informal issue tracker. |
-| **Trigger** | Material classified as Not Acceptable during quality grading (Process 05). |
+| **Purpose** | Track and resolve material identified as "Not Acceptable" — rejected fabric that needs to be returned to the vendor mill. Functions as an informal issue tracker. |
+| **Trigger** | Material identified as Not Acceptable during packing execution (gradation) (Process 06). |
 | **End condition** | Vendor picks up the rejected material, OR material remains at Miroli indefinitely (unresolved). |
 | **Frequency** | Occasional — varies by vendor quality. |
 | **Typical duration** | Days to months. Some entries remain open for over a year. |
@@ -22,7 +22,7 @@ tags: [process, not-acceptable, reprocess, vendor, exception, resolution]
 
 | Role | Responsibility |
 |---|---|
-| Grading workers / supervisor | Classify material as Not Acceptable. Record on Reprocess List. |
+| Packing workers / supervisor | Identify material as Not Acceptable during packing execution (gradation). Record on Reprocess List. |
 | Manager | Contacts vendor, manages back-and-forth discussion. |
 | Vendor mill | Expected to arrange pickup of rejected material. |
 
@@ -30,8 +30,8 @@ tags: [process, not-acceptable, reprocess, vendor, exception, resolution]
 
 | Input | Source | Format | Notes |
 |---|---|---|---|
-| Not Acceptable material | Quality grading (Process 05) | Physical fabric (metres) | Rejected during inspection. Either full roll or cut-out section. Always measured in metres. |
-| Rejection reason / remark | Grading team | Free text (often Hindi) | Describes the quality issue. |
+| Not Acceptable material | Packing execution / gradation (Process 06) | Physical fabric (metres) | Identified as Not Acceptable during packing execution. Either full roll or cut-out section. Always measured in metres. |
+| Rejection reason / remark | Packing team | Free text (often Hindi) | Describes the quality issue. |
 
 ## Outputs
 
@@ -46,7 +46,7 @@ tags: [process, not-acceptable, reprocess, vendor, exception, resolution]
 ### Main Flow
 
 ```
-START — Material graded as Not Acceptable (Process 05)
+START — Material identified as Not Acceptable during packing execution (Process 06)
   │
   ▼
 ┌─────────────────────────────────────┐
@@ -143,8 +143,8 @@ Not Acceptable ──► Open (on Reprocess List)
 
 | Direction | Process | How Connected |
 |---|---|---|
-| **Upstream** | [05 — Quality Grading](05-quality-grading.md) | Material graded as Not Acceptable enters this process. |
-| **Related** | [02 — Outbound to Vendor](02-outbound-to-vendor.md) | Vendor is the same mill that originally processed the fabric. |
+| **Upstream** | [06 — Packing Program & Execution](06-packing-program-execution.md) | Material identified as Not Acceptable during packing execution (gradation) enters this process. |
+| **Related** | Vendor mill (external) | Vendor is the same mill that originally processed the fabric. |
 
 ## Systems / Tools
 
