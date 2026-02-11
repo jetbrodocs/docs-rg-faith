@@ -88,4 +88,7 @@ Factory-level inventory tracking system for RG Faith Creations Pvt. Ltd. at thei
 - Packaging materials are deferred to a future phase — not in current scope
 - Tone/finish classification can be changed later with role-based authorization
 - Code generation (FY prefix, vendor codes embedded) is noted for implementation time — not in solution design yet
-- Dispatch is two-step: pickup scheduled → dispatched
+- Dispatch is two-step: pickup scheduled → dispatched. Delivery forms can be cancelled (bales revert to PACKED).
+- BALE_REGISTERED is a single unified event for both regular and Todiya bales — distinguished by a `source` field (REGULAR or TODIYA) and optional `todiya_instruction_id`
+- No quality/tone/finish matching enforced on cross-lot packing programs — manager is trusted to select compatible rolls
+- Centralized state machines for Fabric Inventory, Thaan, and Bale are defined in 00-overview.md
