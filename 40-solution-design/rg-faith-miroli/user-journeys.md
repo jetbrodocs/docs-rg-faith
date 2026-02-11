@@ -126,7 +126,7 @@ She and two other workers begin cutting rolls into thaans. For each cut piece, D
 
 She clicks Submit. The system auto-assigns thaan number **104832**. She continues logging thaans as each piece is cut and folded in Book style. Most pieces are Fresh. Occasionally the end of a roll yields a short piece or a section with a defect:
 
-- Thaan 104847: Source Roll 2, Grade = GOOD_CUT, Metres = 4.25. Submit. (This Good Cut thaan goes to accumulation — it is not used for baling in this regular program.)
+- Thaan 104847: Source Roll 2, Grade = GOOD_CUT, Metres = 4.25. Submit. (This Good Cut thaan will be assembled into a separate non-Fresh bale later.)
 - Thaan 104851: Source Roll 3, Grade = FENT, Kilograms = 0.8. Submit. (Chadat was already recorded for this lot: 5.12 metres/kg. The system converts 0.8 kg to 4.10 equivalent metres and updates the Gradation Report.)
 
 Each thaan logged updates the **Gradation Report** for FY26-MRL-0533 progressively — this IS the gradation. There is no standalone grading step.
@@ -207,7 +207,7 @@ The team continues executing PP-2026-0087. **Deepa** alternates between logging 
 - 2:15 PM: Bale 37434 registered. 3 of 5 complete.
 - 3:00 PM: Bale 37435 registered. 4 of 5 complete.
 
-Non-Fresh thaans logged during cutting (Good Cut ends, Fent offcuts, etc.) are automatically routed to accumulation at MIROLI-ACCUM. They remain as individual thaans with status CREATED awaiting a future Todiya sale.
+Non-Fresh thaans logged during cutting (Good Cut ends, Fent offcuts, etc.) are assembled into separate non-Fresh bales. These bales sit at MIROLI-FG-OUT awaiting a future Todiya buyer. When a buyer is found, bales are unpacked and thaans repacked into new Todiya bales (Module 07).
 
 ---
 

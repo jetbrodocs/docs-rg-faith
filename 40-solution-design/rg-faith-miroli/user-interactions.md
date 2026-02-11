@@ -175,8 +175,8 @@ Two paths exist depending on whether the MRL already exists.
 | **Role** | Worker, Supervisor |
 | **Trigger** | Worker cuts a piece from a source roll and folds it per program specifications; grades the piece during the process |
 | **Data captured** | Packing Program (selected), Source Roll (selected from program's allocated rolls), Grade (Fresh / Good Cut / Fent / Rags / Chindi / Not Acceptable), Quantity — metres for Fresh, Good Cut, Not Acceptable; kg for Fent, Rags, Chindi (Chadat must already be recorded for the source MRL if grade is kg-based) |
-| **System effect** | Thaan record created. Thaan number auto-assigned. Routing by grade: Fresh thaans remain available for bale assembly within this program. Good Cut / Fent / Rags / Chindi thaans move to accumulation stock. Not Acceptable thaans create an entry on the Reprocess List. Gradation Report for the source MRL auto-updated. |
-| **Auto side-effects** | If grade = NOT_ACCEPTABLE: auto-creates entry on Reprocess List with lot details. Accumulation Dashboard totals auto-updated for Good Cut / Fent / Rags / Chindi. Gradation Report percentages recalculated (Fresh yield vs losses). |
+| **System effect** | Thaan record created. Thaan number auto-assigned. All grades available for bale assembly — Fresh thaans into Fresh bales, non-Fresh thaans (Good Cut / Fent / Rags / Chindi) into separate non-Fresh bales. Not Acceptable thaans create an entry on the Reprocess List. Gradation Report for the source MRL auto-updated. |
+| **Auto side-effects** | If grade = NOT_ACCEPTABLE: auto-creates entry on Reprocess List with lot details. Gradation Report percentages recalculated (Fresh yield vs losses). |
 
 ### 4.3 Register Bale
 
@@ -243,10 +243,10 @@ Todiya is the process of unpacking bales that contain non-Fresh thaans (accumula
 | **Action** | Create a Todiya instruction — specify which accumulated non-Fresh thaans to repack and the target buyer/product details |
 | **Screen** | Create Todiya Instruction |
 | **Role** | Manager |
-| **Trigger** | Buyer found for accumulated non-Fresh stock |
-| **Data captured** | Source bales or thaans (selected from accumulation stock — Good Cut / Fent / Rags / Chindi), Buyer (Haste), Brand, Product, Trade Number |
-| **System effect** | Todiya instruction created. Selected material allocated to the Todiya instruction. Instruction status = CREATED. |
-| **Auto side-effects** | Accumulation Dashboard balances decrease for allocated material |
+| **Trigger** | Buyer found for non-Fresh bales in finished goods |
+| **Data captured** | Source bales (selected from non-Fresh bales at MIROLI-FG-OUT — Good Cut / Fent / Rags / Chindi), Buyer (Haste), Brand, Product, Trade Number |
+| **System effect** | Todiya instruction created. Selected bales earmarked for unpacking. Instruction status = CREATED. |
+| **Auto side-effects** | — |
 
 ### 6.2 Unpack Bale
 
@@ -281,8 +281,8 @@ Todiya is the process of unpacking bales that contain non-Fresh thaans (accumula
 | **Role** | Manager |
 | **Trigger** | All designated material has been unpacked and repacked, or manager decides the instruction is fulfilled |
 | **Data captured** | Completion confirmation, Notes (optional) |
-| **System effect** | Todiya instruction status -> COMPLETED. Any unallocated thaans remaining in the unpacked pool return to accumulation stock. |
-| **Auto side-effects** | Accumulation Dashboard balances updated for any returned material |
+| **System effect** | Todiya instruction status -> COMPLETED. Any unallocated thaans remaining in the unpacked pool stay as UNPACKED — available for a future Todiya Instruction. |
+| **Auto side-effects** | — |
 
 ---
 
@@ -374,15 +374,15 @@ Note: Most NA entries are auto-created during packing execution (Log Thaan, sect
 | 3.4 | Classification | Resolve Decision Pending | Decision Pending Detail | Supervisor, Manager | Classification assigned; material available for packing |
 | 3.5 | Classification | Add Comment (Decision Pending) | Decision Pending Detail | Supervisor, Manager | Aging timer resets |
 | 4.1 | Packing | Create Packing Program | Create Packing Program | Manager | Classified rolls allocated (cross-lot) |
-| 4.2 | Packing | Log Thaan | Log Thaan | Worker, Supervisor | Thaan graded; non-Fresh to accumulation; NA to Reprocess List |
-| 4.3 | Packing | Register Bale | Register Bale | Supervisor, Worker | Bale number assigned; packing slip generated; packaging backflushed |
+| 4.2 | Packing | Log Thaan | Log Thaan | Worker, Supervisor | Thaan graded; all grades available for baling; NA to Reprocess List |
+| 4.3 | Packing | Register Bale | Register Bale | Supervisor, Worker | Bale number assigned; packing slip generated |
 | 4.4 | Packing | Cancel Packing Program | Packing Program Detail | Manager | Allocated rolls released (only if no thaans logged) |
 | 5.1 | Dispatch | Create Delivery Form | Create Delivery Form | Manager, Supervisor | Bales -> PICKUP_SCHEDULED |
 | 5.2 | Dispatch | Dispatch Delivery | Delivery Form Detail | Manager, Supervisor | Bales -> DISPATCHED |
 | 6.1 | Todiya | Create Todiya Instruction | Create Todiya Instruction | Manager | Non-Fresh material allocated for repacking |
 | 6.2 | Todiya | Unpack Bale | Todiya Instruction Detail | Supervisor, Worker | Thaans released from bale into pool |
 | 6.3 | Todiya | Register Todiya Bale | Register Todiya Bale | Supervisor, Worker | New bale created; packing slip generated |
-| 6.4 | Todiya | Complete Todiya Instruction | Todiya Instruction Detail | Manager | Instruction closed; unallocated thaans return to accumulation |
+| 6.4 | Todiya | Complete Todiya Instruction | Todiya Instruction Detail | Manager | Instruction closed; unallocated thaans stay in unpacked pool |
 | 7.1 | NA Resolution | Create NA Entry | Create NA Entry | Supervisor | Entry added to Reprocess List |
 | 7.2 | NA Resolution | Add Comment (NA Entry) | NA Entry Detail | Supervisor, Manager | Aging timer resets |
 | 7.3 | NA Resolution | Resolve NA Entry | NA Entry Detail | Supervisor, Manager | Entry removed from active Reprocess List |

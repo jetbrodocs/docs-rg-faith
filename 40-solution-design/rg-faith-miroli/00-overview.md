@@ -143,14 +143,15 @@ Events emitted in one module that are consumed by projections in other modules.
 | `DECISION_PENDING_COMMENTED` | Classification (4) | Classification projection | Adds comment to Decision Pending entry. Resets 14-day aging clock. |
 | `DECISION_PENDING_RESOLVED` | Classification (4) | Inventory projection, Classification projection | Resolves classification uncertainty by assigning tone and finish. |
 | `PACKING_PROGRAM_CREATED` | Packing Program (5) | Inventory projection | Allocates classified rolls (cross-lot), changes state to PROGRAM_ASSIGNED |
-| `THAAN_LOGGED` | Packing Program (5) | Inventory projection, Gradation Report, Accumulation | Logs a thaan with grade. Fresh thaans → baling pool. Non-Fresh → accumulation. NA → Reprocess List. |
-| `BALE_REGISTERED` | Packing Program (5) | Inventory projection | Assembles Fresh thaans into a bale. State → PACKED. Packing slip generated. Packaging backflushed. |
+| `THAAN_LOGGED` | Packing Program (5) | Inventory projection, Gradation Report | Logs a thaan with grade. Fresh thaans → Fresh bales. Non-Fresh → non-Fresh bales (Todiya candidates). NA → Reprocess List. |
+| `BALE_REGISTERED` | Packing Program (5) | Inventory projection | Assembles Fresh thaans into a bale. State → PACKED. Packing slip generated. |
 | `PACKING_PROGRAM_CANCELLED` | Packing Program (5) | Inventory projection | Returns allocated rolls to previous state |
 | `DELIVERY_CREATED` | Dispatch (6) | Inventory projection | Creates Delivery Form. Bales → PICKUP_SCHEDULED. |
 | `DELIVERY_DISPATCHED` | Dispatch (6) | Inventory projection | Confirms truck departure. Bales → DISPATCHED. |
+| `DELIVERY_CANCELLED` | Dispatch (6) | Inventory projection | Cancels scheduled delivery. Bales revert PICKUP_SCHEDULED → PACKED. |
 | `TODIYA_INSTRUCTION_CREATED` | Todiya (7) | Todiya projection | Creates instruction to unpack specified bales |
 | `BALE_UNPACKED` | Todiya (7) | Bale projection, Thaan projection | Unpacks a bale, releases its thaans for repacking |
-| `TODIYA_BALE_REGISTERED` | Todiya (7) | Bale projection, Thaan projection | Repacks selected thaans into a new Todiya bale |
+| `BALE_REGISTERED` (source=TODIYA) | Todiya (7) | Bale projection, Thaan projection | Repacks selected thaans into a new Todiya bale (same event as Module 05, source field distinguishes) |
 | `TODIYA_INSTRUCTION_COMPLETED` | Todiya (7) | Todiya projection | Marks instruction as complete |
 | `NA_ENTRY_CREATED` | NA Resolution (8) | NA projection | Records rejected material on Reprocess List (also auto-created from THAAN_LOGGED when grade = NA) |
 | `NA_ENTRY_COMMENTED` | NA Resolution (8) | NA projection | Adds vendor communication update. Resets aging clock. |
@@ -202,10 +203,69 @@ The entire system operates at a single facility: Miroli. There are no distinct p
 | Classified Storage | zone | `MIROLI-CLASSIFIED` | Classified material awaiting packing program assignment. |
 | Cutting/Packing Area | zone | `MIROLI-PACK` | Where packing programs are executed — rolls moved here on allocation, thaans cut and bales assembled. |
 | Finished Goods | zone | `MIROLI-FG-OUT` | Packed bales awaiting dispatch. Also where Todiya unpack/repack happens. |
-| Accumulation Area | zone | `MIROLI-ACCUM` | Non-Fresh thaans (Good Cut, Fent, Rags, Chindi) routed here from packing. |
 | Not Acceptable Storage | zone | `MIROLI-NA` | Rejected material awaiting vendor return. |
 
 Note: These are logical zones for inventory tracking purposes. Physically, the facility has no walls or marked boundaries between areas. Packaging Materials Store (`MIROLI-PKGMAT`) is deferred.
+
+## Centralized State Machines
+
+### Fabric Inventory States
+
+Material progresses through these states as it moves across modules. Each transition is triggered by a specific event in a specific module.
+
+| State | Location | Module | Description |
+|---|---|---|---|
+| `RECEIVED` | MIROLI-RECEIVED | Inbound (2) | Material arrived, awaiting folding |
+| `FOLDED` | MIROLI-FG | Folding (3) | Folding complete, awaiting classification |
+| `AWAITING_CLASSIFICATION` | MIROLI-FG | Classification (4) | Folded, classification in progress |
+| `DECISION_PENDING` | MIROLI-FG | Classification (4) | Classification uncertain — samples sent to HO, 14-day aging alert |
+| `CLASSIFIED` | MIROLI-CLASSIFIED | Classification (4) | Tone and finish assigned, available for packing program |
+| `PROGRAM_ASSIGNED` | MIROLI-PACK | Packing (5) | Allocated to a packing program, physically moved to cutting area |
+| `NOT_ACCEPTABLE` | MIROLI-NA | Packing (5) | Rejected during cutting — entry on Reprocess List (Module 8) |
+
+### Thaan States
+
+| State | Location | Module | Description |
+|---|---|---|---|
+| `CREATED` | MIROLI-PACK | Packing (5) | Thaan cut and logged, available for bale assembly |
+| `BALED` | MIROLI-FG-OUT | Packing (5) / Todiya (7) | Assembled into a bale |
+| `UNPACKED` | MIROLI-FG-OUT | Todiya (7) | Released from unpacked bale, available for repacking |
+
+### Bale States
+
+| State | Location | Module | Description |
+|---|---|---|---|
+| `PACKED` | MIROLI-FG-OUT | Packing (5) / Todiya (7) | Bale assembled with packing slip, dispatch-ready. Source field: REGULAR or TODIYA. |
+| `PICKUP_SCHEDULED` | MIROLI-FG-OUT | Dispatch (6) | Assigned to a Delivery Form, truck not yet departed |
+| `DISPATCHED` | — | Dispatch (6) | Truck departed, bale left facility |
+| `UNPACKED` | MIROLI-FG-OUT | Todiya (7) | Bale physically opened, thaans released for repacking (terminal for this bale) |
+
+### State Transition Diagram
+
+```
+Fabric Inventory:
+  RECEIVED ──FOLDING_COMPLETED──► FOLDED
+  FOLDED ──CLASSIFICATION_RECORDED──► CLASSIFIED
+  FOLDED ──DECISION_PENDING_CREATED──► DECISION_PENDING
+  DECISION_PENDING ──DECISION_PENDING_RESOLVED──► CLASSIFIED
+  CLASSIFIED ──PACKING_PROGRAM_CREATED──► PROGRAM_ASSIGNED
+  PROGRAM_ASSIGNED ──PACKING_PROGRAM_CANCELLED──► CLASSIFIED (reversal)
+  PROGRAM_ASSIGNED ──THAAN_LOGGED (grade=NA)──► NOT_ACCEPTABLE (terminal)
+
+Thaan:
+  (new) ──THAAN_LOGGED──► CREATED
+  CREATED ──BALE_REGISTERED──► BALED
+  BALED ──BALE_UNPACKED──► UNPACKED
+  UNPACKED ──BALE_REGISTERED (source=TODIYA)──► BALED (in new bale)
+
+Bale:
+  (new) ──BALE_REGISTERED──► PACKED
+  (new) ──BALE_REGISTERED (source=TODIYA)──► PACKED
+  PACKED ──DELIVERY_CREATED──► PICKUP_SCHEDULED
+  PICKUP_SCHEDULED ──DELIVERY_DISPATCHED──► DISPATCHED (terminal)
+  PICKUP_SCHEDULED ──DELIVERY_CANCELLED──► PACKED (reversal)
+  PACKED ──BALE_UNPACKED──► UNPACKED (terminal for this bale)
+```
 
 ## Cross-Module Reports
 

@@ -75,7 +75,7 @@ Factory-level inventory tracking system for RG Faith Creations Pvt. Ltd. at thei
 - After folding: Tone & Finish Classification is a separate step. Tone and finish are two separate attributes. Samples sent to HO; factory worker enters after HO confirmation.
 - Classification (tone/finish assignment) is distinct from Gradation (quality sorting during packing). Do not mix these terms.
 - Gradation happens only as a byproduct of packing execution — no standalone grading step. Non-Fresh thaans are logged with grade during packing.
-- Regular packing programs use Fresh only; Good Cut and below always go to accumulation → Todiya
+- All thaans are baled during regular packing — Fresh into dispatch-ready bales, non-Fresh into separate non-Fresh bales that sit at MIROLI-FG-OUT until a Todiya buyer is found
 - Packing programs can pick rolls from different lots (cross-lot selection)
 - Thaan is the tracked intermediate unit: Roll → Thaan (cut+fold) → Bale. One thaan = one source roll. Bale-to-thaan mapping tracked.
 - Not Acceptable material is always measured in metres (never kg)

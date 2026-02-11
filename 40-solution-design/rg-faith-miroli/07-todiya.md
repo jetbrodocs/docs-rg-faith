@@ -23,7 +23,7 @@ Flow:
   Identify Candidates        Unpack Bales               Repack into Todiya Bales
        [ENTRY]                  [ENTRY]                        [ENTRY]
           |                        |                              |
-   Bales with non-Fresh       BALE_UNPACKED                TODIYA_BALE_REGISTERED
+   Bales with non-Fresh       BALE_UNPACKED                BALE_REGISTERED (source=TODIYA)
    thaans identified              |                              |
           |                  (bale opened,                  (thaans assembled
    TODIYA_INSTRUCTION_        thaans released)               into new bale,
@@ -85,7 +85,7 @@ The Thaan entity (defined in Module 05) gains an additional status:
 |---|---|
 | `UNPACKED` | Thaan has been released from its original bale. Available for repacking into a new Todiya bale. |
 
-Transition: `BALED` -> `UNPACKED` (via `BALE_UNPACKED`) -> `BALED` (via `TODIYA_BALE_REGISTERED`, in a new bale)
+Transition: `BALED` -> `UNPACKED` (via `BALE_UNPACKED`) -> `BALED` (via `BALE_REGISTERED (source=TODIYA)`, in a new bale)
 
 Note: The thaan itself is unchanged through this process — same metres, same source roll, same grade. Only the bale assignment changes.
 
@@ -195,13 +195,13 @@ Permissions:
 
 ### Step: Register Todiya Bale
 
-Event type: `TODIYA_BALE_REGISTERED`
+Event type: `BALE_REGISTERED` (same event as Module 05, with source = TODIYA)
 
 Trigger:
   Worker or supervisor opens the Register Todiya Bale screen for an active Todiya Instruction.
   Selects thaans from the pool of unpacked thaans (from one or more unpacked bales). Assembles
   them into a new bale. Clicks Submit. A bale number is auto-assigned and a packing slip is
-  generated. Packaging materials are backflushed.
+  generated.
 
 Data points captured:
   - todiya_instruction_id: UUID — which Todiya Instruction this bale belongs to
@@ -211,7 +211,10 @@ Data points captured:
 Payload:
   id: UUID (generated)
   bale_number: integer (generated — next in running serial, shared with Module 05)
+  source: "TODIYA"
   todiya_instruction_id: UUID
+  packing_program_id: null (no packing program for Todiya bales)
+  packing_program_line_id: null
   thaan_ids: [UUID]
   customer_id: UUID (from instruction)
   brand_id: UUID (from instruction)
@@ -235,15 +238,13 @@ Side effects:
   - New bale created with status PACKED
   - Selected thaans: status -> BALED, bale_id updated to new bale
   - Packing slip auto-generated (dispatch-ready)
-  - Packaging materials backflushed (same pattern as Module 05 bale registration)
-
 Projections updated:
   - bales: new row (status = PACKED, source = TODIYA)
   - thaans: status -> BALED, bale_id -> new bale id
   - todiya_instructions: bale count incremented
 
 Permissions:
-  - events:TODIYA_BALE_REGISTERED:emit
+  - events:BALE_REGISTERED:emit
 
 ---
 
@@ -331,10 +332,10 @@ This module adds:
 | From Status | Event | To Status |
 |---|---|---|
 | `BALED` | `BALE_UNPACKED` (parent bale unpacked) | `UNPACKED` |
-| `UNPACKED` | `TODIYA_BALE_REGISTERED` (thaan selected for new bale) | `BALED` |
+| `UNPACKED` | `BALE_REGISTERED (source=TODIYA)` (thaan selected for new bale) | `BALED` |
 
 ```
-BALED --BALE_UNPACKED--> UNPACKED --TODIYA_BALE_REGISTERED--> BALED (in new bale)
+BALED --BALE_UNPACKED--> UNPACKED --BALE_REGISTERED (source=TODIYA)--> BALED (in new bale)
 ```
 
 Note: The thaan's identity (metres, source roll, grade) does not change through these transitions. Only the bale assignment changes.
@@ -350,7 +351,7 @@ Note: The thaan's identity (metres, source roll, grade) does not change through 
 | 1 | "Which bales contain non-Fresh thaans and are available for Todiya?" | `bales` + `thaans` | bale status = PACKED, thaan grade != FRESH, bale_number, grade, metres | `BALE_REGISTERED` (Module 05), `BALE_UNPACKED` |
 | 2 | "What Todiya Instructions are active?" | `todiya_instructions` | status = CREATED or IN_PROGRESS, instruction_number, customer | `TODIYA_INSTRUCTION_CREATED`, `BALE_UNPACKED`, `TODIYA_INSTRUCTION_COMPLETED` |
 | 3 | "Todiya history by customer" | `todiya_instructions` + `bales` | customer, instruction_number, bales produced, total metres | All Todiya events |
-| 4 | "What are the unpacked bales and where did their thaans go?" | `bales` + `thaans` | bale status = UNPACKED, thaan status (UNPACKED or BALED in new bale), disposition | `BALE_UNPACKED`, `TODIYA_BALE_REGISTERED` |
+| 4 | "What are the unpacked bales and where did their thaans go?" | `bales` + `thaans` | bale status = UNPACKED, thaan status (UNPACKED or BALED in new bale), disposition | `BALE_UNPACKED`, `BALE_REGISTERED (source=TODIYA)` |
 
 ---
 
@@ -360,8 +361,8 @@ Note: The thaan's identity (metres, source roll, grade) does not change through 
 
 | Role | Description | Permissions |
 |---|---|---|
-| Facility Manager | Creates Todiya Instructions, completes instructions, monitors candidates | `events:TODIYA_INSTRUCTION_CREATED:emit`, `events:BALE_UNPACKED:emit`, `events:TODIYA_BALE_REGISTERED:emit`, `events:TODIYA_INSTRUCTION_COMPLETED:emit` |
-| Supervisor | Unpacks bales, registers Todiya bales | `events:BALE_UNPACKED:emit`, `events:TODIYA_BALE_REGISTERED:emit` |
+| Facility Manager | Creates Todiya Instructions, completes instructions, monitors candidates | `events:TODIYA_INSTRUCTION_CREATED:emit`, `events:BALE_UNPACKED:emit`, `events:BALE_REGISTERED (source=TODIYA):emit`, `events:TODIYA_INSTRUCTION_COMPLETED:emit` |
+| Supervisor | Unpacks bales, registers Todiya bales | `events:BALE_UNPACKED:emit`, `events:BALE_REGISTERED (source=TODIYA):emit` |
 
 ### Permissions
 
@@ -369,7 +370,7 @@ Note: The thaan's identity (metres, source roll, grade) does not change through 
 |---|---|---|
 | `events:TODIYA_INSTRUCTION_CREATED:emit` | Create a Todiya Instruction | Create Todiya Instruction |
 | `events:BALE_UNPACKED:emit` | Mark a bale as unpacked, releasing its thaans | Unpack Bale |
-| `events:TODIYA_BALE_REGISTERED:emit` | Register a new Todiya bale from repacked thaans | Register Todiya Bale |
+| `events:BALE_REGISTERED (source=TODIYA):emit` | Register a new Todiya bale from repacked thaans | Register Todiya Bale |
 | `events:TODIYA_INSTRUCTION_COMPLETED:emit` | Mark a Todiya Instruction as complete | Complete Todiya Instruction |
 
 ---
@@ -380,7 +381,7 @@ Note: The thaan's identity (metres, source roll, grade) does not change through 
 |---|---|---|---|---|
 | Finished Goods | zone | `MIROLI-FG-OUT` | MIROLI | Where packed bales (including non-Fresh candidates) are stored; where unpacking and repacking physically happens |
 
-Note: Todiya no longer requires a separate Accumulation Area (`MIROLI-ACCUM`). Non-Fresh material lives in bales at `MIROLI-FG-OUT` until unpacked and repacked. The cutting/packing area (`MIROLI-PACK`) is also not used — no cutting or folding occurs during Todiya.
+Note: There is no separate accumulation area. Non-Fresh material lives in bales at `MIROLI-FG-OUT` until unpacked and repacked. The cutting/packing area (`MIROLI-PACK`) is not used for Todiya — no cutting or folding occurs.
 
 ---
 
@@ -406,7 +407,7 @@ flowchart TD
     C -->|"Select bale\nto unpack"| D["Unpack Bale\n(BALE_UNPACKED)"]
     D -->|"Status: IN_PROGRESS"| E["Thaans Released\n(UNPACKED)"]
     D -->|"More bales\nto unpack?"| D
-    E -->|"Select thaans\nfrom unpacked pool"| F["Register Todiya Bale\n(TODIYA_BALE_REGISTERED)"]
+    E -->|"Select thaans\nfrom unpacked pool"| F["Register Todiya Bale\n(BALE_REGISTERED (source=TODIYA))"]
     F -->|"New bale created"| G["Todiya Bale (PACKED)\n+ Packing Slip\n→ MIROLI-FG-OUT"]
     F -->|"More bales\nto assemble?"| F
     G -->|"All repacking done"| H["Complete Instruction\n(TODIYA_INSTRUCTION_COMPLETED)"]

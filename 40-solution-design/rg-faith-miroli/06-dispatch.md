@@ -173,22 +173,64 @@ Permissions:
 
 ---
 
+### Step: Cancel Delivery Form
+
+Event type: `DELIVERY_CANCELLED`
+
+Trigger:
+  Manager opens a Delivery Form with status PICKUP_SCHEDULED and cancels it — e.g., customer
+  cancelled the order, logistics issue, or bales need to be reassigned. Enters a reason.
+  Clicks Cancel Delivery.
+
+Data points captured:
+  - id: UUID — which delivery form
+  - reason: string — why the delivery is being cancelled
+
+Payload:
+  id: UUID
+  reason: string
+  cancelled_at: datetime
+
+Aggregate: DeliveryForm / id
+
+Location: MIROLI
+
+Preconditions:
+  - Delivery form must exist with status = PICKUP_SCHEDULED
+  - Cannot cancel after dispatch (status = DISPATCHED)
+
+Side effects:
+  - Each bale's status reverts from PICKUP_SCHEDULED to PACKED
+  - fabric_inventory: state -> PACKED for each bale's metres
+  - Bales become available for inclusion in a new Delivery Form
+
+Projections updated:
+  - delivery_forms: status -> CANCELLED, reason set
+  - bales: status -> PACKED for each bale in the delivery
+  - fabric_inventory: state -> PACKED
+
+Permissions:
+  - events:DELIVERY_CANCELLED:emit
+
+---
+
 ## 4. State Machines
 
 ### Delivery Form States
 
-Statuses: `PICKUP_SCHEDULED`, `DISPATCHED`
+Statuses: `PICKUP_SCHEDULED`, `DISPATCHED`, `CANCELLED`
 
 | From Status | Event | To Status |
 |---|---|---|
 | (new) | `DELIVERY_CREATED` | `PICKUP_SCHEDULED` |
 | `PICKUP_SCHEDULED` | `DELIVERY_DISPATCHED` | `DISPATCHED` |
+| `PICKUP_SCHEDULED` | `DELIVERY_CANCELLED` | `CANCELLED` |
 
 Notes:
 - PICKUP_SCHEDULED means the delivery form is created and bales are earmarked for this shipment. The truck has not yet departed.
 - DISPATCHED means the truck has physically left Miroli with the bales. This is terminal.
-- Delivery forms are not editable after dispatch. If a correction is needed before dispatch, the delivery can be modified while in PICKUP_SCHEDULED status.
-- No cancellation state — if a scheduled delivery is cancelled, bales should be returned to PACKED status (handled operationally).
+- CANCELLED means the delivery was cancelled before dispatch. Bales revert to PACKED status and become available for a new delivery. This is terminal for the delivery form.
+- Delivery forms are not editable after dispatch.
 
 ---
 
@@ -214,7 +256,7 @@ Notes:
 
 | Role | Description | Permissions |
 |---|---|---|
-| Facility Manager | Creates delivery forms, confirms dispatch | `events:DELIVERY_CREATED:emit`, `events:DELIVERY_DISPATCHED:emit` |
+| Facility Manager | Creates delivery forms, confirms dispatch, cancels deliveries | `events:DELIVERY_CREATED:emit`, `events:DELIVERY_DISPATCHED:emit`, `events:DELIVERY_CANCELLED:emit` |
 | Supervisor | Creates delivery forms, confirms dispatch | `events:DELIVERY_CREATED:emit`, `events:DELIVERY_DISPATCHED:emit` |
 
 ### Permissions
@@ -223,6 +265,7 @@ Notes:
 |---|---|---|
 | `events:DELIVERY_CREATED:emit` | Create a delivery form and schedule pickup | Create Delivery Form (Schedule Pickup) |
 | `events:DELIVERY_DISPATCHED:emit` | Confirm truck departure | Dispatch Delivery (Confirm Departure) |
+| `events:DELIVERY_CANCELLED:emit` | Cancel a scheduled delivery and release bales | Cancel Delivery Form |
 
 ---
 
@@ -243,7 +286,7 @@ Notes:
 | 2 | Create Delivery Form | form | Manager, Supervisor | Select customer, check bales to include, enter scheduled date and notes | Submit |
 | 3 | Scheduled Pickups | list | Manager, Supervisor | Browse delivery forms with status PICKUP_SCHEDULED | Dispatch (confirm departure) |
 | 4 | Delivery Forms | list | Manager | Browse all delivery forms — filter by date, customer, status | View detail |
-| 5 | Delivery Form Detail | detail | Manager | View form header, all bale lines, totals, status (scheduled/dispatched) | Print Delivery Form, Dispatch |
+| 5 | Delivery Form Detail | detail | Manager | View form header, all bale lines, totals, status (scheduled/dispatched/cancelled) | Print Delivery Form, Dispatch, Cancel Delivery |
 | 6 | Dispatch Dashboard | dashboard | Manager | Today's dispatches, scheduled pickups, total bales/metres, bales awaiting dispatch count | Drill down |
 
 ---

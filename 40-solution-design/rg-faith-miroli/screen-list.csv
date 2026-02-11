@@ -36,7 +36,7 @@ Packing Program,1,Packing Programs,list,Manager,Browse all programs with status 
 Packing Program,2,Packing Program Detail,detail,Manager / Supervisor,View program header / source rolls / line items / thaans logged (by grade) / bales produced / gradation summary / progress,Log Thaan / Register Bale / Cancel
 Packing Program,3,Create Packing Program,form,Manager,Select source rolls from one or more MRLs / set fold type / add line items with brand/product/customer/cut specs / advisory bale count,Submit
 Packing Program,4,Log Thaan,form,Supervisor / Worker,Select source roll / enter grade (Fresh or non-Fresh) / enter metres or kg,Submit (auto-assigns thaan number)
-Packing Program,5,Register Bale,form,Supervisor / Worker,Select program line / select Fresh thaans to assemble into bale,Submit (auto-assigns bale number / generates packing slip / backflushes packaging)
+Packing Program,5,Register Bale,form,Supervisor / Worker,Select program line / select Fresh thaans to assemble into bale,Submit (auto-assigns bale number / generates packing slip)
 Packing Program,6,Bale Register,list,Manager / Supervisor,Browse all bales — filter by date / brand / product / customer / status,View bale detail
 Packing Program,7,Bale Detail,detail,Manager / Supervisor,View full bale identity — all attributes / thaans included / packing slip preview / event history,Print Packing Slip
 Packing Program,8,Gradation Report,detail,Supervisor / Manager,View progressive gradation report for one MRL — Fresh metres / grade breakdown / fresh percentage / shrinkage,Print / Export

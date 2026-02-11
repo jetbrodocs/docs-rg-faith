@@ -14,7 +14,7 @@ A single lot can contribute rolls to multiple packing programs. A single packing
 
 **No fixed rules** govern brand/product assignment. Any lot can become any brand/product combination. The manager decides at packing program creation time.
 
-**Regular packing programs use Fresh thaans only for baling.** Good Cut and below always go to accumulation for Todiya (Module 07).
+**All thaans are baled during regular packing** — Fresh thaans into dispatch-ready bales, non-Fresh thaans (Good Cut, Fent, Rags, Chindi) into separate non-Fresh bales. Non-Fresh bales sit at MIROLI-FG-OUT until a Todiya buyer is found (Module 07).
 
 Flow:
 
@@ -26,12 +26,11 @@ Flow:
             |                              |                              |
      (manager creates work          (cut roll to length,          (select Fresh thaans,
       order, selects rolls           fold per fold type,           assemble into bale,
-      from 1+ MRLs)                  log thaan with grade)         auto-generate slip,
-            |                              |                        auto-backflush pkg)
-     Rolls allocated              Gradation Report updated              |
-            |                              |                       PACKAGING_BACKFLUSHED
-         [EXIT]                         [EXIT]                          |
-                                                                     [EXIT]
+      from 1+ MRLs)                  log thaan with grade)         auto-generate slip)
+            |                              |                              |
+     Rolls allocated              Gradation Report updated         Bale (PACKED)
+            |                              |                              |
+         [EXIT]                         [EXIT]                         [EXIT]
 ```
 
 ---
@@ -115,8 +114,10 @@ Flow:
 |---|---|---|
 | id | UUID | Primary key |
 | bale_number | integer | Human-readable bale number (auto-generated running serial) |
-| packing_program_id | UUID (FK) | Which packing program produced this bale |
-| packing_program_line_id | UUID (FK) | Which line item this bale is from |
+| source | string | `REGULAR` or `TODIYA` — how this bale was created |
+| packing_program_id | UUID (FK) | Which packing program produced this bale (null for Todiya bales) |
+| packing_program_line_id | UUID (FK) | Which line item this bale is from (null for Todiya bales) |
+| todiya_instruction_id | UUID (FK) | Which Todiya Instruction produced this bale (null for regular bales) |
 | brand_id | UUID (FK) | Brand stamp on this bale |
 | product_id | UUID (FK) | Product name |
 | trade_number_id | UUID (FK) | Trade number / SKU |
@@ -236,6 +237,7 @@ Preconditions:
   - All referenced master data (brand, product, trade number, fold type, customer) must be active
   - At least one line item required
   - At least one source roll required
+  - **No quality/tone/finish matching enforced** — the manager sets quality_code_id and tone_code_id at the program level independently of the source rolls' classification. The manager is trusted to select compatible rolls.
 
 Side effects:
   - fabric_inventory: source rolls state changes to PROGRAM_ASSIGNED
@@ -300,8 +302,7 @@ Side effects:
   - Packing program status -> IN_PROGRESS (if was CREATED)
   - Gradation Report updated for the thaan's MRL (incremental recalculation of grade totals, fresh percentage, shrinkage)
   - If grade = GOOD_CUT, FENT, RAGS, or CHINDI:
-    - fabric_inventory: new ACCUMULATED entry at MIROLI-ACCUM
-    - accumulation_stock: totals incremented (metres for Good Cut, kg for Fent/Rags/Chindi)
+    - Thaan logged with status CREATED (available for baling into a non-Fresh bale)
   - If grade = NOT_ACCEPTABLE:
     - fabric_inventory: state -> NOT_ACCEPTABLE, location -> MIROLI-NA
     - Creates NA_ENTRY_CREATED event on Reprocess List (Module 08)
@@ -311,7 +312,6 @@ Projections updated:
   - packing_programs: total_thaans_logged++, total_fresh_thaans++ (if Fresh), status -> IN_PROGRESS
   - gradation_reports: incremental update (add metres/kg to grade totals, recalculate fresh_percentage, recalculate shrinkage)
   - fabric_inventory: updated based on grade
-  - accumulation_stock: if non-Fresh and not NA, add to accumulation totals (metres for Good Cut, kg for Fent/Rags/Chindi)
   - not_acceptable_entries: if grade = NOT_ACCEPTABLE, new row on Reprocess List
 
 Permissions:
@@ -327,8 +327,7 @@ Trigger:
   Worker or supervisor opens the Register Bale screen for an active packing program, selects
   the line item, selects the Fresh thaans to include in this bale (from thaans with status =
   CREATED and grade = FRESH), and clicks Submit. A bale number is auto-assigned. Packing slip
-  is auto-generated (dispatch-ready — no separate approval step). Packaging materials are
-  auto-backflushed per the product's BOM.
+  is auto-generated (dispatch-ready — no separate approval step).
 
   This step is repeated for each bale produced during Phase 2.
 
@@ -364,7 +363,8 @@ Preconditions:
   - Packing program must exist with status CREATED or IN_PROGRESS
   - Line item must belong to this program
   - All thaan_ids must belong to this packing program
-  - All selected thaans must have status = CREATED and grade = FRESH (regular programs use Fresh only for baling)
+  - All selected thaans must have status = CREATED
+  - All selected thaans in a single bale must have the same grade (Fresh bales contain only Fresh thaans; non-Fresh bales contain one grade each)
   - thaan_ids must not be empty
 
 Side effects:
@@ -374,7 +374,6 @@ Side effects:
   - Packing program status -> IN_PROGRESS (if was CREATED)
   - fabric_inventory: state changes from PROGRAM_ASSIGNED to PACKED
   - Packing slip auto-generated (dispatch-ready trigger)
-  - PACKAGING_BACKFLUSHED event emitted — packaging materials auto-deducted per product BOM (Module 09)
   - If program is considered complete (manager's judgment, since planned_bales is advisory):
     packing program status -> COMPLETED
 
@@ -384,7 +383,6 @@ Projections updated:
   - packing_programs: total_bales++, total_metres_packed += total_metres, status updated
   - packing_program_lines: actual_bales++, actual_metres += total_metres
   - fabric_inventory: state -> PACKED, location -> MIROLI-FG-OUT
-  - packaging_stock_levels: decremented per product BOM (via PACKAGING_BACKFLUSHED)
 
 Permissions:
   - events:BALE_REGISTERED:emit
@@ -462,23 +460,26 @@ Statuses: `CREATED`, `BALED`, `UNPACKED`
 |---|---|---|
 | (new) | `THAAN_LOGGED` | `CREATED` |
 | `CREATED` | `BALE_REGISTERED` (thaan assembled into bale) | `BALED` |
-| `BALED` | Todiya unpacking (Module 07) | `UNPACKED` |
+| `BALED` | `BALE_UNPACKED` — Todiya unpacking (Module 07) | `UNPACKED` |
+| `UNPACKED` | `BALE_REGISTERED` (source=TODIYA, Module 07) | `BALED` (in new Todiya bale) |
 
 Notes:
 - CREATED means the thaan has been cut and logged but not yet assembled into a bale.
 - BALED means the thaan is part of a bale.
 - UNPACKED is used for Todiya scenarios where a bale is broken apart.
-- Non-Fresh thaans (Good Cut, Fent, Rags, Chindi) are not assembled into bales during regular programs — they go to accumulation. Their status remains CREATED until consumed by a Todiya program.
+- Non-Fresh thaans (Good Cut, Fent, Rags, Chindi) are assembled into separate non-Fresh bales during regular programs. These bales sit at MIROLI-FG-OUT until a Todiya buyer is found (Module 07).
 
 ### Bale States
 
-Statuses: `PACKED`, `PICKUP_SCHEDULED`, `DISPATCHED`
+Statuses: `PACKED`, `PICKUP_SCHEDULED`, `DISPATCHED`, `UNPACKED`
 
 | From Status | Event | To Status |
 |---|---|---|
 | (new) | `BALE_REGISTERED` | `PACKED` |
 | `PACKED` | `DELIVERY_CREATED` (Module 06) | `PICKUP_SCHEDULED` |
 | `PICKUP_SCHEDULED` | `DELIVERY_DISPATCHED` (Module 06) | `DISPATCHED` |
+| `PICKUP_SCHEDULED` | `DELIVERY_CANCELLED` (Module 06) | `PACKED` |
+| `PACKED` | `BALE_UNPACKED` (Module 07 — Todiya) | `UNPACKED` |
 
 Notes:
 - A bale is dispatch-ready the moment its packing slip is generated (which happens at `BALE_REGISTERED`). No approval step.
@@ -533,8 +534,7 @@ Notes:
 | Location | Type | Code | Parent | Purpose |
 |---|---|---|---|---|
 | Cutting/Packing Area | zone | `MIROLI-PACK` | MIROLI | Where programs are executed — rolls moved here on allocation, thaans cut and bales assembled |
-| Finished Goods | zone | `MIROLI-FG-OUT` | MIROLI | Packed bales stored here awaiting dispatch |
-| Accumulation Area | zone | `MIROLI-ACCUM` | MIROLI | Non-Fresh thaans (Good Cut, Fent, Rags, Chindi) routed here |
+| Finished Goods | zone | `MIROLI-FG-OUT` | MIROLI | Packed bales stored here awaiting dispatch (both Fresh and non-Fresh bales) |
 | Not Acceptable Storage | zone | `MIROLI-NA` | MIROLI | Not Acceptable thaans routed here; entry created on Reprocess List (Module 08) |
 
 ---
@@ -547,7 +547,7 @@ Notes:
 | 2 | Packing Program Detail | detail | Manager, Supervisor | View program header, source rolls, line items, thaans logged (by grade), bales produced, gradation summary, progress | Log Thaan, Register Bale, Cancel |
 | 3 | Create Packing Program | form | Manager | Select source rolls from one or more MRLs, set fold type, add line items with brand/product/customer/cut specs, advisory bale count | Submit |
 | 4 | Log Thaan | form | Supervisor, Worker | Select source roll, enter grade (Fresh or non-Fresh), enter metres or kg | Submit (auto-assigns thaan number) |
-| 5 | Register Bale | form | Supervisor, Worker | Select program line, select Fresh thaans to assemble into bale | Submit (auto-assigns bale number, auto-generates packing slip, auto-backflushes packaging) |
+| 5 | Register Bale | form | Supervisor, Worker | Select program line, select Fresh thaans to assemble into bale | Submit (auto-assigns bale number, auto-generates packing slip) |
 | 6 | Bale Register | list | Manager, Supervisor | Browse all bales — filter by date, brand, product, customer, status | View bale detail |
 | 7 | Bale Detail | detail | Manager, Supervisor | View full bale identity — all attributes, thaans included, packing slip preview, event history | Print Packing Slip |
 | 8 | Gradation Report | detail | Supervisor, Manager | View progressive gradation report for one MRL — Fresh metres, grade breakdown, fresh percentage, shrinkage. Updated as thaans are logged. | Print, Export |
@@ -566,13 +566,13 @@ flowchart TD
     C -->|"Phase 1: Cut + Fold"| D["Log Thaan\n(THAAN_LOGGED)"]
 
     D -->|"Grade = FRESH"| E["Fresh Thaan\n(CREATED)"]
-    D -->|"Grade = GOOD_CUT /\nFENT / RAGS / CHINDI"| F["Non-Fresh Thaan\n→ Accumulation\n(MIROLI-ACCUM)\n→ Todiya (Module 7)"]
+    D -->|"Grade = GOOD_CUT /\nFENT / RAGS / CHINDI"| F["Non-Fresh Thaan\n→ Baled separately\n→ MIROLI-FG-OUT\n→ Todiya (Module 7)"]
     D -->|"Grade = NOT_ACCEPTABLE"| G["NA Thaan\n→ MIROLI-NA\n→ Reprocess List\n(Module 8)"]
 
     D -->|"Updates"| H["Gradation Report\n(progressive)"]
 
     E -->|"Phase 2: Assemble"| I["Register Bale\n(BALE_REGISTERED)"]
-    I -->|"Auto-generates"| J["Packing Slip\n+ Packaging Backflush"]
+    I -->|"Auto-generates"| J["Packing Slip"]
     I -->|"Bale (PACKED)"| K["Finished Goods\n→ MIROLI-FG-OUT"]
 
     I -->|"More bales?"| E
