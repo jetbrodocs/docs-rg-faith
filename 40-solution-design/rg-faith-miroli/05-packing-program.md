@@ -6,7 +6,7 @@
 
 This module transforms rolls into branded, packed bales — the finished product. A packing program is a work order that can source rolls from **multiple MRLs** (cross-lot selection). Execution happens in two explicit phases: **Phase 1 (Cut + Fold to Thaan)** produces individually logged thaans from source rolls, and **Phase 2 (Assemble Thaans to Bale)** groups thaans into finished bales with bale numbers, brand stamps, product assignments, trade numbers, and packing slips.
 
-**Gradation is embedded in packing execution.** There is no standalone grading step. During Phase 1, as each roll is cut, the majority produces Fresh thaans. Any non-Fresh material (Good Cut, Fent, Rags, Chindi) is logged as non-Fresh thaans with the appropriate grade — this IS the gradation. The Gradation Report is a progressive projection updated every time a thaan is logged. Not Acceptable material identified during cutting is logged in metres and creates an entry on the Reprocess List (Module 08).
+**Gradation is embedded in packing execution.** There is no standalone grading step. During Phase 1, as each roll is cut, the majority produces Fresh thaans. Any non-Fresh material (Good Cut, Fent, Rags, Chindi) is logged as non-Fresh thaans with the appropriate grade — this IS the gradation. The Gradation Report is a progressive projection updated every time a thaan is logged. Material rejected for quality issues is marked as Not Acceptable at the classification stage (Module 04), not during packing.
 
 Packing programs are triggered by: sales orders from head office (~95%), proactive inventory advancement by the manager (~5%), or Todiya repacking (handled in Module 07). This module covers regular (Fresh) packing programs only — Todiya packing programs are documented in Module 07 but follow the same execution flow.
 
@@ -101,8 +101,8 @@ Flow:
 | packing_program_id | UUID (FK) | Which packing program produced this thaan |
 | source_roll_id | UUID (FK) | Which roll this thaan was cut from (one thaan = one source roll) |
 | mrl_id | UUID (FK) | Denormalized from roll — which MRL |
-| grade | string | FRESH, GOOD_CUT, FENT, RAGS, CHINDI, or NOT_ACCEPTABLE |
-| metres | decimal | For Fresh, Good Cut, and Not Acceptable thaans (always in metres) |
+| grade | string | FRESH, GOOD_CUT, FENT, RAGS, or CHINDI |
+| metres | decimal | For Fresh and Good Cut thaans (always in metres) |
 | kilograms | decimal | For Fent, Rags, and Chindi thaans (always in kg; metres derived via Chadat) |
 | bale_id | UUID (FK) | Which bale this thaan was assembled into (null until baling) |
 | status | string | Current lifecycle status: CREATED, BALED, UNPACKED (for Todiya) |
@@ -149,11 +149,13 @@ Flow:
 | rags_metres | decimal | Converted via Chadat |
 | chindi_kg | decimal | Sum of CHINDI thaans in kg |
 | chindi_metres | decimal | Converted via Chadat |
-| not_acceptable_metres | decimal | Sum of NOT_ACCEPTABLE thaans in metres |
+| not_acceptable_metres | decimal | Material rejected at classification (Module 04), tracked separately from packing gradation. Not part of packing yield calculation. |
 | total_graded_metres | decimal | Sum of all grades in metres |
 | fresh_percentage | decimal | (total_fresh_metres / total_graded_metres) * 100 |
 | shrinkage_metres | decimal | folding_metres - total_graded_metres (ongoing; null if folding not yet recorded) |
 | updated_at | datetime | Last time the report was updated |
+
+**Note:** not_acceptable_metres is populated from CLASSIFICATION_RECORDED events (Module 04) where is_not_acceptable=true, NOT from THAAN_LOGGED events. This field tracks material rejected before it reaches packing, displayed separately in the Gradation Report.
 
 ### Numbering
 
@@ -270,8 +272,8 @@ Trigger:
 Data points captured:
   - packing_program_id: UUID
   - source_roll_id: UUID — which roll this thaan was cut from
-  - grade: string — FRESH, GOOD_CUT, FENT, RAGS, CHINDI, or NOT_ACCEPTABLE
-  - metres: decimal — for Fresh, Good Cut, and Not Acceptable (in metres)
+  - grade: string — FRESH, GOOD_CUT, FENT, RAGS, or CHINDI
+  - metres: decimal — for Fresh and Good Cut (in metres)
   - kilograms: decimal — for Fent, Rags, and Chindi (in kg)
 
 Payload:
@@ -293,7 +295,7 @@ Preconditions:
   - Packing program must exist with status CREATED or IN_PROGRESS
   - source_roll_id must be one of the program's source rolls
   - One thaan can only come from one roll
-  - For FRESH, GOOD_CUT, NOT_ACCEPTABLE: metres must be > 0, kilograms = 0
+  - For FRESH, GOOD_CUT: metres must be > 0, kilograms = 0
   - For FENT, RAGS, CHINDI: kilograms must be > 0, metres computed via Chadat
   - **Validation rule:** Chadat must be recorded (on the MRL's folding record) BEFORE any non-Fresh thaan can be logged — because Fent, Rags, and Chindi are measured in kg and need Chadat for the metres-to-kg conversion bridge
 
@@ -303,16 +305,12 @@ Side effects:
   - Gradation Report updated for the thaan's MRL (incremental recalculation of grade totals, fresh percentage, shrinkage)
   - If grade = GOOD_CUT, FENT, RAGS, or CHINDI:
     - Thaan logged with status CREATED (available for baling into a non-Fresh bale)
-  - If grade = NOT_ACCEPTABLE:
-    - fabric_inventory: state -> NOT_ACCEPTABLE, location -> MIROLI-NA
-    - Creates NA_ENTRY_CREATED event on Reprocess List (Module 08)
 
 Projections updated:
   - thaans: new row (status = CREATED, bale_id = null)
   - packing_programs: total_thaans_logged++, total_fresh_thaans++ (if Fresh), status -> IN_PROGRESS
   - gradation_reports: incremental update (add metres/kg to grade totals, recalculate fresh_percentage, recalculate shrinkage)
   - fabric_inventory: updated based on grade
-  - not_acceptable_entries: if grade = NOT_ACCEPTABLE, new row on Reprocess List
 
 Permissions:
   - events:THAAN_LOGGED:emit
@@ -567,7 +565,6 @@ flowchart TD
 
     D -->|"Grade = FRESH"| E["Fresh Thaan\n(CREATED)"]
     D -->|"Grade = GOOD_CUT /\nFENT / RAGS / CHINDI"| F["Non-Fresh Thaan\n→ Baled separately\n→ MIROLI-FG-OUT\n→ Todiya (Module 7)"]
-    D -->|"Grade = NOT_ACCEPTABLE"| G["NA Thaan\n→ MIROLI-NA\n→ Reprocess List\n(Module 8)"]
 
     D -->|"Updates"| H["Gradation Report\n(progressive)"]
 

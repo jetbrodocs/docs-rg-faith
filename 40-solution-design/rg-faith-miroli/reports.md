@@ -42,8 +42,7 @@ Reports are available to the Facility Manager, Supervisor, and Head Office User.
 | Program Assigned (in packing) | Total metres allocated to packing programs | `fabric_inventory` (state = PROGRAM_ASSIGNED) |
 | Packed (awaiting dispatch) | Total bales + metres at MIROLI-FG-OUT | `bales` (status = PACKED) |
 | Todiya Candidates (bales with non-Fresh thaans) | Count of bales + total non-Fresh thaan metres/kg | `bales` (status = PACKED, containing non-Fresh thaans) |
-| Decision Pending | Total metres in DECISION_PENDING state | `fabric_inventory` (state = DECISION_PENDING) |
-| Not Acceptable | Total metres at MIROLI-NA | `fabric_inventory` (state = NOT_ACCEPTABLE) |
+| Not Acceptable | Total metres at MIROLI-HOLD | `fabric_inventory` (state = NOT_ACCEPTABLE) |
 
 **Drill-down:** Each row links to the relevant module's list screen (e.g., clicking "Received" opens the Pending Folding list).
 
@@ -197,7 +196,7 @@ Note: This is an informational report only. The system does not track outbound s
 | Total metres received | From inbound receipts |
 | Fresh metres | Sum of Fresh gradation for vendor's lots (from `gradation_reports`, Module 05) |
 | Fresh yield % | Percentage |
-| Not Acceptable metres | Sum of NA thaans logged during packing for vendor's lots |
+| Not Acceptable metres | Sum of material marked NOT_ACCEPTABLE at classification (Module 04) |
 | NA rate % | Percentage |
 | Open NA entries | Count still unresolved |
 | Average shrinkage % | From folding records for vendor's lots |
@@ -542,33 +541,6 @@ Note: Dispatch follows a two-step process. Delivery forms first move to PICKUP_S
 
 ## Exception Reports
 
-### R17 — Decision Pending Aging Report
-
-**Question:** "What Decision Pending entries are overdue for review?"
-
-| Field | Description |
-|---|---|
-| **Type** | List with aging buckets |
-| **Audience** | Manager |
-| **Filters** | Status (Pending only), age threshold |
-
-**Content:**
-
-| Column | Description |
-|---|---|
-| MRL Number | Lot identifier |
-| Roll / Lot Number | Specific roll or vendor lot |
-| Metres | Pending decision |
-| Classification Issue | Why tone/finish classification is uncertain |
-| Created Date | When `DECISION_PENDING_CREATED` event was recorded |
-| Comments | History of `DECISION_PENDING_COMMENTED` entries |
-| Days Since Last Activity | Aging indicator |
-| Status Flag | Green (< 7 days), Yellow (7-13 days), Red (14+ days) |
-
-Note: Decision Pending is now for classification uncertainty — material where tone and/or finish cannot be confidently assigned. It is no longer related to quality grading. Resolved via `DECISION_PENDING_RESOLVED` event.
-
----
-
 ### R18 — Not Acceptable Aging Report
 
 **Question:** "What rejected material has been sitting the longest?"
@@ -588,14 +560,15 @@ Note: Decision Pending is now for classification uncertainty — material where 
 | Vendor | Which mill |
 | Metres | Rejected amount |
 | Remark | Rejection reason |
-| Created Date | When thaan was logged as NA during packing execution (Module 05) |
+| Created Date | When material was marked NA at classification (Module 04) |
 | Days Open | Total age |
 | Last Activity | Most recent comment date |
 | Status | Open / In Discussion |
+| Possible Actions | "Vendor Pickup / Dispose / Reclassify" — three resolution options available |
 
 **Summary:** Grouped by vendor, showing total pending metres per vendor.
 
-Note: Not Acceptable material is identified during packing execution (Module 05) when a thaan is logged with grade = Not Acceptable, not during a separate grading step.
+Note: Not Acceptable material is identified at classification (Module 04), not during packing execution. Three resolution paths available: vendor pickup (RETURNED_TO_VENDOR), disposal (DISPOSED), or manager reclassification (RECLASSIFIED).
 
 ---
 
@@ -617,12 +590,16 @@ Note: Not Acceptable material is identified during packing execution (Module 05)
 | MRL Number | Source MRL |
 | Vendor | Which mill |
 | Metres | Amount |
-| Created Date | When NA thaan was logged during packing (Module 05) |
+| Created Date | When material was marked NA at classification (Module 04) |
 | Resolved Date | When closed |
 | Days to Resolve | Duration |
-| Resolution Type | Vendor Pickup / Unresolved |
+| Resolution Type | RETURNED_TO_VENDOR, DISPOSED, or RECLASSIFIED |
 
-**Summary:** Average resolution time, % resolved via pickup vs. unresolved, by vendor.
+**Summary:**
+- Average resolution time (days)
+- % returned to vendor vs. % disposed vs. % reclassified
+- By vendor: total resolutions, avg time, breakdown by resolution type
+- Reclassification rate (indicates quality of initial classification process)
 
 ---
 
@@ -752,12 +729,11 @@ Note: Todiya is an unpack-and-repack operation. Candidate bales at PACKED status
 | R14 | Dispatch Register | Dispatch | List | Manager, Head Office | Active |
 | R15 | Customer-wise Dispatch | Dispatch | Summary | Manager, Head Office | Active |
 | R16 | Delivery Form (Printable) | Dispatch | Printable | Manager, Supervisor | Active |
-| R17 | Decision Pending Aging | Exception | List + aging | Manager | Active |
-| R18 | Not Acceptable Aging | Exception | List + aging | Manager | Active |
-| R19 | NA Resolution History | Exception | Analytical | Manager, Head Office | Active |
-| R20 | Todiya Candidate Report | Exception | List | Manager | Active |
-| R21 | Packaging Stock Report | Packaging | List | Manager, Supervisor | DEFERRED |
-| R22 | Packaging GRN Register | Packaging | List | Manager | DEFERRED |
-| R23 | Packaging Consumption | Packaging | Summary + detail | Manager | DEFERRED |
-| R24 | Classification Summary | Processing | Summary + detail | Manager, Head Office | Active |
-| R25 | Thaan Register | Packing & Output | List | Manager, Supervisor | Active |
+| R17 | Not Acceptable Aging | Exception | List + aging | Manager | Active |
+| R18 | NA Resolution History | Exception | Analytical | Manager, Head Office | Active |
+| R19 | Todiya Candidate Report | Exception | List | Manager | Active |
+| R20 | Packaging Stock Report | Packaging | List | Manager, Supervisor | DEFERRED |
+| R21 | Packaging GRN Register | Packaging | List | Manager | DEFERRED |
+| R22 | Packaging Consumption | Packaging | Summary + detail | Manager | DEFERRED |
+| R23 | Classification Summary | Processing | Summary + detail | Manager, Head Office | Active |
+| R24 | Thaan Register | Packing & Output | List | Manager, Supervisor | Active |

@@ -14,7 +14,7 @@ This document describes how real users experience the system day-to-day. It is s
 | Role | Person | Location | Responsibility | Primary Screens |
 |---|---|---|---|---|
 | **Facility Manager** | Ramesh | Miroli floor | Decision-maker. Creates packing programs and Todiya instructions. Creates delivery forms and confirms dispatch (two-step). Reviews dashboards. Handles vendor issues. | Dashboards, Create Packing Program, Create Todiya Instruction, Ready for Dispatch, Scheduled Pickups, Reprocess List |
-| **Supervisor** | Kiran | Miroli floor (folding/classification/packing areas) | Operational lead. Records inbound receipts (creates MRLs on first receipt). Records per-roll folding measurements and Chadat. Records tone and finish classification. Logs thaans during packing. Manages Decision Pending entries. | Record Inbound Receipt, Record Folding, Record Chadat, Record Classification, Log Thaan, Decision Pending |
+| **Supervisor** | Kiran | Miroli floor (folding/classification/packing areas) | Operational lead. Records inbound receipts (creates MRLs on first receipt). Records per-roll folding measurements and Chadat. Records tone and finish classification or marks material as Not Acceptable. Logs thaans during packing. | Record Inbound Receipt, Record Folding, Record Chadat, Record Classification, Log Thaan |
 | **Receiving Worker** | Anil | Miroli receiving area | Unloads trucks. Assists with bale loading for dispatch. | (physical — no primary screens in current scope) |
 | **Packing Worker** | Deepa | Miroli packing area | Executes packing programs — logs thaans (cut + fold + grade) in Phase 1, then registers bales in Phase 2. | Log Thaan, Register Bale, Packing Program Detail |
 | **Head Office User** | Priyanka | Ahmedabad head office (New Cloth Market) | Remote monitoring. Reviews dashboards and reports. Answers management queries. | Stage-wise Dashboard, Gradation Reports, Dispatch Dashboard |
@@ -169,13 +169,38 @@ She clicks Submit. The material state changes from FOLDED to CLASSIFIED at MIROL
 
 ---
 
-### 11:00 AM — Ramesh handles the stale Decision Pending entry
+### 10:50 AM — Kiran marks defective material as Not Acceptable
 
-Between activities, Ramesh walks to the storage area and physically examines the 100 metres from FY26-MRL-0531 that has been sitting as Decision Pending for 16 days. The classification uncertainty was about tone variation between two rolls — one appears slightly warmer than the other.
+While inspecting another freshly folded lot (FY26-MRL-0542, 1,800 metres), **Kiran** notices visible defects throughout the fabric — color bleeding and uneven dyeing. This material cannot be classified for normal use.
 
-He compares them carefully. The difference is subtle but real — they should be classified separately. He opens **Decision Pending Detail** on his phone and resolves the entry: Resolved Tone = O1W, Resolved Finish = 01. The 100 metres move from DECISION_PENDING to CLASSIFIED and appear in the **Classified Material Available** screen.
+She opens **Record Classification** and selects:
+- MRL: FY26-MRL-0542
+- Classification Decision: "Mark Not Acceptable" (radio button)
+- Rejection Reason: "Fabric has visible defects and color bleeding throughout - not suitable for packing"
+- Metres Rejected: 1,800
 
-(If the rolls had truly different tones, he would have split the resolution into two separate classification records — one per roll — with different tone codes.)
+She clicks Submit. The system updates:
+- Material state → NOT_ACCEPTABLE at MIROLI-HOLD
+- NA_ENTRY_CREATED event auto-triggers
+- Entry NA-2026-0089 appears on the **Reprocess List**
+
+The material will remain at MIROLI-HOLD until Ramesh contacts the vendor for pickup, decides to dispose of it, or (rarely) overrides the rejection and reclassifies it.
+
+---
+
+### 11:00 AM — Ramesh reviews Not Acceptable entry and reclassifies material
+
+Between activities, Ramesh checks the **Reprocess List** and notices an entry from yesterday (FY26-MRL-0548, 180 metres) marked as Not Acceptable during classification with reason "fabric has minor color bleeding."
+
+He walks to MIROLI-HOLD and physically inspects the material. After careful examination, he decides the quality is acceptable enough for certain lower-grade applications.
+
+He opens **NA Entry Detail** on his phone and resolves the entry:
+- Resolution Type: "Reclassified"
+- Tone Code: O1W
+- Finish Code: 02
+- Notes: "Inspected material — bleeding is minor and isolated, acceptable for Reclassified use"
+
+The system updates: Entry → RESOLVED, Material state → CLASSIFIED at MIROLI-CLASSIFIED. The 180 metres are now available for packing program allocation.
 
 ---
 
@@ -217,25 +242,30 @@ Non-Fresh thaans logged during cutting (Good Cut ends, Fent offcuts, etc.) are a
 
 | Grade | Metres | % |
 |---|---|---|
-| Fresh | 1,425.00 | 96.53% |
+| Fresh | 1,430.00 | 96.87% |
 | Good Cut | 10.75 | 0.73% |
 | Fent (1.2 kg = 6.14m via Chadat) | 6.14 | 0.42% |
 | Rags (0.4 kg = 2.05m via Chadat) | 2.05 | 0.14% |
 | Chindi (0.3 kg = 1.54m via Chadat) | 1.54 | 0.10% |
-| Not Acceptable | 5.00 | 0.34% |
 | **Total graded** | **1,450.48** | -- |
+| Not Acceptable* | 0.00 | 0.00% |
 
-The 5 metres of Not Acceptable fabric identified during thaan logging automatically created an entry on the **Reprocess List**: NA-2026-0034, FY26-MRL-0533, 5 metres, remark "stain found during cutting, roll 3, approx 65m mark."
+*Not Acceptable is tracked separately — material rejected at classification (Module 04), not during packing. For this MRL, no material was marked NA at classification.
 
-Note: This report is progressive. Not all of this MRL's material has been packed yet — only the portion allocated to PP-2026-0087. The remaining classified metres from this MRL will be graded when they are assigned to future packing programs.
+Note: This report is progressive. Not all of this MRL's material has been packed yet — only the portion allocated to PP-2026-0087. The remaining classified metres from this MRL will be graded when they are assigned to future packing programs. If worker encounters severely defective material during packing, they escalate to manager — quality rejection should happen at classification, not here.
 
 ---
 
-### 3:45 PM — Ramesh contacts PSJC about the old rejection
+### 3:45 PM — Ramesh contacts PSJC about the old rejection and schedules pickup
 
-Ramesh calls PSJC about the 47-day-old Reprocess List entry (FY26-MRL-0526, 1,408 metres). They say they will send a truck next week to pick it up.
+Ramesh calls PSJC about the 47-day-old Reprocess List entry (FY26-MRL-0526, 1,408 metres marked NA at classification). The vendor confirms they will send a truck next week to collect the rejected material.
 
 He opens **NA Entry Detail** for the entry and adds a comment: "Called PSJC. They confirmed pickup next week — tentatively Thursday." The last_activity_at resets. The aging clock restarts.
+
+One week later, when the vendor truck arrives and collects the material, Ramesh resolves the entry:
+- Resolution Type: "Returned to Vendor"
+- Notes: "Material picked up by PSJC truck on 2026-02-19"
+- System updates: Entry → RESOLVED, Material state → RETURNED_TO_VENDOR, location → OUT (left facility)
 
 ---
 

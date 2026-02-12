@@ -90,17 +90,17 @@ Two paths exist depending on whether the MRL already exists.
 
 ## 3. Classification — Tone & Finish Assignment
 
-### 3.1 Record Classification
+### 3.1 Record Classification or Mark Not Acceptable
 
 | Field | Value |
 |---|---|
-| **Action** | Assign tone code and finish code to material — classifies rolls or a lot after rough inspection and head office sample return |
+| **Action** | Assign tone code and finish code to material — classifies rolls or a lot after rough inspection and head office sample return, OR mark material as Not Acceptable if rejected |
 | **Screen** | Record Classification |
 | **Role** | Supervisor |
-| **Trigger** | Sample has been sent to head office and returned with tone and finish determination; supervisor records the classification |
-| **Data captured** | MRL (selected), Tone Code (from master data), Finish Code (from master data), Scope (roll / lot / partial — specifying which rolls or how many metres), Metres Classified, HO Sample Sent Date (optional), HO Sample Returned Date (optional) |
-| **System effect** | Classification record created. Classified material is now available for packing program sourcing. Classification appears on lot detail and roll detail views. |
-| **Auto side-effects** | None |
+| **Trigger** | Sample has been sent to head office and returned with tone and finish determination; supervisor records the classification, OR material is rejected for quality issues |
+| **Data captured** | MRL (selected), Classification Decision (radio button: "Classify" or "Mark Not Acceptable").<br><br>**If Classify:** Tone Code (from master data), Finish Code (from master data), Scope (roll / lot / partial — specifying which rolls or how many metres), Metres Classified, HO Sample Sent Date (optional), HO Sample Returned Date (optional).<br><br>**If Mark Not Acceptable:** Rejection Reason (text), Metres Rejected. |
+| **System effect** | **If Classify:** Classification record created. Classified material is now available for packing program sourcing. Classification appears on lot detail and roll detail views.<br><br>**If Mark Not Acceptable:** Material state → NOT_ACCEPTABLE at MIROLI-HOLD. NA_ENTRY_CREATED event auto-triggered. Entry created on Reprocess List (Module 08). |
+| **Auto side-effects** | **If Classify:** None<br><br>**If Mark Not Acceptable:** Reprocess List entry created. Gradation Report updated (not_acceptable_metres tracked separately). Inventory dashboard updated (material moved to Not Acceptable Hold). |
 
 ### 3.2 Update Classification (Re-classification)
 
@@ -113,42 +113,6 @@ Two paths exist depending on whether the MRL already exists.
 | **Data captured** | Updated Tone Code and/or Finish Code, Reason for change |
 | **System effect** | Classification record updated with new tone/finish codes. Previous values preserved in audit trail. Any downstream packing programs sourcing this material reflect the updated classification. |
 | **Auto side-effects** | None. No approval workflow — RBAC restriction to Facility Manager is the sole control. |
-
-### 3.3 Create Decision Pending
-
-| Field | Value |
-|---|---|
-| **Action** | Flag material where tone and/or finish is unclear and classification cannot yet be assigned |
-| **Screen** | Record Classification (classification = Decision Pending) |
-| **Role** | Supervisor |
-| **Trigger** | Classification ambiguity — colour variation between rolls, unclear finish, head office sample not yet returned |
-| **Data captured** | MRL, Metres flagged, Remark describing the uncertainty |
-| **System effect** | Decision Pending entry created. Material remains unclassified — cannot be sourced for packing programs. Entry appears on Decision Pending list with aging counter starting from creation date. |
-| **Auto side-effects** | 14-day inactivity alert: if no comments or resolution for 14 days, entry flagged with red warning on Decision Pending screen |
-
-### 3.4 Resolve Decision Pending
-
-| Field | Value |
-|---|---|
-| **Action** | Resolve a pending classification decision by assigning tone code and finish code |
-| **Screen** | Decision Pending Detail |
-| **Role** | Supervisor, Manager |
-| **Trigger** | Head office confirms tone/finish, or manager inspects physical material and makes a classification determination |
-| **Data captured** | Tone Code (from master data), Finish Code (from master data) |
-| **System effect** | Decision Pending entry resolved and removed from active list. Classification record created with the assigned tone and finish codes. Material becomes available for packing program sourcing. |
-| **Auto side-effects** | None |
-
-### 3.5 Add Comment (Decision Pending)
-
-| Field | Value |
-|---|---|
-| **Action** | Add a comment to a Decision Pending entry to document investigation progress |
-| **Screen** | Decision Pending Detail |
-| **Role** | Supervisor, Manager |
-| **Trigger** | Ongoing investigation — noting observations, next steps, or partial findings from head office |
-| **Data captured** | Comment text |
-| **System effect** | Comment added to entry's history. last_activity_at timestamp resets — aging clock restarts from this point. |
-| **Auto side-effects** | 14-day inactivity alert timer resets |
 
 ---
 
@@ -174,9 +138,9 @@ Two paths exist depending on whether the MRL already exists.
 | **Screen** | Log Thaan |
 | **Role** | Worker, Supervisor |
 | **Trigger** | Worker cuts a piece from a source roll and folds it per program specifications; grades the piece during the process |
-| **Data captured** | Packing Program (selected), Source Roll (selected from program's allocated rolls), Grade (Fresh / Good Cut / Fent / Rags / Chindi / Not Acceptable), Quantity — metres for Fresh, Good Cut, Not Acceptable; kg for Fent, Rags, Chindi (Chadat must already be recorded for the source MRL if grade is kg-based) |
-| **System effect** | Thaan record created. Thaan number auto-assigned. All grades available for bale assembly — Fresh thaans into Fresh bales, non-Fresh thaans (Good Cut / Fent / Rags / Chindi) into separate non-Fresh bales. Not Acceptable thaans create an entry on the Reprocess List. Gradation Report for the source MRL auto-updated. |
-| **Auto side-effects** | If grade = NOT_ACCEPTABLE: auto-creates entry on Reprocess List with lot details. Gradation Report percentages recalculated (Fresh yield vs losses). |
+| **Data captured** | Packing Program (selected), Source Roll (selected from program's allocated rolls), Grade (Fresh / Good Cut / Fent / Rags / Chindi), Quantity — metres for Fresh, Good Cut; kg for Fent, Rags, Chindi (Chadat must already be recorded for the source MRL if grade is kg-based) |
+| **System effect** | Thaan record created. Thaan number auto-assigned. All grades available for bale assembly — Fresh thaans into Fresh bales, non-Fresh thaans (Good Cut / Fent / Rags / Chindi) into separate non-Fresh bales. Gradation Report for the source MRL auto-updated. |
+| **Auto side-effects** | Gradation Report percentages recalculated (Fresh yield vs losses). NOT_ACCEPTABLE is NOT a valid grade at packing — quality rejection happens at classification (Module 04). |
 
 ### 4.3 Register Bale
 
@@ -295,12 +259,12 @@ Todiya is the process of unpacking bales that contain non-Fresh thaans (accumula
 | **Action** | Record a Not Acceptable entry on the Reprocess List (when not auto-created from packing execution) |
 | **Screen** | Create NA Entry |
 | **Role** | Supervisor |
-| **Trigger** | Material identified as Not Acceptable outside the normal packing execution flow |
+| **Trigger** | Material identified as Not Acceptable outside the normal classification flow (rarely used — most NA entries are auto-created at classification) |
 | **Data captured** | MRL Number, Lot Number, Metres rejected, Quality Code, Tone, Remark (reason for rejection) |
-| **System effect** | NA entry created on Reprocess List. Material tracked at MIROLI-NA. Entry appears on Reprocess List with aging counter from creation date. |
+| **System effect** | NA entry created on Reprocess List. Material tracked at MIROLI-HOLD. Entry appears on Reprocess List with aging counter from creation date. |
 | **Auto side-effects** | None |
 
-Note: Most NA entries are auto-created during packing execution (Log Thaan, section 4.2) when a thaan is graded as Not Acceptable.
+Note: Most NA entries are auto-created during classification (Record Classification, section 3.1) when material is marked as Not Acceptable.
 
 ### 7.2 Add Comment (NA Entry)
 
@@ -318,13 +282,13 @@ Note: Most NA entries are auto-created during packing execution (Log Thaan, sect
 
 | Field | Value |
 |---|---|
-| **Action** | Resolve an NA entry — vendor picked up rejected material, or entry written off |
+| **Action** | Resolve an NA entry with one of three resolution outcomes |
 | **Screen** | NA Entry Detail |
 | **Role** | Supervisor, Manager |
-| **Trigger** | Vendor arranges pickup, or manager decides to write off after extended non-response |
-| **Data captured** | Resolution type (Pickup / Write-off), Resolution notes |
-| **System effect** | NA entry removed from active Reprocess List. If Pickup: material leaves MIROLI-NA inventory. If Write-off: material remains at facility but is no longer tracked as pending resolution. Entry preserved in resolution history. |
-| **Auto side-effects** | Reprocess List count decreases. Vendor Rejection Summary stats updated. |
+| **Trigger** | Vendor arranges pickup, OR manager decides to write off/dispose, OR manager overrides rejection and reclassifies material |
+| **Data captured** | Resolution type (Returned to Vendor / Disposed / Reclassified), Resolution notes.<br><br>**If Reclassified:** Tone Code (from master data), Finish Code (from master data). |
+| **System effect** | NA entry removed from active Reprocess List. Entry marked RESOLVED.<br><br>**Returned to Vendor:** Material state → RETURNED_TO_VENDOR, location → OUT (material left facility)<br>**Disposed:** Material state → DISPOSED, location → OUT (material left facility)<br>**Reclassified:** Material state → CLASSIFIED, location → MIROLI-CLASSIFIED (material proceeds to packing) |
+| **Auto side-effects** | Reprocess List count decreases. Vendor Rejection Summary stats updated. If reclassified: material becomes available for packing program allocation. |
 
 ---
 
@@ -368,13 +332,10 @@ Note: Most NA entries are auto-created during packing execution (Log Thaan, sect
 | 2.2 | Folding | Edit Folding Record | Folding Record Detail | Supervisor, Manager | Roll totals recalculated |
 | 2.3 | Folding | Record Chadat | Record Chadat | Supervisor | Chadat value available for kg-based grades |
 | 2.4 | Folding | Edit Chadat Record | Chadat Record Detail | Supervisor, Manager | Chadat value corrected |
-| 3.1 | Classification | Record Classification | Record Classification | Supervisor | Tone & finish assigned; material available for packing |
+| 3.1 | Classification | Record Classification or Mark Not Acceptable | Record Classification | Supervisor | Tone & finish assigned OR material marked Not Acceptable |
 | 3.2 | Classification | Update Classification | Classification Record Detail | Facility Manager | Tone/finish changed (RBAC-restricted) |
-| 3.3 | Classification | Create Decision Pending | Record Classification | Supervisor | 14-day inactivity alert activated |
-| 3.4 | Classification | Resolve Decision Pending | Decision Pending Detail | Supervisor, Manager | Classification assigned; material available for packing |
-| 3.5 | Classification | Add Comment (Decision Pending) | Decision Pending Detail | Supervisor, Manager | Aging timer resets |
 | 4.1 | Packing | Create Packing Program | Create Packing Program | Manager | Classified rolls allocated (cross-lot) |
-| 4.2 | Packing | Log Thaan | Log Thaan | Worker, Supervisor | Thaan graded; all grades available for baling; NA to Reprocess List |
+| 4.2 | Packing | Log Thaan | Log Thaan | Worker, Supervisor | Thaan graded; all grades available for baling (Fresh/Good Cut/Fent/Rags/Chindi only) |
 | 4.3 | Packing | Register Bale | Register Bale | Supervisor, Worker | Bale number assigned; packing slip generated |
 | 4.4 | Packing | Cancel Packing Program | Packing Program Detail | Manager | Allocated rolls released (only if no thaans logged) |
 | 5.1 | Dispatch | Create Delivery Form | Create Delivery Form | Manager, Supervisor | Bales -> PICKUP_SCHEDULED |
@@ -385,6 +346,6 @@ Note: Most NA entries are auto-created during packing execution (Log Thaan, sect
 | 6.4 | Todiya | Complete Todiya Instruction | Todiya Instruction Detail | Manager | Instruction closed; unallocated thaans stay in unpacked pool |
 | 7.1 | NA Resolution | Create NA Entry | Create NA Entry | Supervisor | Entry added to Reprocess List |
 | 7.2 | NA Resolution | Add Comment (NA Entry) | NA Entry Detail | Supervisor, Manager | Aging timer resets |
-| 7.3 | NA Resolution | Resolve NA Entry | NA Entry Detail | Supervisor, Manager | Entry removed from active Reprocess List |
+| 7.3 | NA Resolution | Resolve NA Entry | NA Entry Detail | Supervisor, Manager | Entry removed from active Reprocess List; three resolution outcomes: returned/disposed/reclassified |
 | 8.1 | Packaging (DEFERRED) | Record Packaging GRN | Record Packaging GRN | Worker, Supervisor | Packaging stock increases |
 | 8.2 | Packaging (DEFERRED) | Stock Adjustment | Stock Adjustment | Supervisor | Stock reconciled to physical count |

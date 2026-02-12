@@ -19,11 +19,11 @@ The facility has ~50 multi-skilled workers operating on an open floor plan with 
 | 1 | Master Data | [01-master-data.md](01-master-data.md) | Vendors, customers (Haste), brands, products, fold types, tone codes, finish codes, quality codes, trade numbers — all user-configurable. Packaging SKUs deferred. |
 | 2 | Inbound Receipt | [02-outbound-inbound.md](02-outbound-inbound.md) | Inbound receipt of finished material from vendor mills. MRL number created at first receipt. Vendor-reported greige pending captured as informational field from Gate Pass. No outbound tracking. |
 | 3 | Folding & Measurement | [03-folding-measurement.md](03-folding-measurement.md) | Standard fold (~95-100cm), per-roll metre measurement. Chadat (metres-to-kg conversion) recorded as a separate event. Reconcile folding metres against Gate Pass received metres. |
-| 4 | Tone & Finish Classification | [04-quality-grading.md](04-quality-grading.md) | Assign tone code and finish code to folded material. Involves factory inspection and optional Head Office confirmation. Decision Pending for classification uncertainty. Not gradation — that happens embedded in Module 05 packing execution. |
-| 5 | Packing Program | [05-packing-program.md](05-packing-program.md) | Create packing programs (cross-lot roll selection), execute in two phases: Phase 1 logs thaans with embedded gradation (Fresh/Good Cut/Fent/Rags/Chindi/NA), Phase 2 assembles Fresh thaans into bales. Gradation Report produced here. |
+| 4 | Tone & Finish Classification | [04-quality-grading.md](04-quality-grading.md) | Assign tone code and finish code to folded material, OR mark as Not Acceptable if material is rejected. Involves factory inspection and optional Head Office confirmation. Not Acceptable material enters resolution workflow (Module 08). Not gradation — that happens embedded in Module 05 packing execution. |
+| 5 | Packing Program | [05-packing-program.md](05-packing-program.md) | Create packing programs (cross-lot roll selection), execute in two phases: Phase 1 logs thaans with embedded gradation (Fresh/Good Cut/Fent/Rags/Chindi), Phase 2 assembles Fresh thaans into bales. Gradation Report produced here. |
 | 6 | Dispatch | [06-dispatch.md](06-dispatch.md) | Two-step dispatch: create Delivery Form (PICKUP_SCHEDULED), then confirm departure (DISPATCHED). |
 | 7 | Todiya | [07-todiya.md](07-todiya.md) | Unpack existing bales containing non-Fresh thaans, repack selected thaans into new Todiya bales. No re-cutting or re-folding — thaans pass through unchanged. |
-| 8 | Not Acceptable Resolution | [08-not-acceptable-resolution.md](08-not-acceptable-resolution.md) | Reprocess List, vendor communication tracking, aging alerts, resolution workflow. NA material identified during packing execution (Module 05). |
+| 8 | Not Acceptable Resolution | [08-not-acceptable-resolution.md](08-not-acceptable-resolution.md) | Reprocess List, vendor communication tracking, aging alerts, resolution workflow. NA material identified at classification (Module 04). Three resolution paths: vendor pickup (RETURNED_TO_VENDOR), manager reclassifies (RECLASSIFIED), or write-off (DISPOSED). |
 | 9 | Packaging Materials (DEFERRED) | [09-packaging-materials.md](09-packaging-materials.md) | GRN for packaging supplies, stock levels, consumption tracking. Deferred to a future phase. |
 
 ## End-to-End Flow
@@ -71,35 +71,35 @@ The facility has ~50 multi-skilled workers operating on an open floor plan with 
                                      │ Classification(4)│
                                      │                  │
                                      │ Tone + Finish    │
-                                     │ assigned         │
+                                     │ assigned OR      │
+                                     │ Not Acceptable   │
                                      │ CLASSIFICATION_  │
                                      │ RECORDED         │
                                      └──┬───────────┬───┘
                                         │           │
-                                        │           │ Decision
-                                        │           │ Pending
-                                        │           │ (14-day flag)
+                                        │           │ Not Acceptable
+                                        │           │ (Module 08)
                                         ▼           ▼
                            ┌──────────────────┐  ┌──────────────┐
-                           │ Packing Program  │  │ Awaiting     │
-                           │ (5)              │  │ classification│
-                           │                  │  │ decision     │
-                           │ Phase 1: Thaans  │  └──────────────┘
-                           │ (embedded grade) │
-                           │ Phase 2: Bales   │
-                           └──┬──────┬────┬───┘
-                              │      │    │
-                  ┌───────────┘      │    └──────────────┐
-                  │ Fresh bales      │ Non-Fresh thaans  │ NA thaans
-                  ▼                  ▼                   ▼
-          ┌────────────┐    ┌────────────┐      ┌──────────────┐
-          │ Dispatch    │    │ Todiya (7) │      │ Not Acceptable│
-          │ (6)         │    │            │      │ Resolution   │
-          │             │    │ Unpack +   │      │ (8)          │
-          │ Two-step:   │    │ Repack     │      │              │
-          │ Schedule →  │    │            │      │ Reprocess    │
-          │ Dispatch    │    │ Todiya     │──────│ List         │
-          └─────────────┘    │ bales →   │      └──────────────┘
+                           │ Packing Program  │  │ Not Acceptable│
+                           │ (5)              │  │ Resolution   │
+                           │                  │  │ (8)          │
+                           │ Phase 1: Thaans  │  │              │
+                           │ (embedded grade) │  │ Reprocess    │
+                           │ Phase 2: Bales   │  │ List         │
+                           └──┬──────┬────────┘  └──────────────┘
+                              │      │
+                  ┌───────────┘      │
+                  │ Fresh bales      │ Non-Fresh thaans
+                  ▼                  ▼
+          ┌────────────┐    ┌────────────┐
+          │ Dispatch    │    │ Todiya (7) │
+          │ (6)         │    │            │
+          │             │    │ Unpack +   │
+          │ Two-step:   │    │ Repack     │
+          │ Schedule →  │    │            │
+          │ Dispatch    │    │ Todiya     │
+          └─────────────┘    │ bales →   │
                              │ Dispatch  │
                              └───────────┘
 ```
@@ -137,13 +137,10 @@ Events emitted in one module that are consumed by projections in other modules.
 | `CHADAT_RECORDED` | Folding (3) | Gradation Report projection | Records metres-to-kg conversion factor. Required before non-Fresh thaans can be logged. |
 | `FOLDING_UPDATED` | Folding (3) | Inventory projection | Corrects a folding record (roll measurements). Recalculates shrinkage. |
 | `CHADAT_UPDATED` | Folding (3) | Gradation Report projection | Corrects a Chadat record. May trigger Gradation Report recalculation. |
-| `CLASSIFICATION_RECORDED` | Classification (4) | Inventory projection | Assigns tone and finish to material. State → CLASSIFIED at MIROLI-CLASSIFIED. |
+| `CLASSIFICATION_RECORDED` | Classification (4) | Inventory projection | Assigns tone and finish to material (State → CLASSIFIED), OR marks as Not Acceptable (State → NOT_ACCEPTABLE at MIROLI-HOLD). Event payload includes is_not_acceptable boolean flag. |
 | `CLASSIFICATION_UPDATED` | Classification (4) | Inventory projection | Re-classifies material (changes tone/finish). RBAC only. |
-| `DECISION_PENDING_CREATED` | Classification (4) | Inventory projection | Flags material with uncertain classification. 14-day aging alert. |
-| `DECISION_PENDING_COMMENTED` | Classification (4) | Classification projection | Adds comment to Decision Pending entry. Resets 14-day aging clock. |
-| `DECISION_PENDING_RESOLVED` | Classification (4) | Inventory projection, Classification projection | Resolves classification uncertainty by assigning tone and finish. |
 | `PACKING_PROGRAM_CREATED` | Packing Program (5) | Inventory projection | Allocates classified rolls (cross-lot), changes state to PROGRAM_ASSIGNED |
-| `THAAN_LOGGED` | Packing Program (5) | Inventory projection, Gradation Report | Logs a thaan with grade. Fresh thaans → Fresh bales. Non-Fresh → non-Fresh bales (Todiya candidates). NA → Reprocess List. |
+| `THAAN_LOGGED` | Packing Program (5) | Inventory projection, Gradation Report | Logs a thaan with grade. Fresh thaans → Fresh bales. Non-Fresh → non-Fresh bales (Todiya candidates). Grades: FRESH, GOOD_CUT, FENT, RAGS, CHINDI only. |
 | `BALE_REGISTERED` | Packing Program (5) | Inventory projection | Assembles Fresh thaans into a bale. State → PACKED. Packing slip generated. |
 | `PACKING_PROGRAM_CANCELLED` | Packing Program (5) | Inventory projection | Returns allocated rolls to previous state |
 | `DELIVERY_CREATED` | Dispatch (6) | Inventory projection | Creates Delivery Form. Bales → PICKUP_SCHEDULED. |
@@ -153,9 +150,9 @@ Events emitted in one module that are consumed by projections in other modules.
 | `BALE_UNPACKED` | Todiya (7) | Bale projection, Thaan projection | Unpacks a bale, releases its thaans for repacking |
 | `BALE_REGISTERED` (source=TODIYA) | Todiya (7) | Bale projection, Thaan projection | Repacks selected thaans into a new Todiya bale (same event as Module 05, source field distinguishes) |
 | `TODIYA_INSTRUCTION_COMPLETED` | Todiya (7) | Todiya projection | Marks instruction as complete |
-| `NA_ENTRY_CREATED` | NA Resolution (8) | NA projection | Records rejected material on Reprocess List (also auto-created from THAAN_LOGGED when grade = NA) |
+| `NA_ENTRY_CREATED` | NA Resolution (8) | NA projection | Records rejected material on Reprocess List (auto-created from CLASSIFICATION_RECORDED when is_not_acceptable = true) |
 | `NA_ENTRY_COMMENTED` | NA Resolution (8) | NA projection | Adds vendor communication update. Resets aging clock. |
-| `NA_ENTRY_RESOLVED` | NA Resolution (8) | NA projection, Inventory projection | Resolves entry: vendor pickup or unresolved write-off |
+| `NA_ENTRY_RESOLVED` | NA Resolution (8) | NA projection, Inventory projection | Resolves entry with resolution_type: RETURNED_TO_VENDOR (material leaves), DISPOSED (write-off, material leaves), or RECLASSIFIED (includes tone_code_id + finish_code_id, transitions to CLASSIFIED) |
 
 ## Build Order
 
@@ -203,7 +200,8 @@ The entire system operates at a single facility: Miroli. There are no distinct p
 | Classified Storage | zone | `MIROLI-CLASSIFIED` | Classified material awaiting packing program assignment. |
 | Cutting/Packing Area | zone | `MIROLI-PACK` | Where packing programs are executed — rolls moved here on allocation, thaans cut and bales assembled. |
 | Finished Goods | zone | `MIROLI-FG-OUT` | Packed bales awaiting dispatch. Also where Todiya unpack/repack happens. |
-| Not Acceptable Storage | zone | `MIROLI-NA` | Rejected material awaiting vendor return. |
+| Not Acceptable Hold | zone | `MIROLI-HOLD` | Material marked as Not Acceptable at classification, awaiting resolution (vendor pickup, disposal, or reclassification). |
+| Not Acceptable Storage (DEPRECATED) | zone | `MIROLI-NA` | DEPRECATED — replaced by MIROLI-HOLD. Material marked as Not Acceptable during classification now uses MIROLI-HOLD. |
 
 Note: These are logical zones for inventory tracking purposes. Physically, the facility has no walls or marked boundaries between areas. Packaging Materials Store (`MIROLI-PKGMAT`) is deferred.
 
@@ -218,10 +216,11 @@ Material progresses through these states as it moves across modules. Each transi
 | `RECEIVED` | MIROLI-RECEIVED | Inbound (2) | Material arrived, awaiting folding |
 | `FOLDED` | MIROLI-FG | Folding (3) | Folding complete, awaiting classification |
 | `AWAITING_CLASSIFICATION` | MIROLI-FG | Classification (4) | Folded, classification in progress |
-| `DECISION_PENDING` | MIROLI-FG | Classification (4) | Classification uncertain — samples sent to HO, 14-day aging alert |
 | `CLASSIFIED` | MIROLI-CLASSIFIED | Classification (4) | Tone and finish assigned, available for packing program |
 | `PROGRAM_ASSIGNED` | MIROLI-PACK | Packing (5) | Allocated to a packing program, physically moved to cutting area |
-| `NOT_ACCEPTABLE` | MIROLI-NA | Packing (5) | Rejected during cutting — entry on Reprocess List (Module 8) |
+| `NOT_ACCEPTABLE` | MIROLI-HOLD | Classification (4) | Rejected at classification — entry on Reprocess List (Module 08). NOT terminal — can transition to RETURNED_TO_VENDOR, DISPOSED, or CLASSIFIED. |
+| `RETURNED_TO_VENDOR` | OUT (not at facility) | NA Resolution (8) | Material returned to vendor — terminal state, material left facility |
+| `DISPOSED` | OUT (not at facility) | NA Resolution (8) | Material written off / disposed — terminal state, material left facility |
 
 ### Thaan States
 
@@ -245,12 +244,13 @@ Material progresses through these states as it moves across modules. Each transi
 ```
 Fabric Inventory:
   RECEIVED ──FOLDING_COMPLETED──► FOLDED
-  FOLDED ──CLASSIFICATION_RECORDED──► CLASSIFIED
-  FOLDED ──DECISION_PENDING_CREATED──► DECISION_PENDING
-  DECISION_PENDING ──DECISION_PENDING_RESOLVED──► CLASSIFIED
+  FOLDED ──CLASSIFICATION_RECORDED (is_not_acceptable=false)──► CLASSIFIED
+  FOLDED ──CLASSIFICATION_RECORDED (is_not_acceptable=true)──► NOT_ACCEPTABLE
+  NOT_ACCEPTABLE ──NA_ENTRY_RESOLVED (type=RECLASSIFIED)──► CLASSIFIED
+  NOT_ACCEPTABLE ──NA_ENTRY_RESOLVED (type=RETURNED_TO_VENDOR)──► RETURNED_TO_VENDOR (terminal)
+  NOT_ACCEPTABLE ──NA_ENTRY_RESOLVED (type=DISPOSED)──► DISPOSED (terminal)
   CLASSIFIED ──PACKING_PROGRAM_CREATED──► PROGRAM_ASSIGNED
   PROGRAM_ASSIGNED ──PACKING_PROGRAM_CANCELLED──► CLASSIFIED (reversal)
-  PROGRAM_ASSIGNED ──THAAN_LOGGED (grade=NA)──► NOT_ACCEPTABLE (terminal)
 
 Thaan:
   (new) ──THAAN_LOGGED──► CREATED

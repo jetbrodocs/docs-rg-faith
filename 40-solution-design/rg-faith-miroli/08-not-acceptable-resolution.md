@@ -4,27 +4,32 @@
 
 ### Process: Reprocess List Management and Vendor Return Tracking
 
-This module tracks material identified as "Not Acceptable" during packing execution (Module 05) — rejected fabric that needs to be returned to the vendor mill. It functions as an issue tracker: rejected material is recorded on the Reprocess List, the vendor is contacted, back-and-forth discussion occurs, and eventually the vendor either picks up the material or it remains at Miroli indefinitely.
+This module tracks material identified as "Not Acceptable" at the classification stage (Module 04) — rejected fabric that cannot proceed to packing. It functions as an issue tracker: rejected material is recorded on the Reprocess List, the vendor is contacted, back-and-forth discussion occurs, and eventually one of three outcomes occurs: (1) the vendor picks up the material (RETURNED_TO_VENDOR), (2) the material is written off / disposed (DISPOSED), or (3) the manager overrides the rejection and reclassifies the material with tone and finish codes (RECLASSIFIED), allowing it to proceed to packing.
 
 This is an informal, trust-based process with no formal dispute mechanism, no credit notes, and no penalties. Resolution timelines vary from days to months — some entries on the Reprocess List remain open for over a year.
 
-Not Acceptable material is always measured in metres (never kilograms).
+Material identified as NA at classification is always measured in metres (never kg) — per CLAUDE.md and domain glossary. NA is identified before packing execution and is entirely separate from packing gradation (Fresh, Good Cut, Fent, Rags, Chindi).
+
+Timing is highly variable: some entries are resolved in days, others remain open for months or even years. There is no enforced SLA or aging escalation — entries simply appear on a report sorted by age.
 
 Flow:
 
 ```
-  Record Rejection          Vendor Communication         Resolution
-      [ENTRY]                     [ENTRY]                  [ENTRY]
-         |                           |                        |
-  NA_ENTRY_CREATED            NA_ENTRY_COMMENTED         NA_ENTRY_RESOLVED
-         |                           |                        |
-    (add to Reprocess         (back-and-forth            (vendor picks up
-     List)                     discussion)                OR remains at
-         |                           |                    facility)
-  material stored              aging tracked                  |
-  at MIROLI-NA                      |                     [EXIT]
-         |                        [EXIT]
-      [EXIT]
+  Classification            Create NA Entry         Vendor Communication      Resolution
+      [ENTRY]                   [ENTRY]                   [ENTRY]             [ENTRY]
+         |                         |                         |                    |
+  Material marked NA        NA_ENTRY_CREATED         NA_ENTRY_COMMENTED     NA_ENTRY_RESOLVED
+  (CLASSIFICATION_                |                         |                    |
+   RECORDED,                Reprocess List          Vendor contacted      Option 1: Vendor pickup
+   is_not_acceptable=true)  entry created            Discussion ongoing         (RETURNED_TO_VENDOR)
+         |                         |                         |                    |
+     [EXIT]                      |                         |                Option 2: Write-off
+                                 |                         |                     (DISPOSED)
+                               [EXIT]                    [EXIT]                  |
+                                                                            Option 3: Manager override
+                                                                                 (RECLASSIFIED)
+                                                                                   |
+                                                                                [EXIT]
 ```
 
 ---
@@ -58,7 +63,9 @@ Flow:
 | status | string | Current lifecycle status |
 | last_activity_at | datetime | Last time a comment or update was made — used for aging alerts |
 | resolved_at | datetime | When the entry was resolved (null while open) |
-| resolution_type | string | How it was resolved: VENDOR_PICKUP or UNRESOLVED (null while open) |
+| resolution_type | string | How it was resolved: RETURNED_TO_VENDOR, DISPOSED, or RECLASSIFIED (null while open) |
+| reclassified_tone_code_id | UUID (FK) | If resolution_type = RECLASSIFIED: which tone code was assigned (null otherwise) |
+| reclassified_finish_code_id | UUID (FK) | If resolution_type = RECLASSIFIED: which finish code was assigned (null otherwise) |
 | created_at | datetime | When the entry was created |
 
 ---
@@ -70,9 +77,9 @@ Flow:
 Event type: `NA_ENTRY_CREATED`
 
 Trigger:
-  When a thaan is logged with grade NOT_ACCEPTABLE during packing execution (Module 05), the
-  system automatically creates a Reprocess List entry. Alternatively, a supervisor can manually
-  create one from the Not Acceptable screen.
+  When material is marked as Not Acceptable during classification (Module 04), via CLASSIFICATION_RECORDED
+  event with is_not_acceptable=true, the system automatically creates a Reprocess List entry.
+  Alternatively, a supervisor can manually create one from the Not Acceptable screen.
 
 Data points captured:
   - inbound_receipt_id: UUID
@@ -95,14 +102,14 @@ Payload:
 
 Aggregate: NotAcceptableEntry / id
 
-Location: MIROLI-NA
+Location: MIROLI-HOLD
 
 Preconditions:
   - Inbound receipt must exist
   - metres must be > 0
 
 Side effects:
-  - fabric_inventory: state already set to NOT_ACCEPTABLE by packing module (THAAN_LOGGED with grade = NA)
+  - fabric_inventory: state already set to NOT_ACCEPTABLE by classification module (CLASSIFICATION_RECORDED with is_not_acceptable=true, location=MIROLI-HOLD)
   - Entry appears on Reprocess List
 
 Projections updated:
@@ -149,77 +156,67 @@ Permissions:
 
 ---
 
-### Step: Resolve — Vendor Pickup
+### Step: Resolve Not Acceptable Entry
 
 Event type: `NA_ENTRY_RESOLVED`
 
 Trigger:
-  Vendor arranges pickup and the rejected material physically leaves Miroli. Supervisor
-  records the resolution.
+  Facility Manager or authorized supervisor opens a Reprocess List entry and chooses one of three
+  resolution options:
+
+  Option 1 (Vendor Pickup): Vendor has physically picked up the material. Material leaves facility.
+
+  Option 2 (Dispose): Write-off — material is disposed of or remains at facility but will not be
+  processed further. Material leaves facility or is scrapped.
+
+  Option 3 (Reclassify): Manager overrides the Not Acceptable marking, assigns tone code and finish
+  code, and allows material to proceed to packing as CLASSIFIED.
 
 Data points captured:
-  - id: UUID — which entry
-  - resolution_type: "VENDOR_PICKUP"
-  - notes: string (optional) — pickup details
+  - na_entry_id: UUID
+  - resolution_type: string — RETURNED_TO_VENDOR, DISPOSED, or RECLASSIFIED
+  - resolution_notes: string — optional notes about the resolution
+  - reclassified_tone_code_id: UUID (required if resolution_type = RECLASSIFIED, null otherwise)
+  - reclassified_finish_code_id: UUID (required if resolution_type = RECLASSIFIED, null otherwise)
 
 Payload:
-  id: UUID
-  resolution_type: "VENDOR_PICKUP"
-  notes: string?
+  id: UUID (na_entry_id)
+  resolution_type: string
+  resolution_notes: string
+  reclassified_tone_code_id: UUID (if applicable)
+  reclassified_finish_code_id: UUID (if applicable)
+  resolved_at: datetime (now)
 
 Aggregate: NotAcceptableEntry / id
 
-Location: MIROLI-NA
+Location: MIROLI-HOLD
 
 Preconditions:
   - Entry must exist with status = OPEN or IN_DISCUSSION
+  - If resolution_type = RECLASSIFIED: reclassified_tone_code_id and reclassified_finish_code_id must be provided
+  - If resolution_type = RETURNED_TO_VENDOR or DISPOSED: reclassified fields must be null
 
 Side effects:
-  - fabric_inventory: NOT_ACCEPTABLE entry removed (material left the facility)
+  - If resolution_type = RETURNED_TO_VENDOR:
+    * fabric_inventory: state → RETURNED_TO_VENDOR, location → OUT (material left facility)
+  - If resolution_type = DISPOSED:
+    * fabric_inventory: state → DISPOSED, location → OUT (material left facility)
+  - If resolution_type = RECLASSIFIED:
+    * fabric_inventory: state → CLASSIFIED, location → MIROLI-CLASSIFIED
+    * Material now eligible for packing programs
+    * Tone and finish codes recorded in fabric_inventory record
 
 Projections updated:
-  - not_acceptable_entries: status -> RESOLVED, resolution_type -> VENDOR_PICKUP, resolved_at -> now
-  - fabric_inventory: entry removed or state -> RETURNED_TO_VENDOR
+  - not_acceptable_entries: status → RESOLVED, resolution_type set, resolved_at → now, reclassified fields populated if applicable
+  - fabric_inventory: state and location updated per resolution_type
 
 Permissions:
-  - events:NA_ENTRY_RESOLVED:emit
+  - events:NA_ENTRY_RESOLVED:emit (FACILITY_MANAGER, SUPERVISOR with authorization)
 
----
-
-### Step: Resolve — Unresolved (Write-off)
-
-Event type: `NA_ENTRY_RESOLVED`
-
-Trigger:
-  Manager decides the vendor will not pick up the material. Marks the entry as unresolved.
-  Material remains at Miroli.
-
-Data points captured:
-  - id: UUID — which entry
-  - resolution_type: "UNRESOLVED"
-  - notes: string (optional) — reason for write-off
-
-Payload:
-  id: UUID
-  resolution_type: "UNRESOLVED"
-  notes: string?
-
-Aggregate: NotAcceptableEntry / id
-
-Location: MIROLI-NA
-
-Preconditions:
-  - Entry must exist with status = OPEN or IN_DISCUSSION
-
-Side effects:
-  - fabric_inventory: NOT_ACCEPTABLE entry remains (material stays at facility)
-  - Entry removed from active Reprocess List
-
-Projections updated:
-  - not_acceptable_entries: status -> RESOLVED, resolution_type -> UNRESOLVED, resolved_at -> now
-
-Permissions:
-  - events:NA_ENTRY_RESOLVED:emit
+Business rules:
+  - RECLASSIFIED resolution requires both tone and finish codes
+  - Once resolved, entry cannot be reopened (resolution is permanent)
+  - Material that is RETURNED_TO_VENDOR or DISPOSED exits the system entirely
 
 ---
 
@@ -242,7 +239,7 @@ Transitions:
 ```
 OPEN --NA_ENTRY_COMMENTED--> IN_DISCUSSION --NA_ENTRY_COMMENTED--> IN_DISCUSSION
   |                                |
-  +--NA_ENTRY_RESOLVED--> RESOLVED (terminal: VENDOR_PICKUP or UNRESOLVED)
+  +--NA_ENTRY_RESOLVED--> RESOLVED (terminal: RETURNED_TO_VENDOR, DISPOSED, or RECLASSIFIED)
                                    |
               +--------------------+
               |
@@ -250,7 +247,7 @@ OPEN --NA_ENTRY_COMMENTED--> IN_DISCUSSION --NA_ENTRY_COMMENTED--> IN_DISCUSSION
 ```
 
 Notes:
-- RESOLVED is terminal. The resolution_type field distinguishes between VENDOR_PICKUP and UNRESOLVED.
+- RESOLVED is terminal. The resolution_type field distinguishes between RETURNED_TO_VENDOR, DISPOSED, and RECLASSIFIED.
 - Entries with no activity for extended periods should be flagged — the system should highlight stale entries.
 
 ---
@@ -293,7 +290,8 @@ Notes:
 
 | Location | Type | Code | Parent | Purpose |
 |---|---|---|---|---|
-| Not Acceptable Storage | zone | `MIROLI-NA` | MIROLI | Where rejected material is stored separately |
+| Not Acceptable Hold | zone | `MIROLI-HOLD` | MIROLI | Material marked as Not Acceptable at classification, awaiting resolution (vendor pickup, disposal, or reclassification) |
+| Not Acceptable Storage | zone | `MIROLI-NA` | MIROLI | DEPRECATED — replaced by MIROLI-HOLD. Material marked as Not Acceptable during classification now uses MIROLI-HOLD. |
 
 ---
 
@@ -312,19 +310,21 @@ Notes:
 
 ```mermaid
 flowchart TD
-    A["Material identified as\nNOT_ACCEPTABLE\nduring packing (Module 5)"] -->|"NA_ENTRY_CREATED"| B["Reprocess List Entry\n(OPEN)"]
+    A["Material marked as\nNOT_ACCEPTABLE\nat classification (Module 4)"] -->|"NA_ENTRY_CREATED"| B["Reprocess List Entry\n(OPEN)"]
     B -->|"NA_ENTRY_COMMENTED\n(vendor contacted)"| C["In Discussion\n(IN_DISCUSSION)"]
     C -->|"NA_ENTRY_COMMENTED\n(ongoing discussion)"| C
-    C -->|"Vendor arranges pickup"| D["Resolved: Vendor Pickup\n(RESOLVED)"]
-    C -->|"Vendor won't pick up"| E["Resolved: Unresolved\n(RESOLVED)"]
-    B -->|"Direct resolution\n(rare)"| D
-    B -->|"Direct write-off\n(rare)"| E
+    C -->|"NA_ENTRY_RESOLVED\n(RETURNED_TO_VENDOR)"| D["Material returned\nto vendor\n(RESOLVED)\nState: RETURNED_TO_VENDOR"]
+    C -->|"NA_ENTRY_RESOLVED\n(DISPOSED)"| E["Material disposed\nof / written off\n(RESOLVED)\nState: DISPOSED"]
+    C -->|"NA_ENTRY_RESOLVED\n(RECLASSIFIED)"| F["Manager overrides,\nassigns tone + finish\n(RESOLVED)\nState: CLASSIFIED"]
+    F -->|"Material proceeds"| G["Available for\nPacking Programs"]
 
-    B -->|"No activity 14+ days"| F["⚠ Stale Entry Alert"]
-    C -->|"No activity 14+ days"| F
-    F -->|"Manager reviews"| C
+    B -->|"No activity 14+ days"| H["⚠ Stale Entry Alert"]
+    C -->|"No activity 14+ days"| H
+    H -->|"Manager reviews"| C
 
     style D fill:#6f6,stroke:#333
     style E fill:#f96,stroke:#333
-    style F fill:#f66,stroke:#333
+    style F fill:#9cf,stroke:#333
+    style G fill:#9f9,stroke:#333
+    style H fill:#f66,stroke:#333
 ```
