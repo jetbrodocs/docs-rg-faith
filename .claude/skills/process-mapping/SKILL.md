@@ -1,3 +1,8 @@
+---
+name: process-mapping
+description: Create or edit process maps in the 20-process-maps folder. Use when documenting workflows, sequential processes, or system flows built from observations.
+---
+
 # Process Mapping
 
 ## When to Use

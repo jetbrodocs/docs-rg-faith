@@ -1,3 +1,8 @@
+---
+name: solution-design
+description: Design technical solutions in the 40-solution-design folder. Use when creating requirements, data models, architecture, or tech decisions that bridge process documentation to implementation.
+---
+
 # Solution Design
 
 ## When to Use

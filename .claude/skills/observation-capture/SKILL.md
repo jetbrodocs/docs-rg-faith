@@ -1,3 +1,8 @@
+---
+name: observation-capture
+description: Capture raw observations in the 10-observations folder from site visits, interviews, or field work. Use when documenting what happens at a station, area, or activity.
+---
+
 # Observation Capture
 
 ## When to Use

@@ -1,3 +1,9 @@
+---
+name: documentation-writer
+description: Write, draft, or edit any documentation file with consistent quality standards. Use whenever creating observations, process maps, analysis documents, or solution designs.
+user-invocable: false
+---
+
 # Documentation Writer
 
 ## When to Use
